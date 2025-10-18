@@ -561,6 +561,22 @@
             background: rgba(255, 255, 255, 0.15);
         }
 
+        /* 搜索结果项样式 */
+        .search-result-item {
+            padding: 10px;
+            cursor: pointer;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            transition: background-color 0.2s;
+        }
+
+        .search-result-item:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .search-result-item:last-child {
+            border-bottom: none;
+        }
+
         .upload-area {
             border: 2px dashed rgba(255, 255, 255, 0.2);
             border-radius: 12px;
@@ -1591,8 +1607,9 @@
                     <button class="close-btn" onclick="closeWeatherModal()">&times;</button>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">城市名称</label>
-                    <input type="text" class="form-input" id="cityInput" placeholder="请输入城市名称，如：北京、上海、广州">
+                    <label class="form-label">搜索城市</label>
+                    <input type="text" class="form-input" id="citySearchInput" placeholder="请输入城市名称，如：北京、纽约、伦敦" oninput="searchCities()">
+                    <div id="searchResults" style="max-height: 200px; overflow-y: auto; margin-top: 10px; display: none;"></div>
                 </div>
                 <div class="form-group">
                     <label class="form-label">热门城市</label>
@@ -1604,6 +1621,21 @@
                         <button class="submit-btn" style="flex: 1; min-width: 80px; padding: 8px;" onclick="selectCity('杭州')">杭州</button>
                         <button class="submit-btn" style="flex: 1; min-width: 80px; padding: 8px;" onclick="selectCity('成都')">成都</button>
                     </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">国际城市</label>
+                    <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px;">
+                        <button class="submit-btn" style="flex: 1; min-width: 80px; padding: 8px;" onclick="selectCity('纽约')">纽约</button>
+                        <button class="submit-btn" style="flex: 1; min-width: 80px; padding: 8px;" onclick="selectCity('伦敦')">伦敦</button>
+                        <button class="submit-btn" style="flex: 1; min-width: 80px; padding: 8px;" onclick="selectCity('东京')">东京</button>
+                        <button class="submit-btn" style="flex: 1; min-width: 80px; padding: 8px;" onclick="selectCity('巴黎')">巴黎</button>
+                        <button class="submit-btn" style="flex: 1; min-width: 80px; padding: 8px;" onclick="selectCity('悉尼')">悉尼</button>
+                        <button class="submit-btn" style="flex: 1; min-width: 80px; padding: 8px;" onclick="selectCity('莫斯科')">莫斯科</button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">已选择城市</label>
+                    <input type="text" class="form-input" id="cityInput" placeholder="请输入或选择城市名称">
                 </div>
                 <button class="submit-btn" onclick="updateWeatherByCity()">确定</button>
             </div>
@@ -2316,6 +2348,52 @@
             // 选择城市
             function selectCity(city) {
                 document.getElementById('cityInput').value = city;
+                // 隐藏搜索结果
+                document.getElementById('searchResults').style.display = 'none';
+            }
+
+            // 搜索城市
+            function searchCities() {
+                const searchTerm = document.getElementById('citySearchInput').value.trim();
+                const searchResults = document.getElementById('searchResults');
+                
+                // 如果搜索词为空，隐藏搜索结果
+                if (!searchTerm) {
+                    searchResults.style.display = 'none';
+                    return;
+                }
+                
+                // 显示搜索结果容器
+                searchResults.style.display = 'block';
+                
+                // 模拟城市搜索结果（实际应用中应该调用API）
+                const commonCities = [
+                    '北京', '上海', '广州', '深圳', '杭州', '成都',
+                    '纽约', '伦敦', '东京', '巴黎', '悉尼', '莫斯科',
+                    '洛杉矶', '芝加哥', '旧金山', '多伦多', '温哥华',
+                    '新加坡', '首尔', '曼谷', '迪拜', '开罗', '德里',
+                    '孟买', '雅加达', '吉隆坡', '马尼拉', '胡志明市',
+                    '柏林', '法兰克福', '慕尼黑', '罗马', '米兰', '马德里',
+                    '巴塞罗那', '阿姆斯特丹', '布鲁塞尔', '维也纳', '苏黎世',
+                    '斯德哥尔摩', '奥斯陆', '赫尔辛基', '哥本哈根',
+                    '伊斯坦布尔', '利雅得', '特拉维夫', '约翰内斯堡'
+                ];
+                
+                // 过滤匹配的城市
+                const filteredCities = commonCities.filter(city => 
+                    city.toLowerCase().includes(searchTerm.toLowerCase())
+                );
+                
+                // 显示搜索结果
+                if (filteredCities.length > 0) {
+                    let resultsHTML = '';
+                    filteredCities.forEach(city => {
+                        resultsHTML += `<div class="search-result-item" onclick="selectCity('${city}')" style="padding: 10px; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.1);">${city}</div>`;
+                    });
+                    searchResults.innerHTML = resultsHTML;
+                } else {
+                    searchResults.innerHTML = '<div class="search-result-item" style="padding: 10px; color: #aaa;">未找到匹配的城市</div>';
+                }
             }
 
             // 根据城市更新天气
@@ -2340,51 +2418,60 @@
 
             // 获取真实天气数据
             function getRealWeatherData(city) {
-                // 使用 OpenWeatherMap API 的免费端点 (需要网络访问)
+                // 使用 WeatherAPI 的免费端点 (需要网络访问)
                 // 注意：这需要设备能访问互联网
-                const url = `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&appid=4a48e1e1428fd83889074671fbf259d9&units=metric&lang=zh_cn`;
+                const url = `https://api.weatherapi.com/v1/current.json?key=37431093e55945bdb9b114902251810&q=${encodeURIComponent(city)}&lang=zh`;
                 
                 fetch(url)
                     .then(response => {
                         if (!response.ok) {
-                            // 如果API调用失败，使用备用方案
+                            // 如果API调用失败，显示错误信息
                             throw new Error('天气API调用失败');
                         }
                         return response.json();
                     })
                     .then(data => {
                         // 处理天气数据
-                        processWeatherData(data);
+                        processWeatherAPIData(data);
                     })
                     .catch(error => {
                         console.error('获取天气数据时出错:', error);
-                        // 如果API调用失败，使用模拟数据
-                        simulateWeatherData(city);
+                        // 如果API调用失败，显示错误信息
+                        alert('获取天气数据失败，请检查网络连接或稍后重试');
                     });
             }
 
-            // 处理真实的天气数据
-            function processWeatherData(data) {
+            // 处理 WeatherAPI 返回的数据
+            function processWeatherAPIData(data) {
                 try {
-                    // 从OpenWeatherMap API解析数据
-                    const weatherMain = data.weather[0].main;
-                    const weatherDesc = data.weather[0].description;
-                    const temp = Math.round(data.main.temp);
+                    // 从WeatherAPI解析数据
+                    const weatherDesc = data.current.condition.text;
+                    // 使用摄氏温度并确保正确处理，直接取整数部分
+                    const temp = Math.trunc(data.current.temp_c);
                     
-                    // 确定天气类型
+                    // 确定天气类型 - 使用更准确的判断逻辑
                     let weatherType = 'sunny';
-                    if (weatherMain === 'Rain' || weatherDesc.includes('雨')) {
-                        weatherType = 'rainy';
-                    } else if (weatherMain === 'Snow' || weatherDesc.includes('雪')) {
-                        weatherType = 'snowy';
-                    } else if (weatherMain === 'Clouds' || weatherDesc.includes('云') || weatherDesc.includes('阴')) {
+                    
+                    // 根据天气描述文本判断天气类型
+                    if (weatherDesc.includes('雷') || weatherDesc.includes('暴')) {
+                        weatherType = 'rainy';  // 雷雨天气
+                    } else if (weatherDesc.includes('雨')) {
+                        weatherType = 'rainy';  // 雨天
+                    } else if (weatherDesc.includes('雪')) {
+                        weatherType = 'snowy';  // 雪天
+                    } else if (weatherDesc.includes('雾') || weatherDesc.includes('霾')) {
+                        weatherType = 'cloudy';  // 雾霾天气
+                    } else if (weatherDesc.includes('阴') || weatherDesc.includes('多云') || weatherDesc.includes('云')) {
+                        weatherType = 'cloudy';  // 阴天或多云
+                    } else if (weatherDesc.includes('晴')) {
+                        weatherType = 'sunny';  // 晴天
+                    }
+                    
+                    // 特殊处理：部分描述可能需要更细致的判断
+                    if (weatherDesc === '多云' || weatherDesc === '阴') {
                         weatherType = 'cloudy';
-                    } else if (weatherMain === 'Thunderstorm' || weatherDesc.includes('雷')) {
-                        weatherType = 'rainy';
-                    } else if (weatherMain === 'Drizzle' || weatherDesc.includes('毛毛雨')) {
-                        weatherType = 'rainy';
-                    } else if (weatherMain === 'Clear') {
-                        weatherType = 'sunny';
+                    } else if (weatherDesc.includes('局部多云') || weatherDesc.includes('晴间多云')) {
+                        weatherType = 'partlyCloudy';  // 晴转多云
                     }
                     
                     // 提取天气信息
@@ -2401,39 +2488,13 @@
                     // 保存天气数据到本地存储
                     localStorage.setItem('weatherData', JSON.stringify(weather));
                 } catch (e) {
-                    console.error('处理天气数据时出错:', e);
-                    // 如果解析失败，使用模拟数据
-                    const city = document.getElementById('weatherLocation').textContent || '北京';
-                    simulateWeatherData(city);
+                    console.error('处理WeatherAPI数据时出错:', e);
+                    // 如果解析失败，显示错误信息
+                    alert('天气数据解析失败，请稍后重试');
                 }
             }
 
-            // 模拟天气数据获取（作为备选方案）
-            function simulateWeatherData(city) {
-                // 模拟不同的天气情况
-                const weatherConditions = [
-                    { type: 'sunny', description: '晴天', temp: Math.floor(Math.random() * 10) + 22 },
-                    { type: 'cloudy', description: '多云', temp: Math.floor(Math.random() * 10) + 15 },
-                    { type: 'rainy', description: '小雨', temp: Math.floor(Math.random() * 5) + 10 },
-                    { type: 'snowy', description: '小雪', temp: Math.floor(Math.random() * 5) + -2 },
-                    { type: 'partlyCloudy', description: '晴转多云', temp: Math.floor(Math.random() * 10) + 18 },
-                    { type: 'sleet', description: '雨夹雪', temp: Math.floor(Math.random() * 3) + 1 }
-                ];
-                
-                // 随机选择一个天气条件
-                const weather = weatherConditions[Math.floor(Math.random() * weatherConditions.length)];
-                
-                // 更新天气显示
-                updateWeatherDisplay(weather);
-                
-                // 保存天气数据到本地存储
-                localStorage.setItem('weatherData', JSON.stringify({
-                    type: weather.type,
-                    temp: weather.temp,
-                    description: weather.description,
-                    timestamp: new Date().toISOString()
-                }));
-            }
+            // 移除了模拟天气数据功能，只使用真实天气API
 
             // 更新天气显示
             function updateWeatherDisplay(weather) {
@@ -2506,8 +2567,6 @@
                             // 数据过期，重新获取
                             if (savedCity) {
                                 getRealWeatherData(savedCity);
-                            } else {
-                                simulateWeatherData('北京');
                             }
                         }
                     } catch (e) {
