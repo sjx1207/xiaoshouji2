@@ -2429,9 +2429,13 @@
 
             // 获取真实天气数据
             function getRealWeatherData(city) {
+                // 获取用户配置的WeatherAPI密钥，如果没有则使用默认密钥
+                const userApiKey = localStorage.getItem('weatherApiKey');
+                const apiKey = userApiKey || '37431093e55945bdb9b114902251810';
+                
                 // 使用 WeatherAPI 的免费端点 (需要网络访问)
                 // 注意：这需要设备能访问互联网
-                const url = `https://api.weatherapi.com/v1/current.json?key=37431093e55945bdb9b114902251810&q=${encodeURIComponent(city)}&lang=zh`;
+                const url = `https://api.weatherapi.com/v1/current.json?key=${apiKey}&q=${encodeURIComponent(city)}&lang=zh`;
                 
                 fetch(url)
                     .then(response => {
