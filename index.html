@@ -680,72 +680,151 @@
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
             z-index: 100;
         }
+
+        /* 浪漫心跳组件样式 */
+        .romantic-heartbeat-widget {
+            position: absolute;
+            top: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 350px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            z-index: 20;
+        }
         
-        .voice-avatar {
-            width: 40px;
-            height: 40px;
+        .heartbeat-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 30px;
+        }
+        
+        .avatar {
+            width: 60px;
+            height: 60px;
             border-radius: 50%;
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.1);
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-right: 10px;
+            position: relative;
+            z-index: 2;
+            border: 2px solid rgba(255, 255, 255, 0.3);
             cursor: pointer;
         }
         
-        .voice-wave {
+        .avatar-img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            overflow: hidden;
+        }
+        
+        .avatar-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+        }
+        
+        .avatar-placeholder {
+            font-size: 30px;
+            line-height: 60px;
+        }
+        
+        .heartbeat-area {
             flex: 1;
-            height: 30px;
+            height: 100px;
             display: flex;
             align-items: center;
             justify-content: center;
+            position: relative;
         }
         
-        .wave-bar {
-            width: 3px;
-            height: 10px;
-            background: rgba(255, 255, 255, 0.6);
-            margin: 0 2px;
-            border-radius: 2px;
-            animation: waveAnimation 1s infinite ease-in-out;
+        .heart-icon {
+            width: 50px;
+            height: 50px;
+            animation: heartbeat 1.2s ease-in-out infinite;
+            position: relative;
+            z-index: 3;
         }
         
-        .wave-bar:nth-child(2) {
-            animation-delay: 0.1s;
-            height: 15px;
+        .heart-icon svg {
+            width: 100%;
+            height: 100%;
         }
         
-        .wave-bar:nth-child(3) {
-            animation-delay: 0.2s;
-            height: 20px;
+        @keyframes heartbeat {
+            0% { transform: scale(1); }
+            5% { transform: scale(1.1); }
+            10% { transform: scale(1); }
+            15% { transform: scale(1.2); }
+            50% { transform: scale(1); }
+            100% { transform: scale(1); }
         }
         
-        .wave-bar:nth-child(4) {
-            animation-delay: 0.3s;
-            height: 25px;
+        /* 创建爱心形状的发光效果 */
+        .heart-icon::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url("data:image/svg+xml,%3Csvg viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M12 21.35L10.55 20.03C5.4 15.36 2 12.28 2 8.5C2 5.42 4.42 3 7.5 3C9.24 3 10.91 3.81 12 5.09C13.09 3.81 14.76 3 16.5 3C19.58 3 22 5.42 22 8.5C22 12.28 18.6 15.36 13.45 20.04L12 21.35Z' fill='red'/%3E%3C/svg%3E") center/contain no-repeat;
+            z-index: -1;
+            animation: pulse 1.2s ease-in-out infinite;
+            filter: blur(15px);
+            opacity: 0.7;
         }
         
-        .wave-bar:nth-child(5) {
-            animation-delay: 0.4s;
-            height: 20px;
+        /* 创建心电图脉冲折线效果 */
+        .ecg-line {
+            position: absolute;
+            width: 100%;
+            height: 60px;
+            top: 50%;
+            transform: translateY(-50%);
+            overflow: hidden;
         }
         
-        .wave-bar:nth-child(6) {
-            animation-delay: 0.5s;
-            height: 15px;
+        /* 使用SVG创建心电图折线 */
+        .ecg-line::after {
+            content: '';
+            position: absolute;
+            width: 200%;
+            height: 100%;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 60'%3E%3Cpath d='M0,30 L20,30 L30,10 L40,50 L50,30 L70,30 L80,15 L90,45 L100,30 L120,30 L130,20 L140,40 L150,30 L170,30 L180,25 L190,35 L200,30' stroke='red' stroke-width='2' fill='none' stroke-dasharray='1000' stroke-dashoffset='1000'%3E%3Canimate attributeName='stroke-dashoffset' from='1000' to='0' dur='2s' repeatCount='indefinite'/%3E%3C/path%3E%3C/svg%3E");
+            background-repeat: repeat-x;
+            animation: ecgMove 2s linear infinite;
+            filter: drop-shadow(0 0 4px rgba(255, 0, 0, 0.7));
         }
         
-        .wave-bar:nth-child(7) {
-            animation-delay: 0.6s;
-            height: 10px;
+        @keyframes ecgMove {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-100px); }
         }
         
-        @keyframes waveAnimation {
-            0%, 100% {
-                transform: scaleY(1);
+        /* 心跳动画增强 */
+        @keyframes pulse {
+            0% { 
+                transform: scale(1);
+                opacity: 0.7;
             }
-            50% {
-                transform: scaleY(1.5);
+            50% { 
+                transform: scale(1.8);
+                opacity: 0.4;
+            }
+            100% { 
+                transform: scale(1);
+                opacity: 0.7;
             }
         }
         
@@ -1132,6 +1211,35 @@
 
                 <!-- 第二页 -->
                 <div class="page" id="page2">
+                    <!-- 浪漫心跳组件 -->
+                    <div class="romantic-heartbeat-widget">
+                        <div class="heartbeat-container">
+                            <!-- 头像1 -->
+                            <div class="avatar avatar-left" onclick="changeAvatar('left')">
+                                <div class="avatar-img" id="avatarLeft">
+                                    <div class="avatar-placeholder">👤</div>
+                                </div>
+                            </div>
+                            
+                            <!-- 心跳动画区域 -->
+                            <div class="heartbeat-area">
+                                <div class="heart-icon">
+                                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M12 21.35L10.55 20.03C5.4 15.36 2 12.28 2 8.5C2 5.42 4.42 3 7.5 3C9.24 3 10.91 3.81 12 5.09C13.09 3.81 14.76 3 16.5 3C19.58 3 22 5.42 22 8.5C22 12.28 18.6 15.36 13.45 20.04L12 21.35Z" stroke="red" stroke-width="2" fill="red"/>
+                                    </svg>
+                                </div>
+                                <div class="ecg-line"></div>
+                            </div>
+                            
+                            <!-- 头像2 -->
+                            <div class="avatar avatar-right" onclick="changeAvatar('right')">
+                                <div class="avatar-img" id="avatarRight">
+                                    <div class="avatar-placeholder">👤</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- 语音组件（新增） -->
                     <div class="voice-component" id="voiceComponent" onclick="playVoiceAudio()">
                         <!-- 头像 -->
@@ -1377,6 +1485,7 @@
                 loadWeatherData(); // 加载天气数据
                 loadCustomIcons(); // 加载自定义图标
                 loadVoiceAvatar(); // 加载语音头像
+                loadRomanticAvatars(); // 加载浪漫头像
                 
                 // 从本地存储加载天气状态，如果没有则默认为晴天
                 const savedWeatherState = localStorage.getItem('weatherState') || 'sunny';
@@ -2297,6 +2406,70 @@
             function toggleWeatherState() {
                 // 不再使用旧的切换逻辑，而是打开天气选择弹窗
                 openWeatherModal();
+            }
+
+            // 添加更换头像的函数
+            function changeAvatar(side) {
+                // 创建文件输入元素
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = 'image/*';
+                input.onchange = function(event) {
+                    const file = event.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            // 创建头像图片元素
+                            const avatarImg = document.createElement('img');
+                            avatarImg.src = e.target.result;
+                            avatarImg.alt = '头像';
+                            
+                            // 更新对应侧的头像显示
+                            if (side === 'left') {
+                                const avatarContainer = document.getElementById('avatarLeft');
+                                avatarContainer.innerHTML = '';
+                                avatarContainer.appendChild(avatarImg);
+                                // 保存到本地存储
+                                localStorage.setItem('romanticAvatarLeft', e.target.result);
+                            } else if (side === 'right') {
+                                const avatarContainer = document.getElementById('avatarRight');
+                                avatarContainer.innerHTML = '';
+                                avatarContainer.appendChild(avatarImg);
+                                // 保存到本地存储
+                                localStorage.setItem('romanticAvatarRight', e.target.result);
+                            }
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                };
+                input.click();
+            }
+            
+            // 加载保存的头像
+            function loadRomanticAvatars() {
+                // 加载左侧头像
+                const savedAvatarLeft = localStorage.getItem('romanticAvatarLeft');
+                if (savedAvatarLeft) {
+                    const avatarImg = document.createElement('img');
+                    avatarImg.src = savedAvatarLeft;
+                    avatarImg.alt = '头像';
+                    
+                    const avatarContainer = document.getElementById('avatarLeft');
+                    avatarContainer.innerHTML = '';
+                    avatarContainer.appendChild(avatarImg);
+                }
+                
+                // 加载右侧头像
+                const savedAvatarRight = localStorage.getItem('romanticAvatarRight');
+                if (savedAvatarRight) {
+                    const avatarImg = document.createElement('img');
+                    avatarImg.src = savedAvatarRight;
+                    avatarImg.alt = '头像';
+                    
+                    const avatarContainer = document.getElementById('avatarRight');
+                    avatarContainer.innerHTML = '';
+                    avatarContainer.appendChild(avatarImg);
+                }
             }
 
             // 添加更换语音头像的函数
