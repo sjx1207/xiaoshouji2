@@ -484,6 +484,27 @@
                     </div>
                 </div>
             </div>
+            
+            <!-- 天气API设置 -->
+            <div class="setting-item">
+                <div class="setting-title">天气API设置</div>
+                <div class="setting-description">配置WeatherAPI密钥以获取真实天气数据</div>
+                
+                <div class="input-group">
+                    <label class="input-label">WeatherAPI密钥</label>
+                    <input type="password" class="input-field" id="weather-api-key" placeholder="请输入WeatherAPI密钥">
+                </div>
+                
+                <div class="setting-description">
+                    <p>注册地址: <a href="https://www.weatherapi.com/" target="_blank" style="color: #007AFF;">https://www.weatherapi.com/</a></p>
+                    <p>每个用户可免费获取一定额度的API调用次数</p>
+                </div>
+                
+                <div class="button-group">
+                    <div class="btn btn-secondary" onclick="testWeatherApi()">测试连接</div>
+                    <div class="btn btn-primary" onclick="saveWeatherApiSettings()">保存设置</div>
+                </div>
+            </div>
         </div>
 
         <!-- 自定义弹窗 -->
