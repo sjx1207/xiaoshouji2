@@ -73,7 +73,7 @@
 
         /* 名片小组件样式 */
         .profile-widget {
-            position: fixed;
+            position: absolute;
             bottom: 140px;
             left: 25px;
             width: 160px;
@@ -134,7 +134,7 @@
 
         /* 天气信息组件样式 */
         .weather-widget {
-            position: fixed;
+            position: absolute;
             top: 60px;
             left: 25px;
             width: calc(50% - 30px);
@@ -249,7 +249,7 @@
 
         /* 照片展示组件样式 */
         .photo-display-widget {
-            position: fixed;
+            position: absolute;
             top: 46px;
             right: 16px;
             width: calc(50% - 10px);
@@ -646,7 +646,7 @@
 
         /* 音乐播放器小组件 */
         .music-player {
-            position: fixed;
+            position: absolute;
             top: 320px;  /* 还原原来的位置 */
             left: 25px;
             width: calc(100% - 50px);
@@ -820,168 +820,168 @@
             </div>
         </div>
 
-        <!-- 名片小组件 -->
-        <div class="profile-widget">
-            <div class="profile-avatar" id="profileAvatar" onclick="changeAvatar()">
-                <span style="font-size: 30px; line-height: 60px;">👤</span>
-            </div>
-            <div class="profile-nickname" id="profileNickname" onclick="changeNickname()">点击设置昵称</div>
-            <div class="profile-signature" id="profileSignature" onclick="changeSignature()">点击设置个性签名</div>
-        </div>
-
-        <!-- 天气信息组件 -->
-        <div class="weather-widget" onclick="openWeatherModal()">
-            <div class="weather-location" id="weatherLocation">北京</div>
-            <div class="weather-icon">
-                <!-- 晴天图标 -->
-                <svg class="sunny-icon" id="sunnyIcon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: none;">
-                    <circle cx="12" cy="12" r="4" fill="#FFD700" stroke="#FFA500" stroke-width="1.5"/>
-                    <path d="M12 3V1" stroke="#FFA500" stroke-width="2" stroke-linecap="round"/>
-                    <path d="M12 23V21" stroke="#FFA500" stroke-width="2" stroke-linecap="round"/>
-                    <path d="M3 12H1" stroke="#FFA500" stroke-width="2" stroke-linecap="round"/>
-                    <path d="M23 12H21" stroke="#FFA500" stroke-width="2" stroke-linecap="round"/>
-                    <path d="M5.64 5.64L4.22 4.22" stroke="#FFA500" stroke-width="2" stroke-linecap="round"/>
-                    <path d="M19.78 19.78L18.36 18.36" stroke="#FFA500" stroke-width="2" stroke-linecap="round"/>
-                    <path d="M5.64 18.36L4.22 19.78" stroke="#FFA500" stroke-width="2" stroke-linecap="round"/>
-                    <path d="M19.78 4.22L18.36 5.64" stroke="#FFA500" stroke-width="2" stroke-linecap="round"/>
-                </svg>
-                
-                <!-- 雨天图标 -->
-                <svg class="rainy-icon" id="rainyIcon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: none;">
-                    <path d="M6 14C4.34315 14 3 15.3431 3 17C3 18.6569 4.34315 20 6 20H16C17.6569 20 19 18.6569 19 17C19 15.3431 17.6569 14 16 14H6Z" fill="#87CEEB"/>
-                    <path d="M8 16C6.34315 16 5 17.3431 5 19C5 20.6569 6.34315 22 8 22H14C15.6569 22 17 20.6569 17 19C17 17.3431 15.6569 16 14 16H8Z" fill="#87CEEB"/>
-                    <!-- 雨滴1 -->
-                    <path d="M9 18L9 20" stroke="#4682B4" stroke-width="1.5" stroke-linecap="round">
-                        <animate attributeName="opacity" values="0;1;0" dur="1s" repeatCount="indefinite" begin="0s"/>
-                        <animate attributeName="y" values="16;22" dur="1s" repeatCount="indefinite" begin="0s"/>
-                    </path>
-                    <!-- 雨滴2 -->
-                    <path d="M12 18L12 20" stroke="#4682B4" stroke-width="1.5" stroke-linecap="round">
-                        <animate attributeName="opacity" values="0;1;0" dur="1s" repeatCount="indefinite" begin="0.3s"/>
-                        <animate attributeName="y" values="16;22" dur="1s" repeatCount="indefinite" begin="0.3s"/>
-                    </path>
-                    <!-- 雨滴3 -->
-                    <path d="M15 18L15 20" stroke="#4682B4" stroke-width="1.5" stroke-linecap="round">
-                        <animate attributeName="opacity" values="0;1;0" dur="1s" repeatCount="indefinite" begin="0.6s"/>
-                        <animate attributeName="y" values="16;22" dur="1s" repeatCount="indefinite" begin="0.6s"/>
-                    </path>
-                </svg>
-                
-                <!-- 阴天图标 -->
-                <svg class="cloudy-icon" id="cloudyIcon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: none;">
-                    <path d="M6 14C4.34315 14 3 15.3431 3 17C3 18.6569 4.34315 20 6 20H16C17.6569 20 19 18.6569 19 17C19 15.3431 17.6569 14 16 14H6Z" fill="#C0C0C0"/>
-                    <path d="M8 16C6.34315 16 5 17.3431 5 19C5 20.6569 6.34315 22 8 22H14C15.6569 22 17 20.6569 17 19C17 17.3431 15.6569 16 14 16H8Z" fill="#C0C0C0"/>
-                </svg>
-                
-                <!-- 雪天图标 -->
-                <svg class="snowy-icon" id="snowyIcon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: none;">
-                    <path d="M6 14C4.34315 14 3 15.3431 3 17C3 18.6569 4.34315 20 6 20H16C17.6569 20 19 18.6569 19 17C19 15.3431 17.6569 14 16 14H6Z" fill="#87CEEB"/>
-                    <path d="M8 16C6.34315 16 5 17.3431 5 19C5 20.6569 6.34315 22 8 22H14C15.6569 22 17 20.6569 17 19C17 17.3431 15.6569 16 14 16H8Z" fill="#87CEEB"/>
-                    <!-- 雪花1 -->
-                    <circle cx="9" cy="18" r="1.5" fill="white">
-                        <animate attributeName="opacity" values="0;1;0" dur="2s" repeatCount="indefinite" begin="0s"/>
-                    </circle>
-                    <!-- 雪花2 -->
-                    <circle cx="12" cy="19" r="1.5" fill="white">
-                        <animate attributeName="opacity" values="0;1;0" dur="2s" repeatCount="indefinite" begin="0.5s"/>
-                    </circle>
-                    <!-- 雪花3 -->
-                    <circle cx="15" cy="18" r="1.5" fill="white">
-                        <animate attributeName="opacity" values="0;1;0" dur="2s" repeatCount="indefinite" begin="1s"/>
-                    </circle>
-                </svg>
-                
-                <!-- 多云转阴图标 -->
-                <svg class="partly-cloudy-icon" id="partlyCloudyIcon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: none;">
-                    <circle cx="10" cy="10" r="3" fill="#FFD700" stroke="#FFA500" stroke-width="1.5"/>
-                    <path d="M10 7V5" stroke="#FFA500" stroke-width="2" stroke-linecap="round"/>
-                    <path d="M6 14C4.34315 14 3 15.3431 3 17C3 18.6569 4.34315 20 6 20H16C17.6569 20 19 18.6569 19 17C19 15.3431 17.6569 14 16 14H6Z" fill="#C0C0C0"/>
-                    <path d="M8 16C6.34315 16 5 17.3431 5 19C5 20.6569 6.34315 22 8 22H14C15.6569 22 17 20.6569 17 19C17 17.3431 15.6569 16 14 16H8Z" fill="#C0C0C0"/>
-                </svg>
-                
-                <!-- 雨夹雪图标 -->
-                <svg class="sleet-icon" id="sleetIcon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: none;">
-                    <path d="M6 14C4.34315 14 3 15.3431 3 17C3 18.6569 4.34315 20 6 20H16C17.6569 20 19 18.6569 19 17C19 15.3431 17.6569 14 16 14H6Z" fill="#87CEEB"/>
-                    <path d="M8 16C6.34315 16 5 17.3431 5 19C5 20.6569 6.34315 22 8 22H14C15.6569 22 17 20.6569 17 19C17 17.3431 15.6569 16 14 16H8Z" fill="#87CEEB"/>
-                    <!-- 雨滴 -->
-                    <path d="M9 18L9 20" stroke="#4682B4" stroke-width="1.5" stroke-linecap="round">
-                        <animate attributeName="opacity" values="0;1;0" dur="1s" repeatCount="indefinite" begin="0s"/>
-                        <animate attributeName="y" values="16;22" dur="1s" repeatCount="indefinite" begin="0s"/>
-                    </path>
-                    <!-- 雪花 -->
-                    <circle cx="15" cy="18" r="1.5" fill="white">
-                        <animate attributeName="opacity" values="0;1;0" dur="2s" repeatCount="indefinite" begin="0.5s"/>
-                    </circle>
-                </svg>
-                
-                <!-- 默认图标 -->
-                <svg id="defaultWeatherIcon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12 15C13.6569 15 15 13.6569 15 12C15 10.3431 13.6569 9 12 9C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15Z" stroke="white" stroke-width="2"/>
-                    <path d="M19.4 15C19.2667 15.2667 18.8 16.2 17.8 17.2C16.8 18.2 15.8667 18.6667 15.6 18.8" stroke="white" stroke-width="2" stroke-linecap="round"/>
-                    <path d="M12 22C14.5 20.5 16 18.5 16 16C16 13.5 14.5 11.5 12 10C9.5 11.5 8 13.5 8 16C8 18.5 9.5 20.5 12 22Z" stroke="white" stroke-width="2"/>
-                    <path d="M4.6 9C4.73333 8.73333 5.2 7.8 6.2 6.8C7.2 5.8 8.13333 5.33333 8.4 5.2" stroke="white" stroke-width="2" stroke-linecap="round"/>
-                    <path d="M19.4 9C19.2667 8.73333 18.8 7.8 17.8 6.8C16.8 5.8 15.8667 5.33333 15.6 5.2" stroke="white" stroke-width="2" stroke-linecap="round"/>
-                    <path d="M4.6 15C4.73333 15.2667 5.2 16.2 6.2 17.2C7.2 18.2 8.13333 18.6667 8.4 18.8" stroke="white" stroke-width="2" stroke-linecap="round"/>
-                </svg>
-            </div>
-            <div class="weather-temp" id="weatherTemp">25°C</div>
-            <div class="weather-description" id="weatherDescription">晴天</div>
-            <div class="weather-day" id="weatherDay">星期三</div>
-            <div class="weather-date" id="weatherDate">10月1日</div>
-        </div>
-
-        <!-- 照片展示组件 -->
-        <div class="photo-display-widget" onclick="changePhotoDisplay()">
-            <div class="photo-display-container">
-                <div class="photo-display-placeholder" id="photoDisplay">
-                    <span class="photo-icon">📷</span>
-                    <span class="photo-text">点击添加照片</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- 音乐播放器小组件 -->
-        <div class="music-player">
-            <div class="album-cover rotating" id="albumCover" onclick="changeAlbumCover()">
-                <div class="placeholder">♪</div>
-            </div>
-            <div class="music-info">
-                <div class="song-info">
-                    <div class="song-name" id="songName" onclick="openSongModal()">未知歌曲</div>
-                </div>
-                <button class="favorite-btn" id="favoriteBtn" onclick="toggleFavorite()">
-                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M12 21.35L10.55 20.03C5.4 15.36 2 12.28 2 8.5C2 5.42 4.42 3 7.5 3C9.24 3 10.91 3.81 12 5.09C13.09 3.81 14.76 3 16.5 3C19.58 3 22 5.42 22 8.5C22 12.28 18.6 15.36 13.45 20.04L12 21.35Z"/>
-                    </svg>
-                </button>
-                <div class="artist-name" id="artistName">未知艺术家</div>
-                <div class="control-buttons">
-                    <button class="control-btn" onclick="previousSong()">
-                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M6 6H8V18H6V6ZM9.5 12L18 6V18L9.5 12Z"/>
-                        </svg>
-                    </button>
-                    <button class="control-btn play-btn" onclick="togglePlay()" id="playBtn">
-                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" id="playIcon">
-                            <path d="M8 5V19L19 12L8 5Z" id="playPath"/>
-                        </svg>
-                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" id="pauseIcon" style="display: none;">
-                            <path d="M14 19V5H18V19H14ZM6 19V5H10V19H6Z"/>
-                        </svg>
-                    </button>
-                    <button class="control-btn" onclick="nextSong()">
-                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M6 18L14.5 12L6 6V18ZM16 6V18H18V6H16Z"/>
-                        </svg>
-                    </button>
-                </div>
-            </div>
-        </div>
-
         <!-- 滑动页面容器 -->
         <div class="pages-container" id="pagesContainer">
             <!-- 第一页 -->
             <div class="page" id="page1">
+                <!-- 名片小组件 -->
+                <div class="profile-widget">
+                    <div class="profile-avatar" id="profileAvatar" onclick="changeAvatar()">
+                        <span style="font-size: 30px; line-height: 60px;">👤</span>
+                    </div>
+                    <div class="profile-nickname" id="profileNickname" onclick="changeNickname()">点击设置昵称</div>
+                    <div class="profile-signature" id="profileSignature" onclick="changeSignature()">点击设置个性签名</div>
+                </div>
+
+                <!-- 天气信息组件 -->
+                <div class="weather-widget" onclick="openWeatherModal()">
+                    <div class="weather-location" id="weatherLocation">北京</div>
+                    <div class="weather-icon">
+                        <!-- 晴天图标 -->
+                        <svg class="sunny-icon" id="sunnyIcon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                            <circle cx="12" cy="12" r="4" fill="#FFD700" stroke="#FFA500" stroke-width="1.5"/>
+                            <path d="M12 3V1" stroke="#FFA500" stroke-width="2" stroke-linecap="round"/>
+                            <path d="M12 23V21" stroke="#FFA500" stroke-width="2" stroke-linecap="round"/>
+                            <path d="M3 12H1" stroke="#FFA500" stroke-width="2" stroke-linecap="round"/>
+                            <path d="M23 12H21" stroke="#FFA500" stroke-width="2" stroke-linecap="round"/>
+                            <path d="M5.64 5.64L4.22 4.22" stroke="#FFA500" stroke-width="2" stroke-linecap="round"/>
+                            <path d="M19.78 19.78L18.36 18.36" stroke="#FFA500" stroke-width="2" stroke-linecap="round"/>
+                            <path d="M5.64 18.36L4.22 19.78" stroke="#FFA500" stroke-width="2" stroke-linecap="round"/>
+                            <path d="M19.78 4.22L18.36 5.64" stroke="#FFA500" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                        
+                        <!-- 雨天图标 -->
+                        <svg class="rainy-icon" id="rainyIcon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                            <path d="M6 14C4.34315 14 3 15.3431 3 17C3 18.6569 4.34315 20 6 20H16C17.6569 20 19 18.6569 19 17C19 15.3431 17.6569 14 16 14H6Z" fill="#87CEEB"/>
+                            <path d="M8 16C6.34315 16 5 17.3431 5 19C5 20.6569 6.34315 22 8 22H14C15.6569 22 17 20.6569 17 19C17 17.3431 15.6569 16 14 16H8Z" fill="#87CEEB"/>
+                            <!-- 雨滴1 -->
+                            <path d="M9 18L9 20" stroke="#4682B4" stroke-width="1.5" stroke-linecap="round">
+                                <animate attributeName="opacity" values="0;1;0" dur="1s" repeatCount="indefinite" begin="0s"/>
+                                <animate attributeName="y" values="16;22" dur="1s" repeatCount="indefinite" begin="0s"/>
+                            </path>
+                            <!-- 雨滴2 -->
+                            <path d="M12 18L12 20" stroke="#4682B4" stroke-width="1.5" stroke-linecap="round">
+                                <animate attributeName="opacity" values="0;1;0" dur="1s" repeatCount="indefinite" begin="0.3s"/>
+                                <animate attributeName="y" values="16;22" dur="1s" repeatCount="indefinite" begin="0.3s"/>
+                            </path>
+                            <!-- 雨滴3 -->
+                            <path d="M15 18L15 20" stroke="#4682B4" stroke-width="1.5" stroke-linecap="round">
+                                <animate attributeName="opacity" values="0;1;0" dur="1s" repeatCount="indefinite" begin="0.6s"/>
+                                <animate attributeName="y" values="16;22" dur="1s" repeatCount="indefinite" begin="0.6s"/>
+                            </path>
+                        </svg>
+                        
+                        <!-- 阴天图标 -->
+                        <svg class="cloudy-icon" id="cloudyIcon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                            <path d="M6 14C4.34315 14 3 15.3431 3 17C3 18.6569 4.34315 20 6 20H16C17.6569 20 19 18.6569 19 17C19 15.3431 17.6569 14 16 14H6Z" fill="#C0C0C0"/>
+                            <path d="M8 16C6.34315 16 5 17.3431 5 19C5 20.6569 6.34315 22 8 22H14C15.6569 22 17 20.6569 17 19C17 17.3431 15.6569 16 14 16H8Z" fill="#C0C0C0"/>
+                        </svg>
+                        
+                        <!-- 雪天图标 -->
+                        <svg class="snowy-icon" id="snowyIcon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                            <path d="M6 14C4.34315 14 3 15.3431 3 17C3 18.6569 4.34315 20 6 20H16C17.6569 20 19 18.6569 19 17C19 15.3431 17.6569 14 16 14H6Z" fill="#87CEEB"/>
+                            <path d="M8 16C6.34315 16 5 17.3431 5 19C5 20.6569 6.34315 22 8 22H14C15.6569 22 17 20.6569 17 19C17 17.3431 15.6569 16 14 16H8Z" fill="#87CEEB"/>
+                            <!-- 雪花1 -->
+                            <circle cx="9" cy="18" r="1.5" fill="white">
+                                <animate attributeName="opacity" values="0;1;0" dur="2s" repeatCount="indefinite" begin="0s"/>
+                            </circle>
+                            <!-- 雪花2 -->
+                            <circle cx="12" cy="19" r="1.5" fill="white">
+                                <animate attributeName="opacity" values="0;1;0" dur="2s" repeatCount="indefinite" begin="0.5s"/>
+                            </circle>
+                            <!-- 雪花3 -->
+                            <circle cx="15" cy="18" r="1.5" fill="white">
+                                <animate attributeName="opacity" values="0;1;0" dur="2s" repeatCount="indefinite" begin="1s"/>
+                            </circle>
+                        </svg>
+                        
+                        <!-- 多云转阴图标 -->
+                        <svg class="partly-cloudy-icon" id="partlyCloudyIcon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                            <circle cx="10" cy="10" r="3" fill="#FFD700" stroke="#FFA500" stroke-width="1.5"/>
+                            <path d="M10 7V5" stroke="#FFA500" stroke-width="2" stroke-linecap="round"/>
+                            <path d="M6 14C4.34315 14 3 15.3431 3 17C3 18.6569 4.34315 20 6 20H16C17.6569 20 19 18.6569 19 17C19 15.3431 17.6569 14 16 14H6Z" fill="#C0C0C0"/>
+                            <path d="M8 16C6.34315 16 5 17.3431 5 19C5 20.6569 6.34315 22 8 22H14C15.6569 22 17 20.6569 17 19C17 17.3431 15.6569 16 14 16H8Z" fill="#C0C0C0"/>
+                        </svg>
+                        
+                        <!-- 雨夹雪图标 -->
+                        <svg class="sleet-icon" id="sleetIcon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                            <path d="M6 14C4.34315 14 3 15.3431 3 17C3 18.6569 4.34315 20 6 20H16C17.6569 20 19 18.6569 19 17C19 15.3431 17.6569 14 16 14H6Z" fill="#87CEEB"/>
+                            <path d="M8 16C6.34315 16 5 17.3431 5 19C5 20.6569 6.34315 22 8 22H14C15.6569 22 17 20.6569 17 19C17 17.3431 15.6569 16 14 16H8Z" fill="#87CEEB"/>
+                            <!-- 雨滴 -->
+                            <path d="M9 18L9 20" stroke="#4682B4" stroke-width="1.5" stroke-linecap="round">
+                                <animate attributeName="opacity" values="0;1;0" dur="1s" repeatCount="indefinite" begin="0s"/>
+                                <animate attributeName="y" values="16;22" dur="1s" repeatCount="indefinite" begin="0s"/>
+                            </path>
+                            <!-- 雪花 -->
+                            <circle cx="15" cy="18" r="1.5" fill="white">
+                                <animate attributeName="opacity" values="0;1;0" dur="2s" repeatCount="indefinite" begin="0.5s"/>
+                            </circle>
+                        </svg>
+                        
+                        <!-- 默认图标 -->
+                        <svg id="defaultWeatherIcon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 15C13.6569 15 15 13.6569 15 12C15 10.3431 13.6569 9 12 9C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15Z" stroke="white" stroke-width="2"/>
+                            <path d="M19.4 15C19.2667 15.2667 18.8 16.2 17.8 17.2C16.8 18.2 15.8667 18.6667 15.6 18.8" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                            <path d="M12 22C14.5 20.5 16 18.5 16 16C16 13.5 14.5 11.5 12 10C9.5 11.5 8 13.5 8 16C8 18.5 9.5 20.5 12 22Z" stroke="white" stroke-width="2"/>
+                            <path d="M4.6 9C4.73333 8.73333 5.2 7.8 6.2 6.8C7.2 5.8 8.13333 5.33333 8.4 5.2" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                            <path d="M19.4 9C19.2667 8.73333 18.8 7.8 17.8 6.8C16.8 5.8 15.8667 5.33333 15.6 5.2" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                            <path d="M4.6 15C4.73333 15.2667 5.2 16.2 6.2 17.2C7.2 18.2 8.13333 18.6667 8.4 18.8" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                    </div>
+                    <div class="weather-temp" id="weatherTemp">25°C</div>
+                    <div class="weather-description" id="weatherDescription">晴天</div>
+                    <div class="weather-day" id="weatherDay">星期三</div>
+                    <div class="weather-date" id="weatherDate">10月1日</div>
+                </div>
+
+                <!-- 照片展示组件 -->
+                <div class="photo-display-widget" onclick="changePhotoDisplay()">
+                    <div class="photo-display-container">
+                        <div class="photo-display-placeholder" id="photoDisplay">
+                            <span class="photo-icon">📷</span>
+                            <span class="photo-text">点击添加照片</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 音乐播放器小组件 -->
+                <div class="music-player">
+                    <div class="album-cover rotating" id="albumCover" onclick="changeAlbumCover()">
+                        <div class="placeholder">♪</div>
+                    </div>
+                    <div class="music-info">
+                        <div class="song-info">
+                            <div class="song-name" id="songName" onclick="openSongModal()">未知歌曲</div>
+                        </div>
+                        <button class="favorite-btn" id="favoriteBtn" onclick="toggleFavorite()">
+                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M12 21.35L10.55 20.03C5.4 15.36 2 12.28 2 8.5C2 5.42 4.42 3 7.5 3C9.24 3 10.91 3.81 12 5.09C13.09 3.81 14.76 3 16.5 3C19.58 3 22 5.42 22 8.5C22 12.28 18.6 15.36 13.45 20.04L12 21.35Z"/>
+                            </svg>
+                        </button>
+                        <div class="artist-name" id="artistName">未知艺术家</div>
+                        <div class="control-buttons">
+                            <button class="control-btn" onclick="previousSong()">
+                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M6 6H8V18H6V6ZM9.5 12L18 6V18L9.5 12Z"/>
+                                </svg>
+                            </button>
+                            <button class="control-btn play-btn" onclick="togglePlay()" id="playBtn">
+                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" id="playIcon">
+                                    <path d="M8 5V19L19 12L8 5Z" id="playPath"/>
+                                </svg>
+                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" id="pauseIcon" style="display: none;">
+                                    <path d="M14 19V5H18V19H14ZM6 19V5H10V19H6Z"/>
+                                </svg>
+                            </button>
+                            <button class="control-btn" onclick="nextSong()">
+                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M6 18L14.5 12L6 6V18ZM16 6V18H18V6H16Z"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- 主屏幕内容 -->
                 <div class="home-screen" id="homeScreen">
                     <!-- 壁纸应用图标 - 第四行第三列 -->
