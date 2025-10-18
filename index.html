@@ -26,6 +26,7 @@
             display: flex;
             flex-direction: column;
             position: relative;
+            overflow: hidden;
         }
 
         /* 状态栏样式 */
@@ -339,15 +340,41 @@
             color: #aaa;
         }
 
+        /* 滑动页面容器 */
+        .pages-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            overflow: hidden; /* 隐藏超出部分 */
+        }
+
+        .page {
+            width: 100%;
+            height: 100%;
+            position: absolute; /* 使用绝对定位 */
+            top: 0;
+            left: 0;
+            padding-top: 44px; /* 为状态栏留出空间 */
+            padding-bottom: 0; /* 移除底部padding，让home-screen自己处理 */
+            transition: transform 0.3s ease; /* 添加过渡效果 */
+        }
+        
+        /* 第二页初始位置在屏幕右侧 */
+        .page:nth-child(2) {
+            transform: translateX(100%);
+        }
+
         /* 主屏幕内容区域 */
         .home-screen {
-            flex: 1;
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             grid-template-rows: repeat(5, 1fr);
             gap: 25px;
-            padding: 100px 25px 120px 25px;
+            padding: 56px 25px 120px 25px; /* 调整顶部padding，为状态栏留出空间 */
             align-content: start;
+            height: 100%; /* 改为100%高度 */
+            position: relative;
+            z-index: 10;
         }
 
         .app-icon {
@@ -951,52 +978,150 @@
             </div>
         </div>
 
-        <!-- 主屏幕内容 -->
-        <div class="home-screen" id="homeScreen">
-            <!-- 壁纸应用图标 - 第四行第三列 -->
-            <div class="app-icon" onclick="window.location.href='bizhi.html'" data-app="壁纸" style="grid-column: 3; grid-row: 4; transform: translateY(-10px);">
-                <div class="icon-bg">
-                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M4 16L9 11L13 15L20 8" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        <rect x="3" y="3" width="18" height="18" rx="3" stroke="white" stroke-width="2"/>
-                    </svg>
+        <!-- 滑动页面容器 -->
+        <div class="pages-container" id="pagesContainer">
+            <!-- 第一页 -->
+            <div class="page" id="page1">
+                <!-- 主屏幕内容 -->
+                <div class="home-screen" id="homeScreen">
+                    <!-- 壁纸应用图标 - 第四行第三列 -->
+                    <div class="app-icon" onclick="window.location.href='bizhi.html'" data-app="壁纸" style="grid-column: 3; grid-row: 4;">
+                        <div class="icon-bg">
+                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M4 16L9 11L13 15L20 8" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <rect x="3" y="3" width="18" height="18" rx="3" stroke="white" stroke-width="2"/>
+                            </svg>
+                        </div>
+                        <span>壁纸</span>
+                    </div>
+                    
+                    <!-- 设置应用图标 - 第四行第四列 -->
+                    <div class="app-icon" onclick="window.location.href='shezhi.html'" data-app="设置" style="grid-column: 4; grid-row: 4;">
+                        <div class="icon-bg">
+                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M21 15C21 15.5304 20.7893 16.0391 20.4142 16.4142C20.0391 16.7893 19.5304 17 19 17H7L3 21V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H19C19.5304 3 20.0391 3.21071 20.4142 3.58579C20.7893 3.96086 21 4.46957 21 5V15Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                        <span>设置</span>
+                    </div>
+                    
+                    <!-- 聊天应用图标 - 第五行第三列 -->
+                    <div class="app-icon" onclick="window.location.href='chat.html'" data-app="聊天" style="grid-column: 3; grid-row: 5;">
+                        <div class="icon-bg">
+                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M21 11.5C21.0034 12.8199 20.6951 14.1219 20.1 15.3C19.3948 16.7262 18.3522 17.9555 17.05 18.9C15.7478 19.8445 14.2199 20.4861 12.58 20.77C11.9413 20.8791 11.2916 20.9135 10.64 20.88L7 22L8.12 18.36C7.38368 17.9462 6.71624 17.4224 6.14 16.8C4.72104 15.2441 3.92829 13.2159 4 11.1C4.00344 9.78012 4.31172 8.47814 4.90685 7.30001C5.61203 5.87386 6.65462 4.64455 7.95683 3.69999C9.25903 2.75544 10.7869 2.11382 12.4269 1.82999C14.0669 1.54616 15.7757 1.62764 17.42 2.06999C19.0643 2.51234 20.5975 3.30299 21.9 4.37999C23.2025 5.45699 24.15 7.02999 24.15 8.76999C24.1491 9.55042 24.0492 10.3261 23.85 11.07L24 11L21 11.5Z" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                                    <path d="M8 12H8.01" stroke="white" stroke-width="3" stroke-linecap="round"/>
+                                    <path d="M12 12H12.01" stroke="white" stroke-width="3" stroke-linecap="round"/>
+                                    <path d="M16 12H16.01" stroke="white" stroke-width="3" stroke-linecap="round"/>
+                                </svg>
+                            </div>
+                            <span>聊天</span>
+                        </div>
+                        
+                        <!-- 音乐应用图标 - 第五行第四列 -->
+                        <div class="app-icon" onclick="window.location.href='yinyue.html'" data-app="音乐" style="grid-column: 4; grid-row: 5;">
+                            <div class="icon-bg">
+                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M12 3V12L19 5V19L12 12V21" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                            <span>音乐</span>
+                        </div>
+                    </div>
                 </div>
-                <span>壁纸</span>
-            </div>
-            
-            <!-- 设置应用图标 - 第四行第四列 -->
-            <div class="app-icon" onclick="window.location.href='shezhi.html'" data-app="设置" style="grid-column: 4; grid-row: 4; transform: translateY(-10px);">
-                <div class="icon-bg">
-                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M21 15C21 15.5304 20.7893 16.0391 20.4142 16.4142C20.0391 16.7893 19.5304 17 19 17H7L3 21V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H19C19.5304 3 20.0391 3.21071 20.4142 3.58579C20.7893 3.96086 21 4.46957 21 5V15Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
+
+                <!-- 第二页 -->
+                <div class="page" id="page2">
+                    <!-- 主屏幕内容 -->
+                    <div class="home-screen">
+                        <!-- 日记应用图标 - 第三行第一列 -->
+                        <div class="app-icon" onclick="alert('日记应用功能开发中')" data-app="日记" style="grid-row: 3; grid-column: 1;">
+                            <div class="icon-bg">
+                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M4 19.5V4.5C4 3.5 5 2.5 6 2.5H17C18 2.5 19 3.5 19 4.5V19.5L12 16.5L4 19.5Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M9 9H15" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                                    <path d="M9 13H13" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                                </svg>
+                            </div>
+                            <span>日记</span>
+                        </div>
+                        
+                        <!-- 购物应用图标 - 第三行第二列 -->
+                        <div class="app-icon" onclick="alert('购物应用功能开发中')" data-app="购物" style="grid-row: 3; grid-column: 2;">
+                            <div class="icon-bg">
+                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M6 2L3 6V20C3 20.5304 3.21071 21.0391 3.58579 21.4142C3.96086 21.7893 4.46957 22 5 22H19C19.5304 22 20.0391 21.7893 20.4142 21.4142C20.7893 21.0391 21 20.5304 21 20V6L18 2H6Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M3 6H21" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M16 10C16 11.0609 15.5786 12.0783 14.8284 12.8284C14.0783 13.5786 13.0609 14 12 14C10.9391 14 9.92172 13.5786 9.17157 12.8284C8.42143 12.0783 8 11.0609 8 10" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                            <span>购物</span>
+                        </div>
+                        
+                        <!-- 论坛应用图标 - 第三行第三列 -->
+                        <div class="app-icon" onclick="alert('论坛应用功能开发中')" data-app="论坛" style="grid-row: 3; grid-column: 3;">
+                            <div class="icon-bg">
+                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M21 15C21 15.5304 20.7893 16.0391 20.4142 16.4142C20.0391 16.7893 19.5304 17 19 17H7L3 21V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H19C19.5304 3 20.0391 3.21071 20.4142 3.58579C20.7893 3.96086 21 4.46957 21 5V15Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M16 10H16.01" stroke="white" stroke-width="3" stroke-linecap="round"/>
+                                    <path d="M12 10H12.01" stroke="white" stroke-width="3" stroke-linecap="round"/>
+                                    <path d="M8 10H8.01" stroke="white" stroke-width="3" stroke-linecap="round"/>
+                                </svg>
+                            </div>
+                            <span>论坛</span>
+                        </div>
+                        
+                        <!-- 备忘录应用图标 - 第三行第四列 -->
+                        <div class="app-icon" onclick="alert('备忘录应用功能开发中')" data-app="备忘录" style="grid-row: 3; grid-column: 4;">
+                            <div class="icon-bg">
+                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M4 6H20V18C20 19.1046 19.1046 20 18 20H6C4.89543 20 4 19.1046 4 18V6Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M4 10H20" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                                    <path d="M9 14H10" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                                    <path d="M9 17H12" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                                </svg>
+                            </div>
+                            <span>备忘录</span>
+                        </div>
+                        
+                        <!-- 钱包应用图标 - 第四行第一列 -->
+                        <div class="app-icon" onclick="alert('钱包应用功能开发中')" data-app="钱包" style="grid-row: 4; grid-column: 1;">
+                            <div class="icon-bg">
+                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M3 7H21C21.5523 7 22 7.44772 22 8V17C22 17.5523 21.5523 18 21 18H3C2.44772 18 2 17.5523 2 17V8C2 7.44772 2.44772 7 3 7Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M2 12H4" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                                    <path d="M18 12C18 13.1046 17.1046 14 16 14C14.8954 14 14 13.1046 14 12C14 10.8954 14.8954 10 16 10C17.1046 10 18 10.8954 18 12Z" stroke="white" stroke-width="2"/>
+                                </svg>
+                            </div>
+                            <span>钱包</span>
+                        </div>
+                        
+                        <!-- 电话应用图标 - 第四行第二列 -->
+                        <div class="app-icon" onclick="alert('电话应用功能开发中')" data-app="电话" style="grid-row: 4; grid-column: 2;">
+                            <div class="icon-bg">
+                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M3 6C3 5.44772 3.44772 5 4 5H20C20.5523 5 21 5.44772 21 6V18C21 18.5523 20.5523 19 20 19H4C3.44772 19 3 18.5523 3 18V6Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M8 7H16" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                                    <path d="M8 11H16" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                                    <path d="M8 15H13" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                                </svg>
+                            </div>
+                            <span>电话</span>
+                        </div>
+                        
+                        <!-- 陪伴应用图标 - 第四行第三列 -->
+                        <div class="app-icon" onclick="alert('陪伴应用功能开发中')" data-app="陪伴" style="grid-row: 4; grid-column: 3;">
+                            <div class="icon-bg">
+                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M12 12C14.2091 12 16 10.2091 16 8C16 5.79086 14.2091 4 12 4C9.79086 4 8 5.79086 8 8C8 10.2091 9.79086 12 12 12Z" stroke="white" stroke-width="2"/>
+                                    <path d="M6 20C6 17.7909 7.79086 16 10 16H14C16.2091 16 18 17.7909 18 20V20C18 21.1046 17.1046 22 16 22H8C6.89543 22 6 21.1046 6 20V20Z" stroke="white" stroke-width="2"/>
+                                </svg>
+                            </div>
+                            <span>陪伴</span>
+                        </div>
+                    </div>
                 </div>
-                <span>设置</span>
             </div>
-            
-            <!-- 聊天应用图标 - 第五行第三列 -->
-            <div class="app-icon" onclick="window.location.href='chat.html'" data-app="聊天" style="grid-column: 3; grid-row: 5; transform: translateY(-10px);">
-                <div class="icon-bg">
-                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M21 11.5C21.0034 12.8199 20.6951 14.1219 20.1 15.3C19.3948 16.7262 18.3522 17.9555 17.05 18.9C15.7478 19.8445 14.2199 20.4861 12.58 20.77C11.9413 20.8791 11.2916 20.9135 10.64 20.88L7 22L8.12 18.36C7.38368 17.9462 6.71624 17.4224 6.14 16.8C4.72104 15.2441 3.92829 13.2159 4 11.1C4.00344 9.78012 4.31172 8.47814 4.90685 7.30001C5.61203 5.87386 6.65462 4.64455 7.95683 3.69999C9.25903 2.75544 10.7869 2.11382 12.4269 1.82999C14.0669 1.54616 15.7757 1.62764 17.42 2.06999C19.0643 2.51234 20.5975 3.30299 21.9 4.37999C23.2025 5.45699 24.15 7.02999 24.15 8.76999C24.1491 9.55042 24.0492 10.3261 23.85 11.07L24 11L21 11.5Z" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-                        <path d="M8 12H8.01" stroke="white" stroke-width="3" stroke-linecap="round"/>
-                        <path d="M12 12H12.01" stroke="white" stroke-width="3" stroke-linecap="round"/>
-                        <path d="M16 12H16.01" stroke="white" stroke-width="3" stroke-linecap="round"/>
-                    </svg>
-                </div>
-                <span>聊天</span>
-            </div>
-            
-            <!-- 音乐应用图标 - 第五行第四列 -->
-            <div class="app-icon" onclick="window.location.href='yinyue.html'" data-app="音乐" style="grid-column: 4; grid-row: 5; transform: translateY(-10px);">
-                <div class="icon-bg">
-                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M12 3V12L19 5V19L12 12V21" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                </div>
-                <span>音乐</span>
-            </div>
-        </div>
 
         <!-- Dock栏 -->
         <div class="dock">
@@ -2044,8 +2169,86 @@
                 // 不再使用旧的切换逻辑，而是打开天气选择弹窗
                 openWeatherModal();
             }
+
+            // ========= 滑动页面功能相关函数 =========
+            let currentPage = 0;
+            let startX = 0;
+            let startY = 0;
+            let isSwiping = false;
+            const pages = document.querySelectorAll('.page'); // 获取所有页面
+            const page1 = document.getElementById('page1');
+            const page2 = document.getElementById('page2');
+
+            // 触摸开始事件
+            document.addEventListener('touchstart', function(e) {
+                startX = e.touches[0].clientX;
+                startY = e.touches[0].clientY;
+                isSwiping = true;
+            });
+
+            // 触摸移动事件
+            document.addEventListener('touchmove', function(e) {
+                if (!isSwiping) return;
+                
+                const currentX = e.touches[0].clientX;
+                const currentY = e.touches[0].clientY;
+                const diffX = currentX - startX;
+                const diffY = currentY - startY;
+                
+                // 判断是否为水平滑动
+                if (Math.abs(diffX) > Math.abs(diffY)) {
+                    e.preventDefault();
+                    
+                    // 根据当前页面和滑动方向更新位置
+                    if (currentPage === 0 && diffX < 0) {
+                        // 第一页向左滑动
+                        const movePercent = Math.max(0, Math.min(100, -diffX / window.innerWidth * 100));
+                        page1.style.transform = `translateX(${-movePercent}%)`;
+                        page2.style.transform = `translateX(${-movePercent + 100}%)`;
+                    } else if (currentPage === 1 && diffX > 0) {
+                        // 第二页向右滑动
+                        const movePercent = Math.max(0, Math.min(100, diffX / window.innerWidth * 100));
+                        page1.style.transform = `translateX(${-100 + movePercent}%)`;
+                        page2.style.transform = `translateX(${movePercent}%)`;
+                    }
+                }
+            });
+
+            // 触摸结束事件
+            document.addEventListener('touchend', function(e) {
+                if (!isSwiping) return;
+                
+                const endX = e.changedTouches[0].clientX;
+                const diffX = endX - startX;
+                const absDiffX = Math.abs(diffX);
+                
+                // 判断是否为有效的滑动
+                if (absDiffX > 30) { // 滑动距离超过30px才切换页面
+                    if (diffX < 0 && currentPage === 0) {
+                        // 向左滑动到第二页
+                        currentPage = 1;
+                        page1.style.transform = 'translateX(-100%)';
+                        page2.style.transform = 'translateX(0)';
+                    } else if (diffX > 0 && currentPage === 1) {
+                        // 向右滑动到第一页
+                        currentPage = 0;
+                        page1.style.transform = 'translateX(0)';
+                        page2.style.transform = 'translateX(100%)';
+                    }
+                } else {
+                    // 滑动距离不够，回到原位置
+                    if (currentPage === 0) {
+                        page1.style.transform = 'translateX(0)';
+                        page2.style.transform = 'translateX(100%)';
+                    } else {
+                        page1.style.transform = 'translateX(-100%)';
+                        page2.style.transform = 'translateX(0)';
+                    }
+                }
+                
+                isSwiping = false;
+            });
         </script>
     </div>
 </body>
-
 </html>
