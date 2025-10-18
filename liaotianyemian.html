@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>聊天页面</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+                'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+                sans-serif;
+            background: linear-gradient(135deg, #1a1a1a, #000);
+            color: #fff;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .phone {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* 状态栏样式 */
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 15px;
+            height: 44px;
+            background-color: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            color: white;
+            font-size: 16px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+
+        .status-left, .status-center, .status-right {
+            display: flex;
+            align-items: center;
+        }
+
+        .status-left {
+            flex: 1;
+        }
+
+        .status-center {
+            flex: 2;
+            justify-content: center;
+        }
+
+        .status-right {
+            flex: 1;
+            justify-content: flex-end;
+        }
+
+        .status-icon {
+            width: 18px;
+            height: 18px;
+            margin: 0 5px;
+        }
+
+        /* 头部导航栏 */
+        .header {
+            display: flex;
+            align-items: center;
+            padding: 0 15px;
+            height: 50px;
+            background-color: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            position: fixed;
+            top: 44px;
+            left: 0;
+            right: 0;
+            z-index: 999;
+        }
+
+        .back-btn {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .back-btn svg {
+            width: 18px;
+            height: 18px;
+            fill: white;
+        }
+
+        .header-content {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .contact-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+        }
+
+        .contact-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+
+        .contact-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .contact-name {
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .contact-status {
+            font-size: 12px;
+            color: #aaa;
+        }
+
+        /* 聊天内容区域 */
+        .chat-content {
+            flex: 1;
+            padding: 110px 15px 80px 15px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .message {
+            max-width: 80%;
+            margin-bottom: 15px;
+            position: relative;
+            word-wrap: break-word;
+            display: flex;
+        }
+
+        .message.received {
+            align-self: flex-start;
+        }
+
+        .message.sent {
+            align-self: flex-end;
+        }
+
+        .message-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .message.received .message-avatar {
+            margin-right: 10px;
+        }
+
+        .message.sent .message-avatar {
+            margin-left: 10px;
+        }
+
+        .message-content-container {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .message-bubble {
+            padding: 10px 15px;
+            border-radius: 18px;
+            position: relative;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            max-width: 100%;
+        }
+
+        .message.received .message-bubble {
+            background: rgba(255, 255, 255, 0.1);
+            border-bottom-left-radius: 5px;
+        }
+
+        .message.sent .message-bubble {
+            background: rgba(0, 122, 255, 0.2);
+            border: 1px solid rgba(0, 122, 255, 0.3);
+            border-bottom-right-radius: 5px;
+        }
+
+        .message-text {
+            font-size: 16px;
+            line-height: 1.4;
+        }
+
+        .message-time {
+            font-size: 10px;
+            color: #aaa;
+            margin-top: 5px;
+        }
+
+        /* 底部输入区域 */
+        .input-area {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 500px;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            padding: 8px 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+        }
+
+        .plus-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin-right: 10px;
+        }
+
+        .plus-btn svg {
+            width: 20px;
+            height: 20px;
+            fill: white;
+        }
+
+        .input-box {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 16px;
+            padding: 8px 0;
+            outline: none;
+        }
+
+        .input-box::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-left: 10px;
+        }
+
+        .send-btn, .ai-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .send-btn svg, .ai-btn svg {
+            width: 20px;
+            height: 20px;
+            fill: white;
+        }
+
+        .send-btn {
+            background: #007AFF;
+        }
+    </style>
+</head>
+<body>
+    <div class="phone">
+        <!-- 状态栏 -->
+        <div class="status-bar">
+            <div class="status-left">
+                <span class="time" id="current-time">00:00</span>
+            </div>
+            <div class="status-center">
+                <!-- 中间留空 -->
+            </div>
+            <div class="status-right">
+                <!-- 信号图标 -->
+                <svg class="status-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M5 17L5 12" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M12 17L12 7" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M19 17L19 2" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                <!-- 电池图标 -->
+                <svg class="status-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="2" y="7" width="16" height="10" rx="3" stroke="white" stroke-width="2"/>
+                    <path d="M20 10V14" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                    <rect x="4" y="9" width="12" height="6" rx="2" fill="white"/>
+                </svg>
+            </div>
+        </div>
+
+        <!-- 头部导航栏 -->
+        <div class="header">
+            <div class="back-btn" onclick="goBack()">
+                <svg viewBox="0 0 24 24">
+                    <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+                </svg>
+            </div>
+            <div class="header-content">
+                <div class="contact-avatar">
+                    <span>👤</span>
+                </div>
+                <div class="contact-info">
+                    <div class="contact-name">联系人姓名</div>
+                    <div class="contact-status">在线</div>
+                </div>
+            </div>
+            <div style="width: 30px;"></div> <!-- 占位符 -->
+        </div>
+
+        <!-- 聊天内容 -->
+        <div class="chat-content">
+            <!-- 默认消息已被移除，新聊天将从空白开始 -->
+        </div>
+
+        <!-- 底部输入区域 -->
+        <div class="input-area">
+            <div class="plus-btn">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 5V19" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M5 12H19" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </div>
+            <input type="text" class="input-box" placeholder="输入消息...">
+            <div class="action-buttons">
+                <div class="ai-btn">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 2L15.09 8.26L22 9L17 14L18.18 21L12 17.77L5.82 21L7 14L2 9L8.91 8.26L12 2Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+                <div class="send-btn">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M22 2L11 13" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                        <path d="M22 2L15 22L11 13L2 9L22 2Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            // 更新时间
+            function updateTime() {
+                const now = new Date();
+                const timeString = now.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+                document.getElementById('current-time').textContent = timeString;
+            }
+
+            // 每秒更新一次时间
+            setInterval(updateTime, 1000);
+            updateTime(); // 初始化时间
+
+            // 页面加载时初始化联系人信息
+            window.onload = function() {
+                loadContactInfo();
+                updateTime();
+                loadUserInfo();
+                updateExistingMessages(); // 更新已存在的消息头像
+            };
+
+            // 加载联系人信息
+            function loadContactInfo() {
+                // 从localStorage获取当前聊天的联系人信息
+                const contactInfo = JSON.parse(localStorage.getItem('currentChatFriend')) || {
+                    name: '联系人姓名',
+                    avatar: '👤'
+                };
+                
+                // 更新页面上的联系人信息
+                document.querySelector('.contact-name').textContent = contactInfo.name;
+                
+                // 更新头像
+                const avatarElement = document.querySelector('.contact-avatar');
+                if (contactInfo.avatar && contactInfo.avatar.startsWith('data:image')) {
+                    // 如果是上传的图片数据
+                    avatarElement.innerHTML = `<img src="${contactInfo.avatar}" alt="${contactInfo.name}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+                } else if (contactInfo.avatar) {
+                    // 如果是默认头像符号
+                    avatarElement.innerHTML = contactInfo.avatar;
+                } else {
+                    // 如果没有任何头像数据，使用默认头像
+                    avatarElement.innerHTML = '👤';
+                }
+            }
+
+            // 加载用户自己的信息
+            function loadUserInfo() {
+                // 从localStorage获取用户自己的信息
+                const userInfo = JSON.parse(localStorage.getItem('userInfo')) || {
+                    name: '我',
+                    avatar: '👤'
+                };
+                
+                // 保存用户信息到全局变量，供发送消息时使用
+                window.userInfo = userInfo;
+            }
+
+            // 更新已存在的消息头像
+            function updateExistingMessages() {
+                // 更新已存在的发送消息头像
+                const sentMessages = document.querySelectorAll('.message.sent');
+                const userInfo = JSON.parse(localStorage.getItem('userInfo')) || { avatar: '👤' };
+                let userAvatarContent = userInfo.avatar;
+                if (userAvatarContent && userAvatarContent.startsWith('data:image')) {
+                    // 如果是上传的图片数据
+                    userAvatarContent = `<img src="${userAvatarContent}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+                } else if (userAvatarContent) {
+                    // 如果是默认头像符号
+                    userAvatarContent = userAvatarContent;
+                } else {
+                    // 如果没有任何头像数据，使用默认头像
+                    userAvatarContent = '👤';
+                }
+                
+                sentMessages.forEach(message => {
+                    const avatarElement = message.querySelector('.message-avatar');
+                    if (avatarElement) {
+                        avatarElement.innerHTML = userAvatarContent;
+                    }
+                });
+                
+                // 更新已存在的接收消息头像
+                const receivedMessages = document.querySelectorAll('.message.received');
+                const contactInfo = JSON.parse(localStorage.getItem('currentChatFriend')) || { avatar: '👤' };
+                let contactAvatarContent = contactInfo.avatar;
+                if (contactAvatarContent && contactAvatarContent.startsWith('data:image')) {
+                    // 如果是上传的图片数据
+                    contactAvatarContent = `<img src="${contactAvatarContent}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+                } else if (contactAvatarContent) {
+                    // 如果是默认头像符号
+                    contactAvatarContent = contactAvatarContent;
+                } else {
+                    // 如果没有任何头像数据，使用默认头像
+                    contactAvatarContent = '👤';
+                }
+                
+                receivedMessages.forEach(message => {
+                    const avatarElement = message.querySelector('.message-avatar');
+                    if (avatarElement) {
+                        avatarElement.innerHTML = contactAvatarContent;
+                    }
+                });
+            }
+
+            // 返回消息列表
+            function goBack() {
+                window.location.href = 'chat.html';
+            }
+
+            // 发送消息功能
+            function sendMessage() {
+                const input = document.querySelector('.input-box');
+                const message = input.value.trim();
+                
+                if (message) {
+                    // 创建消息元素
+                    const messageElement = document.createElement('div');
+                    messageElement.className = 'message sent';
+                    
+                    const time = new Date();
+                    const timeString = `${time.getHours().toString().padStart(2, '0')}:${time.getMinutes().toString().padStart(2, '0')}`;
+                    
+                    // 获取用户自己的头像（每次都从localStorage获取最新信息）
+                    const userInfo = JSON.parse(localStorage.getItem('userInfo')) || { avatar: '👤' };
+                    let userAvatarContent = userInfo.avatar;
+                    if (userAvatarContent && userAvatarContent.startsWith('data:image')) {
+                        // 如果是上传的图片数据
+                        userAvatarContent = `<img src="${userAvatarContent}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+                    } else if (userAvatarContent) {
+                        // 如果是默认头像符号
+                        userAvatarContent = userAvatarContent;
+                    } else {
+                        // 如果没有任何头像数据，使用默认头像
+                        userAvatarContent = '👤';
+                    }
+                    
+                    messageElement.innerHTML = `
+                        <div class="message-content-container">
+                            <div class="message-bubble">
+                                <div class="message-text">${message}</div>
+                            </div>
+                            <div class="message-time">${timeString}</div>
+                        </div>
+                        <div class="message-avatar">${userAvatarContent}</div>
+                    `;
+                    
+                    // 添加到聊天内容
+                    document.querySelector('.chat-content').appendChild(messageElement);
+                    
+                    // 清空输入框
+                    input.value = '';
+                    
+                    // 滚动到底部
+                    document.querySelector('.chat-content').scrollTop = document.querySelector('.chat-content').scrollHeight;
+                    
+                    // 模拟回复
+                    setTimeout(() => {
+                        receiveMessage("这是自动回复的消息");
+                    }, 1000);
+                }
+            }
+
+            // 接收消息功能
+            function receiveMessage(text) {
+                const messageElement = document.createElement('div');
+                messageElement.className = 'message received';
+                
+                const time = new Date();
+                const timeString = `${time.getHours().toString().padStart(2, '0')}:${time.getMinutes().toString().padStart(2, '0')}`;
+                
+                // 获取联系人的头像（每次都从localStorage获取最新信息）
+                const contactInfo = JSON.parse(localStorage.getItem('currentChatFriend')) || { avatar: '👤' };
+                let contactAvatarContent = contactInfo.avatar;
+                if (contactAvatarContent && contactAvatarContent.startsWith('data:image')) {
+                    // 如果是上传的图片数据
+                    contactAvatarContent = `<img src="${contactAvatarContent}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+                } else if (contactAvatarContent) {
+                    // 如果是默认头像符号
+                    contactAvatarContent = contactAvatarContent;
+                } else {
+                    // 如果没有任何头像数据，使用默认头像
+                    contactAvatarContent = '👤';
+                }
+                
+                messageElement.innerHTML = `
+                    <div class="message-avatar">${contactAvatarContent}</div>
+                    <div class="message-content-container">
+                        <div class="message-bubble">
+                            <div class="message-text">${text}</div>
+                        </div>
+                        <div class="message-time">${timeString}</div>
+                    </div>
+                `;
+                
+                // 添加到聊天内容
+                document.querySelector('.chat-content').appendChild(messageElement);
+                
+                // 滚动到底部
+                document.querySelector('.chat-content').scrollTop = document.querySelector('.chat-content').scrollHeight;
+            }
+
+            // AI回复功能
+            document.querySelector('.ai-btn').addEventListener('click', function() {
+                const input = document.querySelector('.input-box');
+                const message = input.value.trim();
+                
+                if (message) {
+                    // 发送消息
+                    sendMessage();
+                    
+                    // 模拟AI回复
+                    setTimeout(() => {
+                        receiveMessage("这是AI智能回复的内容");
+                    }, 2000);
+                } else {
+                    // 如果没有输入内容，直接触发AI回复
+                    receiveMessage("你好！我是AI助手，有什么可以帮助你的吗？");
+                }
+            });
+        </script>
+    </div>
+</body>
+</html>

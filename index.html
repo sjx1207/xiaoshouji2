@@ -1,0 +1,2052 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>手机主屏幕</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+                'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+                sans-serif;
+            background: linear-gradient(135deg, #1a1a1a, #000);
+            color: #fff;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .phone {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* 状态栏样式 */
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 15px;
+            height: 44px;
+            background-color: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            color: white;
+            font-size: 16px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+
+        .status-left, .status-center, .status-right {
+            display: flex;
+            align-items: center;
+        }
+
+        .status-left {
+            flex: 1;
+        }
+
+        .status-center {
+            flex: 2;
+            justify-content: center;
+        }
+
+        .status-right {
+            flex: 1;
+            justify-content: flex-end;
+        }
+
+        .status-icon {
+            width: 18px;
+            height: 18px;
+            margin: 0 5px;
+        }
+
+        /* 名片小组件样式 */
+        .profile-widget {
+            position: fixed;
+            bottom: 140px;
+            left: 25px;
+            width: 160px;
+            background: transparent;
+            border-radius: 20px;
+            padding: 15px;
+            text-align: center;
+            z-index: 998;
+        }
+
+        .profile-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: #333;
+            margin: 0 auto 15px;
+            cursor: pointer;
+            overflow: hidden;
+            border: 2px solid white;
+        }
+
+        .profile-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+        }
+
+        .profile-avatar:hover {
+            opacity: 0.8;
+        }
+
+        .profile-nickname {
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+
+        .profile-nickname:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .profile-signature {
+            font-size: 12px;
+            color: #aaa;
+            cursor: pointer;
+            min-height: 20px;
+            padding: 5px;
+            border-radius: 10px;
+        }
+
+        .profile-signature:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* 天气信息组件样式 */
+        .weather-widget {
+            position: fixed;
+            top: 60px;
+            left: 25px;
+            width: calc(50% - 30px);
+            background: rgba(255, 255, 255, 0.01);
+            border-radius: 20px;
+            padding: 15px;
+            z-index: 996;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .weather-location {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #fff;
+        }
+
+        .weather-icon {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 10px;
+        }
+
+        /* 晴天图标动画 */
+        .sunny-icon {
+            animation: sunAnimation 3s ease-in-out infinite;
+        }
+
+        @keyframes sunAnimation {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-5px) rotate(5deg); }
+        }
+
+        /* 雨天图标动画 */
+        .rainy-icon {
+            animation: rainAnimation 2s linear infinite;
+        }
+
+        @keyframes rainAnimation {
+            0% { transform: translateY(-10px); }
+            100% { transform: translateY(10px); }
+        }
+
+        /* 阴天图标动画 */
+        .cloudy-icon {
+            animation: cloudAnimation 4s ease-in-out infinite;
+        }
+
+        @keyframes cloudAnimation {
+            0%, 100% { transform: translateX(0); }
+            50% { transform: translateX(5px); }
+        }
+
+        /* 雪天图标动画 */
+        .snowy-icon {
+            animation: snowAnimation 4s linear infinite;
+        }
+
+        @keyframes snowAnimation {
+            0% { transform: translateY(-5px) rotate(0deg); }
+            100% { transform: translateY(5px) rotate(360deg); }
+        }
+
+        /* 多云转阴图标动画 */
+        .partly-cloudy-icon {
+            animation: partlyCloudyAnimation 3s ease-in-out infinite;
+        }
+
+        @keyframes partlyCloudyAnimation {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        /* 雨夹雪图标动画 */
+        .sleet-icon {
+            animation: sleetAnimation 2s ease-in-out infinite;
+        }
+
+        @keyframes sleetAnimation {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-3px); }
+        }
+
+        .weather-temp {
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 5px;
+            color: #fff;
+        }
+
+        .weather-day {
+            font-size: 14px;
+            text-align: center;
+            margin-bottom: 5px;
+            color: #aaa;
+        }
+
+        .weather-date {
+            font-size: 14px;
+            text-align: center;
+            color: #aaa;
+        }
+
+        .weather-description {
+            font-size: 14px;
+            text-align: center;
+            margin-bottom: 5px;
+            color: #aaa;
+        }
+
+        /* 照片展示组件样式 */
+        .photo-display-widget {
+            position: fixed;
+            top: 46px;
+            right: 16px;
+            width: calc(50% - 10px);
+            background: transparent; /* 移除背景 */
+            border-radius: 20px;
+            padding: 15px;
+            z-index: 996;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            height: 276px; /* 调整高度以匹配天气组件(包括padding) */
+        }
+
+        .photo-display-widget:hover {
+            transform: scale(1.02);
+        }
+
+        .photo-display-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            border-radius: 10px;
+        }
+
+        .photo-display-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+        }
+
+        .photo-display-placeholder img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+            border-radius: 10px;
+        }
+
+        /* 旋转动画类 */
+        .rotating {
+            animation: rotate 20s linear infinite;
+            animation-play-state: paused;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .rotating.playing {
+            animation-play-state: running;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* 专辑封面占位符 */
+        .rotating .placeholder {
+            font-size: 24px;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        /* 专辑封面图片 */
+        .rotating img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+        }
+
+        .photo-icon {
+            font-size: 30px;
+            margin-bottom: 10px;
+        }
+
+        .photo-text {
+            font-size: 14px;
+            color: #aaa;
+        }
+
+        /* 主屏幕内容区域 */
+        .home-screen {
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(5, 1fr);
+            gap: 25px;
+            padding: 100px 25px 120px 25px;
+            align-content: start;
+        }
+
+        .app-icon {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: transform 0.2s;
+            position: relative;
+        }
+
+        .app-icon.dragging {
+            opacity: 0.5;
+            transform: scale(1.1);
+            z-index: 1000;
+        }
+
+        .app-icon .icon-bg {
+            width: 65px;
+            height: 65px;
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .app-icon .icon-bg svg {
+            width: 35px;
+            height: 35px;
+        }
+
+        .app-icon span {
+            font-size: 13px;
+            text-align: center;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        .app-icon:hover {
+            transform: scale(1.1);
+        }
+
+        /* Dock栏样式 */
+        .dock {
+            height: 100px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 15px;
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-radius: 30px;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            z-index: 999;
+        }
+
+        .dock .app-icon {
+            margin: 0 10px;
+        }
+
+        .dock .app-icon .icon-bg {
+            width: 70px;
+            height: 70px;
+            border-radius: 20px;
+        }
+
+        .dock .app-icon .icon-bg svg {
+            width: 40px;
+            height: 40px;
+        }
+
+        /* 隐藏文件输入框 */
+        .hidden-file-input {
+            display: none;
+        }
+
+        /* 自定义弹窗样式 */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: rgba(30, 30, 30, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 25px;
+            width: 90%;
+            max-width: 350px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+        }
+
+        .modal.active .modal-content {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .close-btn {
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        .close-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #aaa;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 15px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: rgba(0, 122, 255, 0.5);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .upload-area {
+            border: 2px dashed rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            margin-bottom: 20px;
+            transition: all 0.3s;
+        }
+
+        .upload-area:hover {
+            border-color: rgba(0, 122, 255, 0.5);
+            background: rgba(0, 122, 255, 0.05);
+        }
+
+        .upload-icon {
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+
+        .upload-text {
+            font-size: 14px;
+            color: #aaa;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 15px;
+            border-radius: 12px;
+            background: linear-gradient(45deg, #007AFF, #0A84FF);
+            border: none;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(10, 132, 255, 0.4);
+        }
+
+        .submit-btn:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* 拖拽占位符 */
+        .drag-placeholder {
+            width: 65px;
+            height: 65px;
+            border: 2px dashed rgba(255, 255, 255, 0.5);
+            border-radius: 18px;
+            margin-bottom: 8px;
+        }
+
+        /* 壁纸样式 */
+        .wallpaper {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            z-index: -1;
+            opacity: 1;
+        }
+        
+        /* 视频壁纸样式 */
+        .wallpaper video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: -1;
+        }
+
+        /* 音乐播放器小组件 */
+        .music-player {
+            position: fixed;
+            top: 320px;  /* 还原原来的位置 */
+            left: 25px;
+            width: calc(100% - 50px);
+            background: rgba(255, 255, 255, 0.01);
+            border-radius: 20px;
+            padding: 10px;
+            z-index: 997;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+        }
+
+        /* 专辑封面 */
+        .album-cover {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            overflow: hidden;
+            margin-right: 15px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .album-cover .placeholder {
+            font-size: 30px;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .album-cover img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+        }
+
+        /* 音乐信息 */
+        .music-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            position: relative;
+        }
+
+        .song-info {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+            width: 100%;
+        }
+
+        .song-name {
+            font-size: 14px;
+            font-weight: bold;
+            margin-right: 8px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .favorite-btn {
+            width: 24px;
+            height: 24px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            padding: 0;
+            flex-shrink: 0;
+            position: absolute;
+            top: 0;
+            right: 0;
+            filter: drop-shadow(0 0 4px rgba(255, 59, 48, 0.3));
+        }
+
+        .favorite-btn.active {
+            filter: drop-shadow(0 0 8px rgba(255, 59, 48, 0.8));
+        }
+
+        .favorite-btn svg {
+            width: 100%;
+            height: 100%;
+            fill: #fff;
+        }
+
+        .favorite-btn.active svg {
+            fill: #ff3b30;
+        }
+
+        .artist-name {
+            font-size: 12px;
+            color: #aaa;
+            margin-bottom: 10px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* 控制按钮 */
+        .control-buttons {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+        }
+
+        .control-btn {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .control-btn svg {
+            width: 16px;
+            height: 16px;
+            fill: white;
+        }
+
+        .play-btn {
+            width: 40px;
+            height: 40px;
+        }
+
+        .play-btn svg {
+            width: 20px;
+            height: 20px;
+        }
+    </style>
+</head>
+<body>
+    <!-- 壁纸 -->
+    <div class="wallpaper" id="wallpaper"></div>
+    
+    <!-- 隐藏的音频播放器 -->
+    <audio id="audioPlayer" style="display: none;"></audio>
+    
+    <div class="phone">
+        <!-- 状态栏 -->
+        <div class="status-bar">
+            <div class="status-left">
+                <span class="time" id="current-time">00:00</span>
+            </div>
+            <div class="status-center">
+                <!-- 中间留空 -->
+            </div>
+            <div class="status-right">
+                <!-- 信号图标 -->
+                <svg class="status-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M5 17L5 12" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M12 17L12 7" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M19 17L19 2" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                <!-- 电池图标 -->
+                <svg class="status-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="2" y="7" width="16" height="10" rx="3" stroke="white" stroke-width="2"/>
+                    <path d="M20 10V14" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                    <rect x="4" y="9" width="12" height="6" rx="2" fill="white"/>
+                </svg>
+            </div>
+        </div>
+
+        <!-- 名片小组件 -->
+        <div class="profile-widget">
+            <div class="profile-avatar" id="profileAvatar" onclick="changeAvatar()">
+                <span style="font-size: 30px; line-height: 60px;">👤</span>
+            </div>
+            <div class="profile-nickname" id="profileNickname" onclick="changeNickname()">点击设置昵称</div>
+            <div class="profile-signature" id="profileSignature" onclick="changeSignature()">点击设置个性签名</div>
+        </div>
+
+        <!-- 天气信息组件 -->
+        <div class="weather-widget" onclick="openWeatherModal()">
+            <div class="weather-location" id="weatherLocation">北京</div>
+            <div class="weather-icon">
+                <!-- 晴天图标 -->
+                <svg class="sunny-icon" id="sunnyIcon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                    <circle cx="12" cy="12" r="4" fill="#FFD700" stroke="#FFA500" stroke-width="1.5"/>
+                    <path d="M12 3V1" stroke="#FFA500" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M12 23V21" stroke="#FFA500" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M3 12H1" stroke="#FFA500" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M23 12H21" stroke="#FFA500" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M5.64 5.64L4.22 4.22" stroke="#FFA500" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M19.78 19.78L18.36 18.36" stroke="#FFA500" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M5.64 18.36L4.22 19.78" stroke="#FFA500" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M19.78 4.22L18.36 5.64" stroke="#FFA500" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                
+                <!-- 雨天图标 -->
+                <svg class="rainy-icon" id="rainyIcon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                    <path d="M6 14C4.34315 14 3 15.3431 3 17C3 18.6569 4.34315 20 6 20H16C17.6569 20 19 18.6569 19 17C19 15.3431 17.6569 14 16 14H6Z" fill="#87CEEB"/>
+                    <path d="M8 16C6.34315 16 5 17.3431 5 19C5 20.6569 6.34315 22 8 22H14C15.6569 22 17 20.6569 17 19C17 17.3431 15.6569 16 14 16H8Z" fill="#87CEEB"/>
+                    <!-- 雨滴1 -->
+                    <path d="M9 18L9 20" stroke="#4682B4" stroke-width="1.5" stroke-linecap="round">
+                        <animate attributeName="opacity" values="0;1;0" dur="1s" repeatCount="indefinite" begin="0s"/>
+                        <animate attributeName="y" values="16;22" dur="1s" repeatCount="indefinite" begin="0s"/>
+                    </path>
+                    <!-- 雨滴2 -->
+                    <path d="M12 18L12 20" stroke="#4682B4" stroke-width="1.5" stroke-linecap="round">
+                        <animate attributeName="opacity" values="0;1;0" dur="1s" repeatCount="indefinite" begin="0.3s"/>
+                        <animate attributeName="y" values="16;22" dur="1s" repeatCount="indefinite" begin="0.3s"/>
+                    </path>
+                    <!-- 雨滴3 -->
+                    <path d="M15 18L15 20" stroke="#4682B4" stroke-width="1.5" stroke-linecap="round">
+                        <animate attributeName="opacity" values="0;1;0" dur="1s" repeatCount="indefinite" begin="0.6s"/>
+                        <animate attributeName="y" values="16;22" dur="1s" repeatCount="indefinite" begin="0.6s"/>
+                    </path>
+                </svg>
+                
+                <!-- 阴天图标 -->
+                <svg class="cloudy-icon" id="cloudyIcon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                    <path d="M6 14C4.34315 14 3 15.3431 3 17C3 18.6569 4.34315 20 6 20H16C17.6569 20 19 18.6569 19 17C19 15.3431 17.6569 14 16 14H6Z" fill="#C0C0C0"/>
+                    <path d="M8 16C6.34315 16 5 17.3431 5 19C5 20.6569 6.34315 22 8 22H14C15.6569 22 17 20.6569 17 19C17 17.3431 15.6569 16 14 16H8Z" fill="#C0C0C0"/>
+                </svg>
+                
+                <!-- 雪天图标 -->
+                <svg class="snowy-icon" id="snowyIcon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                    <path d="M6 14C4.34315 14 3 15.3431 3 17C3 18.6569 4.34315 20 6 20H16C17.6569 20 19 18.6569 19 17C19 15.3431 17.6569 14 16 14H6Z" fill="#87CEEB"/>
+                    <path d="M8 16C6.34315 16 5 17.3431 5 19C5 20.6569 6.34315 22 8 22H14C15.6569 22 17 20.6569 17 19C17 17.3431 15.6569 16 14 16H8Z" fill="#87CEEB"/>
+                    <!-- 雪花1 -->
+                    <circle cx="9" cy="18" r="1.5" fill="white">
+                        <animate attributeName="opacity" values="0;1;0" dur="2s" repeatCount="indefinite" begin="0s"/>
+                    </circle>
+                    <!-- 雪花2 -->
+                    <circle cx="12" cy="19" r="1.5" fill="white">
+                        <animate attributeName="opacity" values="0;1;0" dur="2s" repeatCount="indefinite" begin="0.5s"/>
+                    </circle>
+                    <!-- 雪花3 -->
+                    <circle cx="15" cy="18" r="1.5" fill="white">
+                        <animate attributeName="opacity" values="0;1;0" dur="2s" repeatCount="indefinite" begin="1s"/>
+                    </circle>
+                </svg>
+                
+                <!-- 多云转阴图标 -->
+                <svg class="partly-cloudy-icon" id="partlyCloudyIcon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                    <circle cx="10" cy="10" r="3" fill="#FFD700" stroke="#FFA500" stroke-width="1.5"/>
+                    <path d="M10 7V5" stroke="#FFA500" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M6 14C4.34315 14 3 15.3431 3 17C3 18.6569 4.34315 20 6 20H16C17.6569 20 19 18.6569 19 17C19 15.3431 17.6569 14 16 14H6Z" fill="#C0C0C0"/>
+                    <path d="M8 16C6.34315 16 5 17.3431 5 19C5 20.6569 6.34315 22 8 22H14C15.6569 22 17 20.6569 17 19C17 17.3431 15.6569 16 14 16H8Z" fill="#C0C0C0"/>
+                </svg>
+                
+                <!-- 雨夹雪图标 -->
+                <svg class="sleet-icon" id="sleetIcon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                    <path d="M6 14C4.34315 14 3 15.3431 3 17C3 18.6569 4.34315 20 6 20H16C17.6569 20 19 18.6569 19 17C19 15.3431 17.6569 14 16 14H6Z" fill="#87CEEB"/>
+                    <path d="M8 16C6.34315 16 5 17.3431 5 19C5 20.6569 6.34315 22 8 22H14C15.6569 22 17 20.6569 17 19C17 17.3431 15.6569 16 14 16H8Z" fill="#87CEEB"/>
+                    <!-- 雨滴 -->
+                    <path d="M9 18L9 20" stroke="#4682B4" stroke-width="1.5" stroke-linecap="round">
+                        <animate attributeName="opacity" values="0;1;0" dur="1s" repeatCount="indefinite" begin="0s"/>
+                        <animate attributeName="y" values="16;22" dur="1s" repeatCount="indefinite" begin="0s"/>
+                    </path>
+                    <!-- 雪花 -->
+                    <circle cx="15" cy="18" r="1.5" fill="white">
+                        <animate attributeName="opacity" values="0;1;0" dur="2s" repeatCount="indefinite" begin="0.5s"/>
+                    </circle>
+                </svg>
+                
+                <!-- 默认图标 -->
+                <svg id="defaultWeatherIcon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 15C13.6569 15 15 13.6569 15 12C15 10.3431 13.6569 9 12 9C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15Z" stroke="white" stroke-width="2"/>
+                    <path d="M19.4 15C19.2667 15.2667 18.8 16.2 17.8 17.2C16.8 18.2 15.8667 18.6667 15.6 18.8" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M12 22C14.5 20.5 16 18.5 16 16C16 13.5 14.5 11.5 12 10C9.5 11.5 8 13.5 8 16C8 18.5 9.5 20.5 12 22Z" stroke="white" stroke-width="2"/>
+                    <path d="M4.6 9C4.73333 8.73333 5.2 7.8 6.2 6.8C7.2 5.8 8.13333 5.33333 8.4 5.2" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M19.4 9C19.2667 8.73333 18.8 7.8 17.8 6.8C16.8 5.8 15.8667 5.33333 15.6 5.2" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M4.6 15C4.73333 15.2667 5.2 16.2 6.2 17.2C7.2 18.2 8.13333 18.6667 8.4 18.8" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </div>
+            <div class="weather-temp" id="weatherTemp">25°C</div>
+            <div class="weather-description" id="weatherDescription">晴天</div>
+            <div class="weather-day" id="weatherDay">星期三</div>
+            <div class="weather-date" id="weatherDate">10月1日</div>
+        </div>
+
+        <!-- 照片展示组件 -->
+        <div class="photo-display-widget" onclick="changePhotoDisplay()">
+            <div class="photo-display-container">
+                <div class="photo-display-placeholder" id="photoDisplay">
+                    <span class="photo-icon">📷</span>
+                    <span class="photo-text">点击添加照片</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 音乐播放器小组件 -->
+        <div class="music-player">
+            <div class="album-cover rotating" id="albumCover" onclick="changeAlbumCover()">
+                <div class="placeholder">♪</div>
+            </div>
+            <div class="music-info">
+                <div class="song-info">
+                    <div class="song-name" id="songName" onclick="openSongModal()">未知歌曲</div>
+                </div>
+                <button class="favorite-btn" id="favoriteBtn" onclick="toggleFavorite()">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 21.35L10.55 20.03C5.4 15.36 2 12.28 2 8.5C2 5.42 4.42 3 7.5 3C9.24 3 10.91 3.81 12 5.09C13.09 3.81 14.76 3 16.5 3C19.58 3 22 5.42 22 8.5C22 12.28 18.6 15.36 13.45 20.04L12 21.35Z"/>
+                    </svg>
+                </button>
+                <div class="artist-name" id="artistName">未知艺术家</div>
+                <div class="control-buttons">
+                    <button class="control-btn" onclick="previousSong()">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M6 6H8V18H6V6ZM9.5 12L18 6V18L9.5 12Z"/>
+                        </svg>
+                    </button>
+                    <button class="control-btn play-btn" onclick="togglePlay()" id="playBtn">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" id="playIcon">
+                            <path d="M8 5V19L19 12L8 5Z" id="playPath"/>
+                        </svg>
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" id="pauseIcon" style="display: none;">
+                            <path d="M14 19V5H18V19H14ZM6 19V5H10V19H6Z"/>
+                        </svg>
+                    </button>
+                    <button class="control-btn" onclick="nextSong()">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M6 18L14.5 12L6 6V18ZM16 6V18H18V6H16Z"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 主屏幕内容 -->
+        <div class="home-screen" id="homeScreen">
+            <!-- 壁纸应用图标 - 第四行第三列 -->
+            <div class="app-icon" onclick="window.location.href='bizhi.html'" data-app="壁纸" style="grid-column: 3; grid-row: 4; transform: translateY(-10px);">
+                <div class="icon-bg">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M4 16L9 11L13 15L20 8" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <rect x="3" y="3" width="18" height="18" rx="3" stroke="white" stroke-width="2"/>
+                    </svg>
+                </div>
+                <span>壁纸</span>
+            </div>
+            
+            <!-- 设置应用图标 - 第四行第四列 -->
+            <div class="app-icon" onclick="window.location.href='shezhi.html'" data-app="设置" style="grid-column: 4; grid-row: 4; transform: translateY(-10px);">
+                <div class="icon-bg">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M21 15C21 15.5304 20.7893 16.0391 20.4142 16.4142C20.0391 16.7893 19.5304 17 19 17H7L3 21V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H19C19.5304 3 20.0391 3.21071 20.4142 3.58579C20.7893 3.96086 21 4.46957 21 5V15Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+                <span>设置</span>
+            </div>
+            
+            <!-- 聊天应用图标 - 第五行第三列 -->
+            <div class="app-icon" onclick="window.location.href='chat.html'" data-app="聊天" style="grid-column: 3; grid-row: 5; transform: translateY(-10px);">
+                <div class="icon-bg">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M21 11.5C21.0034 12.8199 20.6951 14.1219 20.1 15.3C19.3948 16.7262 18.3522 17.9555 17.05 18.9C15.7478 19.8445 14.2199 20.4861 12.58 20.77C11.9413 20.8791 11.2916 20.9135 10.64 20.88L7 22L8.12 18.36C7.38368 17.9462 6.71624 17.4224 6.14 16.8C4.72104 15.2441 3.92829 13.2159 4 11.1C4.00344 9.78012 4.31172 8.47814 4.90685 7.30001C5.61203 5.87386 6.65462 4.64455 7.95683 3.69999C9.25903 2.75544 10.7869 2.11382 12.4269 1.82999C14.0669 1.54616 15.7757 1.62764 17.42 2.06999C19.0643 2.51234 20.5975 3.30299 21.9 4.37999C23.2025 5.45699 24.15 7.02999 24.15 8.76999C24.1491 9.55042 24.0492 10.3261 23.85 11.07L24 11L21 11.5Z" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                        <path d="M8 12H8.01" stroke="white" stroke-width="3" stroke-linecap="round"/>
+                        <path d="M12 12H12.01" stroke="white" stroke-width="3" stroke-linecap="round"/>
+                        <path d="M16 12H16.01" stroke="white" stroke-width="3" stroke-linecap="round"/>
+                    </svg>
+                </div>
+                <span>聊天</span>
+            </div>
+            
+            <!-- 音乐应用图标 - 第五行第四列 -->
+            <div class="app-icon" onclick="window.location.href='yinyue.html'" data-app="音乐" style="grid-column: 4; grid-row: 5; transform: translateY(-10px);">
+                <div class="icon-bg">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 3V12L19 5V19L12 12V21" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+                <span>音乐</span>
+            </div>
+        </div>
+
+        <!-- Dock栏 -->
+        <div class="dock">
+            <div class="app-icon" data-app="角色书" onclick="window.location.href='jueseshu.html'">
+                <div class="icon-bg">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 3C16.9706 3 21 7.02944 21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3Z" stroke="white" stroke-width="2"/>
+                        <path d="M12 7V12L15 15" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                        <path d="M8 16C8.5 14.5 10 13.5 12 13.5C14 13.5 15.5 14.5 16 16" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </div>
+            </div>
+            <div class="app-icon" data-app="世界书" onclick="window.location.href='shijieshu.html'">
+                <div class="icon-bg">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="white" stroke-width="2"/>
+                        <path d="M8 3H16" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                        <path d="M8 21H16" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                        <path d="M12 2V22" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                        <path d="M3 12H21" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                        <path d="M3 8L7 8" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                        <path d="M3 16L7 16" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                        <path d="M17 8L21 8" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                        <path d="M17 16L21 16" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </div>
+            </div>
+            <div class="app-icon" data-app="说明书" onclick="window.location.href='shuomingshu.html'">
+                <div class="icon-bg">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M4 2H20C21.1046 2 22 2.89543 22 4V20C22 21.1046 21.1046 22 20 22H4C2.89543 22 2 21.1046 2 20V4C2 2.89543 2.89543 2 4 2Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M9 7H15" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                        <path d="M9 11H15" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                        <path d="M9 15H13" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </div>
+            </div>
+            <div class="app-icon" data-app="图标" onclick="window.location.href='tubiao.html'">
+                <div class="icon-bg">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="white" stroke-width="2"/>
+                        <circle cx="12" cy="12" r="3" stroke="white" stroke-width="2"/>
+                        <path d="M3 12H21" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                        <path d="M12 3V21" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- 隐藏文件输入框 -->
+        <input type="file" id="avatarUpload" class="hidden-file-input" accept="image/*">
+
+        <!-- 歌曲信息弹窗 -->
+        <div class="modal" id="songModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="modal-title">设置歌曲信息</div>
+                    <button class="close-btn" onclick="closeSongModal()">&times;</button>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">上传MP3文件</label>
+                    <div class="upload-area" onclick="document.getElementById('mp3Upload').click()">
+                        <div class="upload-icon">🎵</div>
+                        <div class="upload-text">点击选择MP3文件</div>
+                    </div>
+                    <input type="file" id="mp3Upload" class="hidden-file-input" accept="audio/mpeg" onchange="handleMp3Upload(event)">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">歌曲名称</label>
+                    <input type="text" class="form-input" id="songNameInput" placeholder="请输入歌曲名称">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">歌手</label>
+                    <input type="text" class="form-input" id="artistNameInput" placeholder="请输入歌手名称">
+                </div>
+                <button class="submit-btn" id="saveSongBtn" onclick="saveSongInfo()" disabled>保存</button>
+            </div>
+        </div>
+
+        <!-- 天气选择弹窗 -->
+        <div class="modal" id="weatherModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="modal-title">选择城市</div>
+                    <button class="close-btn" onclick="closeWeatherModal()">&times;</button>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">城市名称</label>
+                    <input type="text" class="form-input" id="cityInput" placeholder="请输入城市名称，如：北京、上海、广州">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">热门城市</label>
+                    <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px;">
+                        <button class="submit-btn" style="flex: 1; min-width: 80px; padding: 8px;" onclick="selectCity('北京')">北京</button>
+                        <button class="submit-btn" style="flex: 1; min-width: 80px; padding: 8px;" onclick="selectCity('上海')">上海</button>
+                        <button class="submit-btn" style="flex: 1; min-width: 80px; padding: 8px;" onclick="selectCity('广州')">广州</button>
+                        <button class="submit-btn" style="flex: 1; min-width: 80px; padding: 8px;" onclick="selectCity('深圳')">深圳</button>
+                        <button class="submit-btn" style="flex: 1; min-width: 80px; padding: 8px;" onclick="selectCity('杭州')">杭州</button>
+                        <button class="submit-btn" style="flex: 1; min-width: 80px; padding: 8px;" onclick="selectCity('成都')">成都</button>
+                    </div>
+                </div>
+                <button class="submit-btn" onclick="updateWeatherByCity()">确定</button>
+            </div>
+        </div>
+
+        <script>
+            // 更新时间
+            function updateTime() {
+                const now = new Date();
+                const timeString = now.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+                document.getElementById('current-time').textContent = timeString;
+            }
+
+            // 每秒更新一次时间
+            setInterval(updateTime, 1000);
+            updateTime(); // 初始化时间
+
+            // 页面加载时检查是否有保存的壁纸
+            window.onload = function() {
+                updateTime();
+                loadProfileData();
+                loadWallpaper();
+                initMusicPlayer();
+                loadDisplayPhoto(); // 加载展示照片
+                loadWeatherData(); // 加载天气数据
+                loadCustomIcons(); // 加载自定义图标
+                
+                // 从本地存储加载天气状态，如果没有则默认为晴天
+                const savedWeatherState = localStorage.getItem('weatherState') || 'sunny';
+                setWeatherState(savedWeatherState);
+            };
+
+            // 监听来自图标管理页面的消息
+            window.addEventListener('message', function(event) {
+                if (event.data.type === 'updateIcon') {
+                    updateAppIcon(event.data.iconId, event.data.iconData);
+                } else if (event.data.type === 'restoreIcons') {
+                    loadCustomIcons(); // 重新加载所有图标
+                }
+            });
+
+            // 加载自定义图标
+            function loadCustomIcons() {
+                // 主屏幕应用图标
+                const mainScreenApps = [
+                    { id: 'bizhi', selector: '.app-icon[data-app="壁纸"]' },
+                    { id: 'shezhi', selector: '.app-icon[data-app="设置"]' },
+                    { id: 'chat', selector: '.app-icon[data-app="聊天"]' },
+                    { id: 'yinyue', selector: '.app-icon[data-app="音乐"]' }
+                ];
+                
+                mainScreenApps.forEach(app => {
+                    const customIcon = localStorage.getItem(`customIcon_${app.id}`);
+                    if (customIcon) {
+                        const appIcon = document.querySelector(app.selector);
+                        if (appIcon) {
+                            const iconBg = appIcon.querySelector('.icon-bg');
+                            if (iconBg) {
+                                iconBg.innerHTML = `<img src="${customIcon}" alt="${app.id}" style="width:100%;height:100%;object-fit:cover;border-radius:18px;">`;
+                            }
+                        }
+                    }
+                });
+                
+                // Dock栏应用图标
+                const dockApps = [
+                    { id: 'jueseshu-dock', selector: '.dock .app-icon[data-app="角色书"]' },
+                    { id: 'shijieshu-dock', selector: '.dock .app-icon[data-app="世界书"]' },
+                    { id: 'shuomingshu-dock', selector: '.dock .app-icon[data-app="说明书"]' },
+                    { id: 'tubiao-dock', selector: '.dock .app-icon[data-app="图标"]' }
+                ];
+                
+                dockApps.forEach(app => {
+                    const customIcon = localStorage.getItem(`customIcon_${app.id}`);
+                    if (customIcon) {
+                        const appIcon = document.querySelector(app.selector);
+                        if (appIcon) {
+                            const iconBg = appIcon.querySelector('.icon-bg');
+                            if (iconBg) {
+                                iconBg.innerHTML = `<img src="${customIcon}" alt="${app.id}" style="width:100%;height:100%;object-fit:cover;border-radius:20px;">`;
+                            }
+                        }
+                    }
+                });
+            }
+
+            // 更新单个应用图标
+            function updateAppIcon(iconId, iconData) {
+                // 主屏幕应用图标
+                const mainScreenApps = [
+                    { id: 'bizhi', selector: '.app-icon[data-app="壁纸"]' },
+                    { id: 'shezhi', selector: '.app-icon[data-app="设置"]' },
+                    { id: 'chat', selector: '.app-icon[data-app="聊天"]' },
+                    { id: 'yinyue', selector: '.app-icon[data-app="音乐"]' }
+                ];
+                
+                // Dock栏应用图标
+                const dockApps = [
+                    { id: 'jueseshu-dock', selector: '.dock .app-icon[data-app="角色书"]' },
+                    { id: 'shijieshu-dock', selector: '.dock .app-icon[data-app="世界书"]' },
+                    { id: 'shuomingshu-dock', selector: '.dock .app-icon[data-app="说明书"]' },
+                    { id: 'tubiao-dock', selector: '.dock .app-icon[data-app="图标"]' }
+                ];
+                
+                // 查找匹配的应用
+                const allApps = [...mainScreenApps, ...dockApps];
+                const app = allApps.find(a => a.id === iconId);
+                
+                if (app) {
+                    const appIcon = document.querySelector(app.selector);
+                    if (appIcon) {
+                        const iconBg = appIcon.querySelector('.icon-bg');
+                        if (iconBg) {
+                            // 根据应用类型设置不同的圆角
+                            const borderRadius = iconId.includes('-dock') ? '20px' : '18px';
+                            iconBg.innerHTML = `<img src="${iconData}" alt="${iconId}" style="width:100%;height:100%;object-fit:cover;border-radius:${borderRadius};">`;
+                        }
+                    }
+                }
+            }
+
+            // 加载个人资料数据
+            function loadProfileData() {
+                // 加载头像
+                const savedAvatar = localStorage.getItem('profileAvatar');
+                if (savedAvatar) {
+                    document.getElementById('profileAvatar').innerHTML = `<img src="${savedAvatar}" alt="头像" style="width:100%;height:100%;object-fit:cover;object-position:center;">`;
+                }
+
+                // 加载昵称
+                const savedNickname = localStorage.getItem('profileNickname');
+                if (savedNickname) {
+                    document.getElementById('profileNickname').textContent = savedNickname;
+                }
+
+                // 加载个性签名
+                const savedSignature = localStorage.getItem('profileSignature');
+                if (savedSignature) {
+                    document.getElementById('profileSignature').textContent = savedSignature;
+                }
+            }
+
+            // 加载壁纸
+            function loadWallpaper() {
+                const savedWallpaper = localStorage.getItem('wallpaper');
+                const wallpaperElement = document.getElementById('wallpaper');
+                
+                // 清除现有的壁纸
+                wallpaperElement.style.backgroundImage = '';
+                wallpaperElement.innerHTML = '';
+                
+                if (savedWallpaper) {
+                    try {
+                        // 解析壁纸数据
+                        const wallpaperData = JSON.parse(savedWallpaper);
+                        
+                        if (wallpaperData && wallpaperData.src) {
+                            if (wallpaperData.type === 'video' && wallpaperData.poster) {
+                                // 视频壁纸 - 创建视频元素
+                                wallpaperElement.innerHTML = `
+                                    <video 
+                                        src="${wallpaperData.src}" 
+                                        poster="${wallpaperData.poster}" 
+                                        autoplay 
+                                        muted 
+                                        playsinline
+                                        loop 
+                                        style="width:100%;height:100%;object-fit:cover;position:absolute;top:0;left:0;z-index:-1;">
+                                    </video>
+                                `;
+                                
+                                // 确保视频在页面加载后播放
+                                setTimeout(() => {
+                                    const video = wallpaperElement.querySelector('video');
+                                    if (video) {
+                                        // 确保视频是静音的
+                                        video.muted = true;
+                                        video.playsInline = true;
+                                        
+                                        // 检查是否支持自动播放
+                                        video.play().catch(e => {
+                                            console.error('自动播放失败:', e);
+                                        });
+                                    }
+                                }, 100);
+                            } else if (wallpaperData.type === 'image') {
+                                // 图片壁纸 - 设置背景图片
+                                wallpaperElement.style.backgroundImage = `url(${wallpaperData.src})`;
+                            }
+                        }
+                    } catch (e) {
+                        console.error('解析壁纸数据时出错:', e);
+                    }
+                }
+            }
+
+            // 保存壁纸
+            function saveWallpaper(wallpaperData) {
+                localStorage.setItem('wallpaper', JSON.stringify(wallpaperData));
+                loadWallpaper();
+            }
+
+            // 保存个人资料数据
+            function saveProfileData(avatar, nickname, signature) {
+                if (avatar) {
+                    localStorage.setItem('profileAvatar', avatar);
+                }
+                if (nickname) {
+                    localStorage.setItem('profileNickname', nickname);
+                }
+                if (signature) {
+                    localStorage.setItem('profileSignature', signature);
+                }
+                loadProfileData();
+            }
+
+            // 收藏歌曲
+            function toggleFavorite(songName) {
+                const isFavorite = localStorage.getItem(`favorite_${songName}`) === 'true';
+                localStorage.setItem(`favorite_${songName}`, !isFavorite);
+                initMusicPlayer();
+            }
+
+            // 设置事件监听器
+            // 更换个性签名
+            function changeSignature() {
+                const signature = prompt('请输入您的个性签名：', document.getElementById('profileSignature').textContent);
+                if (signature !== null) {
+                    document.getElementById('profileSignature').textContent = signature;
+                    localStorage.setItem('profileSignature', signature);
+                }
+            }
+
+            // 更换照片
+            function changePhoto(photoNumber) {
+                // 创建文件输入元素
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = 'image/*';
+                input.onchange = function(event) {
+                    const file = event.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            // 更新照片显示，确保正确比例
+                            const photoCard = document.querySelector(`.photo-card-${photoNumber}`);
+                            photoCard.innerHTML = `<img src="${e.target.result}" alt="照片${photoNumber}" style="width:100%;height:100%;object-fit:cover;object-position:center;">`;
+                            // 保存到本地存储
+                            localStorage.setItem(`photo${photoNumber}`, e.target.result);
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                };
+                input.click();
+            }
+
+            // 加载保存的照片
+            function loadSavedPhotos() {
+                for (let i = 1; i <= 3; i++) {
+                    const savedPhoto = localStorage.getItem(`photo${i}`);
+                    if (savedPhoto) {
+                        const photoCard = document.querySelector(`.photo-card-${i}`);
+                        photoCard.innerHTML = `<img src="${savedPhoto}" alt="照片${i}" style="width:100%;height:100%;object-fit:cover;object-position:center;">`;
+                    }
+                }
+            }
+
+            // 点击歌曲名打开弹窗
+            function openSongModal() {
+                document.getElementById('songModal').classList.add('active');
+                // 加载已保存的歌曲信息
+                const savedSong = localStorage.getItem('currentSong');
+                if (savedSong) {
+                    const song = JSON.parse(savedSong);
+                    document.getElementById('songNameInput').value = song.name;
+                    document.getElementById('artistNameInput').value = song.artist;
+                    document.getElementById('saveSongBtn').disabled = false;
+                }
+                
+                // 检查是否有保存的歌曲文件
+                const savedSongFile = localStorage.getItem('currentSongFile');
+                if (savedSongFile) {
+                    const songFile = JSON.parse(savedSongFile);
+                    // 如果有保存的文件，启用保存按钮
+                    document.getElementById('saveSongBtn').disabled = false;
+                }
+            }
+
+            // 关闭弹窗
+            function closeSongModal() {
+                document.getElementById('songModal').classList.remove('active');
+            }
+
+            // 处理MP3上传
+            function handleMp3Upload(event) {
+                const file = event.target.files[0];
+                if (file) {
+                    // 检查文件大小（限制为10MB）
+                    if (file.size > 10 * 1024 * 1024) {
+                        alert('文件太大，请选择小于10MB的文件');
+                        return;
+                    }
+                    
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        // 保存MP3文件数据到本地存储
+                        localStorage.setItem('currentSongFile', JSON.stringify({
+                            name: file.name,
+                            size: file.size,
+                            type: file.type,
+                            data: e.target.result,
+                            lastModified: file.lastModified
+                        }));
+                        
+                        // 启用保存按钮
+                        document.getElementById('saveSongBtn').disabled = false;
+                    };
+                    reader.onerror = function(e) {
+                        console.error('文件读取错误:', e);
+                        alert('文件读取失败，请重试');
+                    };
+                    reader.readAsDataURL(file);
+                }
+            }
+
+            // 保存歌曲信息
+            function saveSongInfo() {
+                const songName = document.getElementById('songNameInput').value || '未知歌曲';
+                const artistName = document.getElementById('artistNameInput').value || '未知艺术家';
+                
+                // 保存到本地存储
+                const songData = {
+                    name: songName,
+                    artist: artistName
+                };
+                localStorage.setItem('currentSong', JSON.stringify(songData));
+                
+                // 更新页面显示
+                document.getElementById('songName').textContent = songName;
+                document.getElementById('artistName').textContent = artistName;
+                
+                // 关闭弹窗
+                closeSongModal();
+                
+                // 显示保存成功提示
+                // 这里可以添加一个简单的提示，比如临时改变按钮文字
+                const saveBtn = document.getElementById('saveSongBtn');
+                const originalText = saveBtn.textContent;
+                saveBtn.textContent = '已保存';
+                setTimeout(() => {
+                    saveBtn.textContent = originalText;
+                    saveBtn.disabled = false;
+                }, 1000);
+            }
+
+            // 更换专辑封面
+            function changeAlbumCover() {
+                // 创建文件输入元素
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = 'image/*';
+                input.onchange = function(event) {
+                    const file = event.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            // 更新封面显示，确保正确比例
+                            document.getElementById('albumCover').innerHTML = `<img src="${e.target.result}" alt="专辑封面" style="width:100%;height:100%;object-fit:cover;object-position:center;">`;
+                            // 保存到本地存储
+                            localStorage.setItem('albumCover', e.target.result);
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                };
+                input.click();
+            }
+
+            // 切换播放/暂停
+            function togglePlay() {
+                const albumCover = document.getElementById('albumCover');
+                const playIcon = document.getElementById('playIcon');
+                const pauseIcon = document.getElementById('pauseIcon');
+                const audioPlayer = document.getElementById('audioPlayer');
+                
+                if (albumCover.classList.contains('playing')) {
+                    // 暂停
+                    albumCover.classList.remove('playing');
+                    playIcon.style.display = 'block';
+                    pauseIcon.style.display = 'none';
+                    audioPlayer.pause();
+                } else {
+                    // 播放
+                    albumCover.classList.add('playing');
+                    playIcon.style.display = 'none';
+                    pauseIcon.style.display = 'block';
+                    
+                    // 检查是否有保存的歌曲文件
+                    const savedSongFile = localStorage.getItem('currentSongFile');
+                    if (savedSongFile) {
+                        const songFile = JSON.parse(savedSongFile);
+                        audioPlayer.src = songFile.data;
+                        audioPlayer.play().catch(e => {
+                            console.error('播放失败:', e);
+                            // 如果播放失败，回滚UI状态
+                            albumCover.classList.remove('playing');
+                            playIcon.style.display = 'block';
+                            pauseIcon.style.display = 'none';
+                            alert('播放失败，请重试');
+                        });
+                    } else {
+                        // 没有上传文件时的提示
+                        albumCover.classList.remove('playing');
+                        playIcon.style.display = 'block';
+                        pauseIcon.style.display = 'none';
+                        alert('请先上传MP3文件');
+                    }
+                }
+            }
+
+            // 上一首
+            function previousSong() {
+                // 这里可以添加切换歌曲的逻辑
+            }
+
+            // 初始化音乐播放器
+            function initMusicPlayer() {
+                // 从本地存储加载音乐数据
+                const savedSong = localStorage.getItem('currentSong');
+                if (savedSong) {
+                    try {
+                        const song = JSON.parse(savedSong);
+                        document.getElementById('songName').textContent = song.name;
+                        document.getElementById('artistName').textContent = song.artist;
+                        
+                        // 检查是否收藏
+                        const isFavorite = localStorage.getItem(`favorite_${song.name}`) === 'true';
+                        if (isFavorite) {
+                            document.getElementById('favoriteBtn').classList.add('active');
+                        }
+                    } catch (e) {
+                        console.error('解析歌曲数据时出错:', e);
+                    }
+                }
+                
+                // 加载专辑封面
+                const savedCover = localStorage.getItem('albumCover');
+                if (savedCover) {
+                    document.getElementById('albumCover').innerHTML = `<img src="${savedCover}" alt="专辑封面" style="width:100%;height:100%;object-fit:cover;object-position:center;">`;
+                }
+                
+                // 检查是否有保存的歌曲文件
+                const savedSongFile = localStorage.getItem('currentSongFile');
+                if (savedSongFile) {
+                    try {
+                        const songFile = JSON.parse(savedSongFile);
+                        // 这里可以添加播放歌曲的逻辑
+                        
+                        // 启用保存按钮
+                        const saveSongBtn = document.getElementById('saveSongBtn');
+                        if (saveSongBtn) {
+                            saveSongBtn.disabled = false;
+                        }
+                    } catch (e) {
+                        console.error('解析歌曲文件数据时出错:', e);
+                    }
+                }
+                
+                // 添加音频播放结束事件监听器实现循环播放
+                const audioPlayer = document.getElementById('audioPlayer');
+                if (audioPlayer) {
+                    audioPlayer.addEventListener('ended', function() {
+                        // 当音频播放结束时，自动重新播放
+                        const albumCover = document.getElementById('albumCover');
+                        const playIcon = document.getElementById('playIcon');
+                        const pauseIcon = document.getElementById('pauseIcon');
+                        
+                        // 保持播放状态但重置音频
+                        if (albumCover) albumCover.classList.add('playing');
+                        if (playIcon) playIcon.style.display = 'none';
+                        if (pauseIcon) pauseIcon.style.display = 'block';
+                        
+                        // 重新设置音频源并播放
+                        const savedSongFile = localStorage.getItem('currentSongFile');
+                        if (savedSongFile) {
+                            try {
+                                const songFile = JSON.parse(savedSongFile);
+                                audioPlayer.src = songFile.data;
+                                audioPlayer.currentTime = 0;
+                                audioPlayer.play().catch(e => {
+                                    console.error('循环播放失败:', e);
+                                });
+                            } catch (e) {
+                                console.error('解析循环播放数据时出错:', e);
+                            }
+                        }
+                    });
+                }
+            }
+
+            // 保存音乐数据
+            function saveMusicData(song, cover, songFile) {
+                if (song) {
+                    localStorage.setItem('currentSong', JSON.stringify(song));
+                }
+                if (cover) {
+                    localStorage.setItem('albumCover', cover);
+                }
+                if (songFile) {
+                    localStorage.setItem('currentSongFile', JSON.stringify(songFile));
+                }
+                initMusicPlayer();
+            }
+
+            // 更换专辑封面
+            function changeAlbumCover() {
+                // 创建文件输入元素
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = 'image/*';
+                input.onchange = function(event) {
+                    const file = event.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            // 更新封面显示，确保正确比例
+                            document.getElementById('albumCover').innerHTML = `<img src="${e.target.result}" alt="专辑封面" style="width:100%;height:100%;object-fit:cover;object-position:center;">`;
+                            // 保存到本地存储
+                            localStorage.setItem('albumCover', e.target.result);
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                };
+                input.click();
+            }
+
+            // 更换头像
+            function changeAvatar() {
+                // 创建文件输入元素
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = 'image/*';
+                input.onchange = function(event) {
+                    const file = event.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            // 更新头像显示，确保正确比例
+                            document.getElementById('profileAvatar').innerHTML = `<img src="${e.target.result}" alt="头像" style="width:100%;height:100%;object-fit:cover;object-position:center;">`;
+                            // 保存到本地存储
+                            localStorage.setItem('profileAvatar', e.target.result);
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                };
+                input.click();
+            }
+
+            // 更换昵称
+            function changeNickname() {
+                // 创建自定义弹窗
+                showCustomPrompt('请输入您的昵称：', document.getElementById('profileNickname').textContent)
+                    .then(nickname => {
+                        if (nickname !== null) {
+                            document.getElementById('profileNickname').textContent = nickname;
+                            localStorage.setItem('profileNickname', nickname);
+                        }
+                    });
+            }
+
+            // 更换个性签名
+            function changeSignature() {
+                // 创建自定义弹窗
+                showCustomPrompt('请输入您的个性签名：', document.getElementById('profileSignature').textContent)
+                    .then(signature => {
+                        if (signature !== null) {
+                            document.getElementById('profileSignature').textContent = signature;
+                            localStorage.setItem('profileSignature', signature);
+                        }
+                    });
+            }
+
+            // 显示自定义提示弹窗（替代浏览器prompt）
+            function showCustomPrompt(message, defaultValue) {
+                return new Promise((resolve) => {
+                    // 创建弹窗元素
+                    const modal = document.createElement('div');
+                    modal.className = 'modal custom-prompt-modal active';
+                    modal.style.zIndex = '2000';
+                    
+                    modal.innerHTML = `
+                        <div class="modal-content" style="max-width: 300px;">
+                            <div class="modal-header">
+                                <div class="modal-title">提示</div>
+                                <button class="close-btn" onclick="this.closest('.modal').remove()">&times;</button>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">${message}</label>
+                                <input type="text" class="form-input" id="customPromptInput" value="${defaultValue || ''}">
+                            </div>
+                            <div style="display: flex; gap: 10px;">
+                                <button class="submit-btn" style="flex: 1;" id="confirmBtn">确定</button>
+                                <button class="submit-btn" style="flex: 1; background: #666;" id="cancelBtn">取消</button>
+                            </div>
+                        </div>
+                    `;
+                    
+                    // 添加到页面
+                    document.body.appendChild(modal);
+                    
+                    // 设置按钮事件处理程序
+                    document.getElementById('confirmBtn').onclick = function() {
+                        const value = document.getElementById('customPromptInput').value;
+                        document.querySelector('.custom-prompt-modal').remove();
+                        resolve(value);
+                    };
+                    
+                    document.getElementById('cancelBtn').onclick = function() {
+                        document.querySelector('.custom-prompt-modal').remove();
+                        resolve(null);
+                    };
+                    
+                    // 聚焦到输入框
+                    setTimeout(() => {
+                        document.getElementById('customPromptInput').focus();
+                    }, 100);
+                });
+            }
+
+            // 显示页面内提示信息（替代浏览器alert）
+            function showPageAlert(message) {
+                // 创建提示元素
+                const alertElement = document.createElement('div');
+                alertElement.style.cssText = `
+                    position: fixed;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    background: rgba(0, 0, 0, 0.8);
+                    color: white;
+                    padding: 20px;
+                    border-radius: 10px;
+                    z-index: 2000;
+                    text-align: center;
+                    backdrop-filter: blur(10px);
+                    border: 1px solid rgba(255, 255, 255, 0.1);
+                    max-width: 80%;
+                `;
+                alertElement.textContent = message;
+                
+                // 添加到页面
+                document.body.appendChild(alertElement);
+                
+                // 3秒后自动移除
+                setTimeout(() => {
+                    if (alertElement.parentNode) {
+                        alertElement.parentNode.removeChild(alertElement);
+                    }
+                }, 3000);
+            }
+
+            // 更换照片展示
+            function changePhotoDisplay() {
+                // 创建文件输入元素
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = 'image/*';
+                input.onchange = function(event) {
+                    const file = event.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            // 更新照片显示
+                            document.getElementById('photoDisplay').innerHTML = `<img src="${e.target.result}" alt="展示照片" style="width:100%;height:100%;object-fit:cover;object-position:center;border-radius:10px;">`;
+                            // 保存到本地存储
+                            localStorage.setItem('displayPhoto', e.target.result);
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                };
+                input.click();
+            }
+
+            // 加载保存的照片
+            function loadDisplayPhoto() {
+                const savedPhoto = localStorage.getItem('displayPhoto');
+                if (savedPhoto) {
+                    document.getElementById('photoDisplay').innerHTML = `<img src="${savedPhoto}" alt="展示照片" style="width:100%;height:100%;object-fit:cover;object-position:center;border-radius:10px;">`;
+                }
+            }
+
+            // 打开天气选择弹窗
+            function openWeatherModal() {
+                document.getElementById('weatherModal').classList.add('active');
+            }
+
+            // 关闭天气选择弹窗
+            function closeWeatherModal() {
+                document.getElementById('weatherModal').classList.remove('active');
+            }
+
+            // 选择城市
+            function selectCity(city) {
+                document.getElementById('cityInput').value = city;
+            }
+
+            // 根据城市更新天气
+            function updateWeatherByCity() {
+                const city = document.getElementById('cityInput').value.trim();
+                if (city) {
+                    // 更新城市名称
+                    document.getElementById('weatherLocation').textContent = city;
+                    
+                    // 保存城市到本地存储
+                    localStorage.setItem('weatherCity', city);
+                    
+                    // 获取真实天气数据
+                    getRealWeatherData(city);
+                    
+                    // 关闭弹窗
+                    closeWeatherModal();
+                } else {
+                    alert('请输入城市名称');
+                }
+            }
+
+            // 获取真实天气数据
+            function getRealWeatherData(city) {
+                // 使用 OpenWeatherMap API 的免费端点 (需要网络访问)
+                // 注意：这需要设备能访问互联网
+                const url = `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&appid=4a48e1e1428fd83889074671fbf259d9&units=metric&lang=zh_cn`;
+                
+                fetch(url)
+                    .then(response => {
+                        if (!response.ok) {
+                            // 如果API调用失败，使用备用方案
+                            throw new Error('天气API调用失败');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        // 处理天气数据
+                        processWeatherData(data);
+                    })
+                    .catch(error => {
+                        console.error('获取天气数据时出错:', error);
+                        // 如果API调用失败，使用模拟数据
+                        simulateWeatherData(city);
+                    });
+            }
+
+            // 处理真实的天气数据
+            function processWeatherData(data) {
+                try {
+                    // 从OpenWeatherMap API解析数据
+                    const weatherMain = data.weather[0].main;
+                    const weatherDesc = data.weather[0].description;
+                    const temp = Math.round(data.main.temp);
+                    
+                    // 确定天气类型
+                    let weatherType = 'sunny';
+                    if (weatherMain === 'Rain' || weatherDesc.includes('雨')) {
+                        weatherType = 'rainy';
+                    } else if (weatherMain === 'Snow' || weatherDesc.includes('雪')) {
+                        weatherType = 'snowy';
+                    } else if (weatherMain === 'Clouds' || weatherDesc.includes('云') || weatherDesc.includes('阴')) {
+                        weatherType = 'cloudy';
+                    } else if (weatherMain === 'Thunderstorm' || weatherDesc.includes('雷')) {
+                        weatherType = 'rainy';
+                    } else if (weatherMain === 'Drizzle' || weatherDesc.includes('毛毛雨')) {
+                        weatherType = 'rainy';
+                    } else if (weatherMain === 'Clear') {
+                        weatherType = 'sunny';
+                    }
+                    
+                    // 提取天气信息
+                    const weather = {
+                        type: weatherType,
+                        description: weatherDesc,
+                        temp: temp,
+                        timestamp: new Date().toISOString()
+                    };
+                    
+                    // 更新天气显示
+                    updateWeatherDisplay(weather);
+                    
+                    // 保存天气数据到本地存储
+                    localStorage.setItem('weatherData', JSON.stringify(weather));
+                } catch (e) {
+                    console.error('处理天气数据时出错:', e);
+                    // 如果解析失败，使用模拟数据
+                    const city = document.getElementById('weatherLocation').textContent || '北京';
+                    simulateWeatherData(city);
+                }
+            }
+
+            // 模拟天气数据获取（作为备选方案）
+            function simulateWeatherData(city) {
+                // 模拟不同的天气情况
+                const weatherConditions = [
+                    { type: 'sunny', description: '晴天', temp: Math.floor(Math.random() * 10) + 22 },
+                    { type: 'cloudy', description: '多云', temp: Math.floor(Math.random() * 10) + 15 },
+                    { type: 'rainy', description: '小雨', temp: Math.floor(Math.random() * 5) + 10 },
+                    { type: 'snowy', description: '小雪', temp: Math.floor(Math.random() * 5) + -2 },
+                    { type: 'partlyCloudy', description: '晴转多云', temp: Math.floor(Math.random() * 10) + 18 },
+                    { type: 'sleet', description: '雨夹雪', temp: Math.floor(Math.random() * 3) + 1 }
+                ];
+                
+                // 随机选择一个天气条件
+                const weather = weatherConditions[Math.floor(Math.random() * weatherConditions.length)];
+                
+                // 更新天气显示
+                updateWeatherDisplay(weather);
+                
+                // 保存天气数据到本地存储
+                localStorage.setItem('weatherData', JSON.stringify({
+                    type: weather.type,
+                    temp: weather.temp,
+                    description: weather.description,
+                    timestamp: new Date().toISOString()
+                }));
+            }
+
+            // 更新天气显示
+            function updateWeatherDisplay(weather) {
+                // 隐藏所有天气图标
+                document.getElementById('sunnyIcon').style.display = 'none';
+                document.getElementById('rainyIcon').style.display = 'none';
+                document.getElementById('cloudyIcon').style.display = 'none';
+                document.getElementById('snowyIcon').style.display = 'none';
+                document.getElementById('partlyCloudyIcon').style.display = 'none';
+                document.getElementById('sleetIcon').style.display = 'none';
+                document.getElementById('defaultWeatherIcon').style.display = 'none';
+                
+                // 根据天气类型显示对应图标
+                switch(weather.type) {
+                    case 'sunny':
+                        document.getElementById('sunnyIcon').style.display = 'block';
+                        break;
+                    case 'rainy':
+                        document.getElementById('rainyIcon').style.display = 'block';
+                        break;
+                    case 'cloudy':
+                        document.getElementById('cloudyIcon').style.display = 'block';
+                        break;
+                    case 'snowy':
+                        document.getElementById('snowyIcon').style.display = 'block';
+                        break;
+                    case 'partlyCloudy':
+                        document.getElementById('partlyCloudyIcon').style.display = 'block';
+                        break;
+                    case 'sleet':
+                        document.getElementById('sleetIcon').style.display = 'block';
+                        break;
+                    default:
+                        document.getElementById('defaultWeatherIcon').style.display = 'block';
+                }
+                
+                // 更新温度和描述
+                document.getElementById('weatherTemp').textContent = `${weather.temp}°C`;
+                document.getElementById('weatherDescription').textContent = weather.description;
+                
+                // 保存天气数据到本地存储
+                localStorage.setItem('weatherData', JSON.stringify({
+                    type: weather.type,
+                    temp: weather.temp,
+                    description: weather.description,
+                    timestamp: new Date().toISOString()
+                }));
+            }
+
+            // 加载保存的天气数据
+            function loadWeatherData() {
+                const savedCity = localStorage.getItem('weatherCity');
+                const savedWeatherData = localStorage.getItem('weatherData');
+                
+                if (savedCity) {
+                    document.getElementById('weatherLocation').textContent = savedCity;
+                }
+                
+                if (savedWeatherData) {
+                    try {
+                        const weatherData = JSON.parse(savedWeatherData);
+                        // 检查数据是否过期（超过1小时）
+                        const now = new Date();
+                        const savedTime = new Date(weatherData.timestamp);
+                        const timeDiff = now - savedTime;
+                        
+                        if (timeDiff < 3600000) { // 1小时内
+                            updateWeatherDisplay(weatherData);
+                        } else {
+                            // 数据过期，重新获取
+                            if (savedCity) {
+                                getRealWeatherData(savedCity);
+                            } else {
+                                simulateWeatherData('北京');
+                            }
+                        }
+                    } catch (e) {
+                        console.error('解析天气数据时出错:', e);
+                    }
+                }
+            }
+
+            // 天气状态控制函数（保持向后兼容）
+            function setWeatherState(state) {
+                // 隐藏所有天气图标
+                document.getElementById('sunnyIcon').style.display = 'none';
+                document.getElementById('rainyIcon').style.display = 'none';
+                document.getElementById('cloudyIcon').style.display = 'none';
+                document.getElementById('snowyIcon').style.display = 'none';
+                document.getElementById('partlyCloudyIcon').style.display = 'none';
+                document.getElementById('sleetIcon').style.display = 'none';
+                document.getElementById('defaultWeatherIcon').style.display = 'none';
+                
+                // 根据状态显示对应图标
+                switch(state) {
+                    case 'sunny':
+                        document.getElementById('sunnyIcon').style.display = 'block';
+                        break;
+                    case 'rainy':
+                        document.getElementById('rainyIcon').style.display = 'block';
+                        break;
+                    case 'cloudy':
+                        document.getElementById('cloudyIcon').style.display = 'block';
+                        break;
+                    case 'snowy':
+                        document.getElementById('snowyIcon').style.display = 'block';
+                        break;
+                    case 'partlyCloudy':
+                        document.getElementById('partlyCloudyIcon').style.display = 'block';
+                        break;
+                    case 'sleet':
+                        document.getElementById('sleetIcon').style.display = 'block';
+                        break;
+                    default:
+                        document.getElementById('defaultWeatherIcon').style.display = 'block';
+                }
+                
+                // 保存当前天气状态到本地存储
+                localStorage.setItem('weatherState', state);
+            }
+
+            // 切换天气状态（保持向后兼容）
+            function toggleWeatherState() {
+                // 不再使用旧的切换逻辑，而是打开天气选择弹窗
+                openWeatherModal();
+            }
+        </script>
+    </div>
+</body>
+</html>

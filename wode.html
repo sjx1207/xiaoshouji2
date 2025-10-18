@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+                'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+                sans-serif;
+            background: linear-gradient(135deg, #1a1a1a, #000);
+            color: #fff;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .phone {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* 状态栏样式 */
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 15px;
+            height: 44px;
+            background-color: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            color: white;
+            font-size: 16px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+
+        .status-left, .status-center, .status-right {
+            display: flex;
+            align-items: center;
+        }
+
+        .status-left {
+            flex: 1;
+        }
+
+        .status-center {
+            flex: 2;
+            justify-content: center;
+        }
+
+        .status-right {
+            flex: 1;
+            justify-content: flex-end;
+        }
+
+        .status-icon {
+            width: 18px;
+            height: 18px;
+            margin: 0 5px;
+        }
+
+        /* 头部导航栏 */
+        .header {
+            display: flex;
+            align-items: center;
+            padding: 0 15px;
+            height: 50px;
+            background-color: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            position: fixed;
+            top: 44px;
+            left: 0;
+            right: 0;
+            z-index: 999;
+        }
+
+        .back-btn {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .back-btn svg {
+            width: 18px;
+            height: 18px;
+            fill: white;
+        }
+
+        .header-title {
+            flex: 1;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        /* 内容区域 */
+        .content {
+            flex: 1;
+            padding: 110px 15px 20px 15px;
+            overflow-y: auto;
+        }
+
+        /* 名片卡片 */
+        .profile-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .profile-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 200px; /* 增加背景高度 */
+            background: rgba(255, 255, 255, 0.1); /* 使用透明背景 */
+            border-radius: 15px 15px 0 0;
+            background-size: cover;
+            background-position: center;
+            z-index: 1; /* 确保背景在内容下方 */
+        }
+
+        .change-bg-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 3; /* 确保按钮在最上层 */
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .change-bg-btn svg {
+            width: 16px;
+            height: 16px;
+            fill: white;
+        }
+
+        .profile-content {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 120px; /* 调整内容顶部内边距 */
+            z-index: 2; /* 确保内容在背景上方 */
+        }
+
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            border: 3px solid white;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+        }
+
+        .profile-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+
+        .profile-name {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 5px;
+            cursor: pointer;
+            padding: 5px 10px;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        
+        .profile-name:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .profile-signature {
+            font-size: 14px;
+            color: #aaa;
+            text-align: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+            padding: 5px 10px;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        
+        .profile-signature:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .profile-info {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 15px;
+        }
+
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+            padding: 10px;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        
+        .info-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .info-item:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            color: #aaa;
+        }
+
+        .info-value {
+            font-weight: bold;
+        }
+
+        /* 模态框 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: rgba(30, 30, 30, 0.9);
+            border-radius: 20px;
+            padding: 20px;
+            width: 80%;
+            max-width: 300px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 10px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 14px;
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .modal-actions button {
+            padding: 10px 20px;
+            border-radius: 10px;
+            border: none;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .cancel-btn {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .save-btn {
+            background: #007AFF;
+            color: white;
+        }
+
+        /* 底部导航栏 */
+        .bottom-nav {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            max-width: 300px;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 30px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 0 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 33.33%;
+            height: 100%;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .nav-item.active {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .nav-icon {
+            width: 24px;
+            height: 24px;
+        }
+    </style>
+</head>
+<body>
+    <div class="phone">
+        <!-- 状态栏 -->
+        <div class="status-bar">
+            <div class="status-left">
+                <span class="time" id="current-time">00:00</span>
+            </div>
+            <div class="status-center">
+                <!-- 中间留空 -->
+            </div>
+            <div class="status-right">
+                <!-- 信号图标 -->
+                <svg class="status-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M5 17L5 12" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M12 17L12 7" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M19 17L19 2" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                <!-- 电池图标 -->
+                <svg class="status-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="2" y="7" width="16" height="10" rx="3" stroke="white" stroke-width="2"/>
+                    <path d="M20 10V14" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                    <rect x="4" y="9" width="12" height="6" rx="2" fill="white"/>
+                </svg>
+            </div>
+        </div>
+
+        <!-- 头部导航栏 -->
+        <div class="header">
+            <div class="back-btn" onclick="goBack()">
+                <svg viewBox="0 0 24 24">
+                    <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+                </svg>
+            </div>
+            <div class="header-title">我的</div>
+            <div style="width: 30px;"></div> <!-- 占位符，保持标题居中 -->
+        </div>
+
+        <!-- 内容区域 -->
+        <div class="content">
+            <!-- 名片卡片 -->
+            <div class="profile-card">
+                <div class="profile-background">
+                    <div class="change-bg-btn" onclick="changeBackground()">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 21.35L10.55 20.03C5.4 15.36 2 12.28 2 8.5C2 5.42 4.42 3 7.5 3C9.24 3 10.91 3.81 12 5.09C13.09 3.81 14.76 3 16.5 3C19.58 3 22 5.42 22 8.5C22 12.28 18.6 15.36 13.45 20.04L12 21.35Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                </div>
+                <div class="profile-content">
+                    <div class="profile-avatar" onclick="changeAvatar()">
+                        <span>👤</span>
+                    </div>
+                    <div class="profile-name" onclick="showEditModal('name')">用户名</div>
+                    <div class="profile-signature" onclick="showEditModal('signature')">个性签名，展示个人特色</div>
+                    <div class="profile-info">
+                        <div class="info-item" onclick="showEditModal('region')">
+                            <span class="info-label">地区</span>
+                            <span class="info-value">北京</span>
+                        </div>
+                        <div class="info-item" onclick="showEditModal('gender')">
+                            <span class="info-label">性别</span>
+                            <span class="info-value">男</span>
+                        </div>
+                        <div class="info-item" onclick="showEditModal('birthday')">
+                            <span class="info-label">生日</span>
+                            <span class="info-value">1990-01-01</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 编辑模态框 -->
+        <div class="modal" id="editModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="modal-title" id="modalTitle">编辑信息</div>
+                    <button class="close-btn" onclick="closeModal()">&times;</button>
+                </div>
+                <div class="form-group">
+                    <input type="text" class="form-input" id="editValue" placeholder="请输入内容">
+                </div>
+                <div class="modal-actions">
+                    <button class="cancel-btn" onclick="closeModal()">取消</button>
+                    <button class="save-btn" onclick="saveEdit()">保存</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 底部导航栏 -->
+        <div class="bottom-nav">
+            <div class="nav-item" onclick="switchTab('chat')">
+                <div class="nav-icon">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M8 12H8.01" stroke="white" stroke-width="3" stroke-linecap="round"/>
+                        <path d="M12 12H12.01" stroke="white" stroke-width="3" stroke-linecap="round"/>
+                        <path d="M16 12H16.01" stroke="white" stroke-width="3" stroke-linecap="round"/>
+                    </svg>
+                </div>
+            </div>
+            <div class="nav-item" onclick="switchTab('dynamic')">
+                <div class="nav-icon">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M2 12C2 12 5 3 12 3C19 3 22 12 22 12C22 12 19 21 12 21C5 21 2 12 2 12Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M12 15C13.6569 15 15 13.6569 15 12C15 10.3431 13.6569 9 12 9C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+            </div>
+            <div class="nav-item active" onclick="switchTab('profile')">
+                <div class="nav-icon">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 12C14.2091 12 16 10.2091 16 8C16 5.79086 14.2091 4 12 4C9.79086 4 8 5.79086 8 8C8 10.2091 9.79086 12 12 12Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M12 14C8.13401 14 5 17.134 5 21H19C19 17.134 15.866 14 12 14Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            // 当前正在编辑的字段
+            let currentEditField = '';
+            
+            // 更新时间
+            function updateTime() {
+                const now = new Date();
+                const timeString = now.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+                document.getElementById('current-time').textContent = timeString;
+            }
+
+            // 每秒更新一次时间
+            setInterval(updateTime, 1000);
+            updateTime(); // 初始化时间
+            
+            // 页面加载时初始化用户信息
+            window.onload = function() {
+                loadUserInfo();
+            };
+
+            // 更改背景图片
+            function changeBackground() {
+                const fileInput = document.createElement('input');
+                fileInput.type = 'file';
+                fileInput.accept = 'image/*';
+                fileInput.style.display = 'none';
+                
+                fileInput.onchange = function(e) {
+                    const file = e.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = function(event) {
+                            // 更新背景图片
+                            document.querySelector('.profile-background').style.background = `url("${event.target.result}") center/cover no-repeat`;
+                            // 保存用户信息
+                            saveUserInfo();
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                };
+                
+                document.body.appendChild(fileInput);
+                fileInput.click();
+                document.body.removeChild(fileInput);
+            }
+            
+            // 更改头像
+            function changeAvatar() {
+                const fileInput = document.createElement('input');
+                fileInput.type = 'file';
+                fileInput.accept = 'image/*';
+                fileInput.style.display = 'none';
+                
+                fileInput.onchange = function(e) {
+                    const file = e.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = function(event) {
+                            // 更新头像
+                            document.querySelector('.profile-avatar').innerHTML = `<img src="${event.target.result}" alt="头像">`;
+                            // 保存用户信息
+                            saveUserInfo();
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                };
+                
+                document.body.appendChild(fileInput);
+                fileInput.click();
+                document.body.removeChild(fileInput);
+            }
+
+            // 加载用户信息
+            function loadUserInfo() {
+                const userInfo = JSON.parse(localStorage.getItem('userInfo')) || {
+                    name: '用户名',
+                    signature: '个性签名，展示个人特色',
+                    region: '北京',
+                    gender: '男',
+                    birthday: '1990-01-01'
+                };
+                
+                document.querySelector('.profile-name').textContent = userInfo.name;
+                document.querySelector('.profile-signature').textContent = userInfo.signature;
+                document.querySelector('.info-item:nth-child(1) .info-value').textContent = userInfo.region;
+                document.querySelector('.info-item:nth-child(2) .info-value').textContent = userInfo.gender;
+                document.querySelector('.info-item:nth-child(3) .info-value').textContent = userInfo.birthday;
+                
+                // 恢复背景图片
+                if (userInfo.background) {
+                    document.querySelector('.profile-background').style.background = `url("${userInfo.background}") center/cover no-repeat`;
+                }
+                
+                // 恢复头像
+                if (userInfo.avatar) {
+                    document.querySelector('.profile-avatar').innerHTML = `<img src="${userInfo.avatar}" alt="头像">`;
+                }
+            }
+
+            // 保存用户信息到localStorage
+            function saveUserInfo() {
+                // 获取背景图片URL
+                let backgroundUrl = null;
+                const backgroundElement = document.querySelector('.profile-background');
+                if (backgroundElement && backgroundElement.style.background) {
+                    const bgStyle = backgroundElement.style.background;
+                    // 提取URL，处理可能的引号
+                    const urlMatch = bgStyle.match(/url\(["']?(.*?)["']?\)/);
+                    if (urlMatch && urlMatch[1]) {
+                        backgroundUrl = urlMatch[1];
+                    }
+                }
+                
+                const userInfo = {
+                    name: document.querySelector('.profile-name').textContent,
+                    signature: document.querySelector('.profile-signature').textContent,
+                    region: document.querySelector('.info-item:nth-child(1) .info-value').textContent,
+                    gender: document.querySelector('.info-item:nth-child(2) .info-value').textContent,
+                    birthday: document.querySelector('.info-item:nth-child(3) .info-value').textContent,
+                    background: backgroundUrl,
+                    avatar: document.querySelector('.profile-avatar img') ? 
+                        document.querySelector('.profile-avatar img').src : null
+                };
+                
+                localStorage.setItem('userInfo', JSON.stringify(userInfo));
+            }
+
+            // 返回聊天页面
+            function goBack() {
+                window.location.href = 'chat.html';
+            }
+
+            // 切换底部导航栏标签
+            function switchTab(tabName) {
+                if (tabName === 'chat') {
+                    window.location.href = 'chat.html';
+                } else if (tabName === 'dynamic') {
+                    window.location.href = 'dongtai.html';
+                } else if (tabName === 'friend') {
+                    window.location.href = 'friends.html';
+                }
+                // 个人标签保持当前页面
+            }
+            
+            // 显示编辑模态框
+            function showEditModal(field) {
+                currentEditField = field;
+                const modal = document.getElementById('editModal');
+                const input = document.getElementById('editValue');
+                const title = document.getElementById('modalTitle');
+                
+                // 根据字段设置标题和初始值
+                switch(field) {
+                    case 'name':
+                        title.textContent = '编辑昵称';
+                        input.placeholder = '请输入昵称';
+                        input.value = document.querySelector('.profile-name').textContent;
+                        break;
+                    case 'signature':
+                        title.textContent = '编辑个性签名';
+                        input.placeholder = '请输入个性签名';
+                        input.value = document.querySelector('.profile-signature').textContent;
+                        break;
+                    case 'region':
+                        title.textContent = '编辑地区';
+                        input.placeholder = '请输入地区';
+                        input.value = document.querySelector('.info-item:nth-child(1) .info-value').textContent;
+                        break;
+                    case 'gender':
+                        title.textContent = '编辑性别';
+                        input.placeholder = '请输入性别';
+                        input.value = document.querySelector('.info-item:nth-child(2) .info-value').textContent;
+                        break;
+                    case 'birthday':
+                        title.textContent = '编辑生日';
+                        input.placeholder = '请输入生日';
+                        input.value = document.querySelector('.info-item:nth-child(3) .info-value').textContent;
+                        break;
+                }
+                
+                modal.style.display = 'flex';
+            }
+            
+            // 关闭模态框
+            function closeModal() {
+                document.getElementById('editModal').style.display = 'none';
+            }
+            
+            // 保存编辑内容
+            function saveEdit() {
+                const inputValue = document.getElementById('editValue').value;
+                
+                if (inputValue.trim() === '') {
+                    alert('请输入内容');
+                    return;
+                }
+                
+                // 根据字段更新对应的内容
+                switch(currentEditField) {
+                    case 'name':
+                        document.querySelector('.profile-name').textContent = inputValue;
+                        break;
+                    case 'signature':
+                        document.querySelector('.profile-signature').textContent = inputValue;
+                        break;
+                    case 'region':
+                        document.querySelector('.info-item:nth-child(1) .info-value').textContent = inputValue;
+                        break;
+                    case 'gender':
+                        document.querySelector('.info-item:nth-child(2) .info-value').textContent = inputValue;
+                        break;
+                    case 'birthday':
+                        document.querySelector('.info-item:nth-child(3) .info-value').textContent = inputValue;
+                        break;
+                }
+                
+                // 保存到localStorage
+                saveUserInfo();
+                
+                // 关闭模态框
+                closeModal();
+            }
+        </script>
+    </div>
+</body>
+</html>

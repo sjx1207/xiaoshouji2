@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>说明书</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+                'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+                sans-serif;
+            background: linear-gradient(135deg, #1a1a1a, #000);
+            color: #fff;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .phone {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* 状态栏样式 */
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 15px;
+            height: 44px;
+            background-color: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            color: white;
+            font-size: 16px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+
+        .status-left, .status-center, .status-right {
+            display: flex;
+            align-items: center;
+        }
+
+        .status-left {
+            flex: 1;
+        }
+
+        .status-center {
+            flex: 2;
+            justify-content: center;
+        }
+
+        .status-right {
+            flex: 1;
+            justify-content: flex-end;
+        }
+
+        .status-icon {
+            width: 18px;
+            height: 18px;
+            margin: 0 5px;
+        }
+
+        /* 头部导航栏 */
+        .header {
+            display: flex;
+            align-items: center;
+            padding: 0 15px;
+            height: 50px;
+            background-color: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            position: fixed;
+            top: 44px;
+            left: 0;
+            right: 0;
+            z-index: 999;
+        }
+
+        /* 返回按钮 */
+        .back-btn {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .back-btn svg {
+            width: 18px;
+            height: 18px;
+            fill: white;
+        }
+
+        .header-title {
+            flex: 1;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        /* 主内容区域 */
+        .content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 110px 20px 20px;
+            overflow-y: auto;
+        }
+
+        /* 功能分类标题 */
+        .section-title {
+            font-size: 20px;
+            font-weight: bold;
+            margin: 20px 0 15px 0;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        /* 功能卡片容器 */
+        .features-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        /* 功能卡片 */
+        .feature-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-3px);
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .feature-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .feature-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: rgba(0, 122, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+        }
+
+        .feature-icon svg {
+            width: 20px;
+            height: 20px;
+            fill: #007AFF;
+        }
+
+        .feature-name {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .feature-desc {
+            font-size: 14px;
+            color: #aaa;
+            line-height: 1.5;
+        }
+
+        /* 详情弹窗 */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: rgba(30, 30, 30, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 25px;
+            width: 90%;
+            max-width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+        }
+
+        .modal.active .modal-content {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .close-btn {
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        .close-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .modal-body {
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        .modal-body h3 {
+            font-size: 18px;
+            margin: 20px 0 10px 0;
+            color: #007AFF;
+        }
+
+        .modal-body p {
+            margin-bottom: 15px;
+            color: #ddd;
+        }
+
+        .modal-body ul {
+            padding-left: 20px;
+            margin-bottom: 15px;
+        }
+
+        .modal-body li {
+            margin-bottom: 8px;
+        }
+
+        .highlight {
+            background: rgba(0, 122, 255, 0.2);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="phone">
+        <!-- 状态栏 -->
+        <div class="status-bar">
+            <div class="status-left">
+                <span class="time" id="current-time">00:00</span>
+            </div>
+            <div class="status-center">
+                <!-- 中间留空 -->
+            </div>
+            <div class="status-right">
+                <!-- 信号图标 -->
+                <svg class="status-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M5 17L5 12" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M12 17L12 7" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M19 17L19 2" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                <!-- 电池图标 -->
+                <svg class="status-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="2" y="7" width="16" height="10" rx="3" stroke="white" stroke-width="2"/>
+                    <path d="M20 10V14" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                    <rect x="4" y="9" width="12" height="6" rx="2" fill="white"/>
+                </svg>
+            </div>
+        </div>
+
+        <!-- 头部导航栏 -->
+        <div class="header">
+            <div class="back-btn" onclick="window.location.href='zhupingmu.html'">
+                <svg viewBox="0 0 24 24">
+                    <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+                </svg>
+            </div>
+            <div class="header-title">说明书</div>
+            <div style="width: 30px;"></div> <!-- 占位符，保持标题居中 -->
+        </div>
+
+        <!-- 主内容 -->
+        <div class="content">
+            <div class="section-title">主屏幕功能</div>
+            <div class="features-container" id="homeFeatures">
+                <!-- 主屏幕功能卡片将在这里动态生成 -->
+            </div>
+
+            <div class="section-title">应用功能</div>
+            <div class="features-container" id="appFeatures">
+                <!-- 应用功能卡片将在这里动态生成 -->
+            </div>
+
+            <div class="section-title">系统功能</div>
+            <div class="features-container" id="systemFeatures">
+                <!-- 系统功能卡片将在这里动态生成 -->
+            </div>
+        </div>
+
+        <!-- 详情弹窗 -->
+        <div class="modal" id="detailModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="modal-title" id="modalTitle">功能详情</div>
+                    <button class="close-btn" onclick="closeModal()">&times;</button>
+                </div>
+                <div class="modal-body" id="modalBody">
+                    <!-- 详情内容将在这里动态生成 -->
+                </div>
+            </div>
+        </div>
+
+        <script>
+            // 更新时间
+            function updateTime() {
+                const now = new Date();
+                const timeString = now.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+                document.getElementById('current-time').textContent = timeString;
+            }
+
+            // 每秒更新一次时间
+            setInterval(updateTime, 1000);
+            updateTime(); // 初始化时间
+
+            // 功能数据
+            const features = [
+                {
+                    id: 'home-1',
+                    category: 'home',
+                    name: '主屏幕布局',
+                    desc: '主屏幕采用网格布局，包含应用图标和Dock栏',
+                    icon: '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 4H10V10H4V4Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M14 4H20V10H14V4Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 14H10V20H4V14Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M14 14H20V20H14V14Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+                    detail: `
+                        <h3>主屏幕布局说明</h3>
+                        <p>主屏幕采用4x4的网格布局，可容纳16个应用图标。屏幕底部设有Dock栏，包含4个常用应用。</p>
+                        
+                        <h3>主要组件</h3>
+                        <ul>
+                            <li><span class="highlight">状态栏</span>：显示时间、信号和电池信息</li>
+                            <li><span class="highlight">主屏幕区域</span>：显示应用图标，支持滑动浏览</li>
+                            <li><span class="highlight">Dock栏</span>：固定显示常用应用</li>
+                            <li><span class="highlight">小组件</span>：包括名片、天气、照片展示和音乐播放器</li>
+                        </ul>
+                        
+                        <h3>主屏幕应用</h3>
+                        <ul>
+                            <li><span class="highlight">壁纸</span>：设置和管理设备壁纸</li>
+                            <li><span class="highlight">设置</span>：管理系统设置和个人资料</li>
+                            <li><span class="highlight">聊天</span>：与虚拟角色进行实时对话</li>
+                        </ul>
+                        
+                        <h3>操作方式</h3>
+                        <ul>
+                            <li>点击应用图标可打开对应应用</li>
+                            <li>长按应用图标可进入编辑模式</li>
+                            <li>上下滑动可浏览不同页面内容</li>
+                        </ul>
+                    `
+                },
+                {
+                    id: 'home-2',
+                    category: 'home',
+                    name: '名片小组件',
+                    desc: '显示用户个人信息，支持点击编辑',
+                    icon: '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="8" r="4" stroke="white" stroke-width="2"/><path d="M4 20C4 15.5817 7.58172 12 12 12C16.4183 12 20 15.5817 20 20" stroke="white" stroke-width="2"/></svg>',
+                    detail: `
+                        <h3>名片小组件说明</h3>
+                        <p>名片小组件位于主屏幕左上角，显示用户的基本信息。</p>
+                        
+                        <h3>包含信息</h3>
+                        <ul>
+                            <li><span class="highlight">头像</span>：用户头像，点击可更换</li>
+                            <li><span class="highlight">昵称</span>：用户昵称，点击可编辑</li>
+                            <li><span class="highlight">个性签名</span>：个人简介，点击可编辑</li>
+                        </ul>
+                        
+                        <h3>操作方式</h3>
+                        <ul>
+                            <li>点击头像区域可更换头像图片</li>
+                            <li>点击昵称可修改用户名</li>
+                            <li>点击个性签名可更新个人简介</li>
+                        </ul>
+                    `
+                },
+                {
+                    id: 'home-3',
+                    category: 'home',
+                    name: '天气小组件',
+                    desc: '显示当前天气信息和城市',
+                    icon: '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 15C13.6569 15 15 13.6569 15 12C15 10.3431 13.6569 9 12 9C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15Z" stroke="white" stroke-width="2"/><path d="M19.4 15C19.2667 15.2667 18.8 16.2 17.8 17.2C16.8 18.2 15.8667 18.6667 15.6 18.8" stroke="white" stroke-width="2" stroke-linecap="round"/><path d="M12 22C14.5 20.5 16 18.5 16 16C16 13.5 14.5 11.5 12 10C9.5 11.5 8 13.5 8 16C8 18.5 9.5 20.5 12 22Z" stroke="white" stroke-width="2"/></svg>',
+                    detail: `
+                        <h3>天气小组件说明</h3>
+                        <p>天气小组件显示当前城市的天气状况和温度信息。</p>
+                        
+                        <h3>显示信息</h3>
+                        <ul>
+                            <li><span class="highlight">城市名称</span>：当前设置的城市</li>
+                            <li><span class="highlight">天气图标</span>：当前天气状况的可视化表示</li>
+                            <li><span class="highlight">温度</span>：当前温度值</li>
+                            <li><span class="highlight">天气描述</span>：文字描述天气状况</li>
+                            <li><span class="highlight">日期信息</span>：当前星期和日期</li>
+                        </ul>
+                        
+                        <h3>操作方式</h3>
+                        <ul>
+                            <li>点击天气组件可切换城市</li>
+                            <li>支持设置多个城市并快速切换</li>
+                        </ul>
+                    `
+                },
+                {
+                    id: 'home-4',
+                    category: 'home',
+                    name: '照片展示组件',
+                    desc: '展示用户选择的照片',
+                    icon: '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 16L9 11L13 15L20 8" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><rect x="3" y="3" width="18" height="18" rx="3" stroke="white" stroke-width="2"/></svg>',
+                    detail: `
+                        <h3>照片展示组件说明</h3>
+                        <p>照片展示组件位于主屏幕右上角，用于展示用户选择的照片。</p>
+                        
+                        <h3>主要功能</h3>
+                        <ul>
+                            <li><span class="highlight">照片展示</span>：展示用户选择的图片</li>
+                            <li><span class="highlight">点击更换</span>：点击组件可更换展示的照片</li>
+                        </ul>
+                        
+                        <h3>操作方式</h3>
+                        <ul>
+                            <li>点击照片展示区域可选择新照片</li>
+                            <li>支持常见图片格式（JPG、PNG等）</li>
+                        </ul>
+                    `
+                },
+                {
+                    id: 'home-5',
+                    category: 'home',
+                    name: '音乐播放器',
+                    desc: '播放音乐并显示专辑封面',
+                    icon: '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 3V12L19 5V19L12 12V21" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+                    detail: `
+                        <h3>音乐播放器说明</h3>
+                        <p>音乐播放器小组件位于主屏幕左侧中部，支持播放本地音乐文件。</p>
+                        
+                        <h3>主要功能</h3>
+                        <ul>
+                            <li><span class="highlight">音乐播放</span>：播放本地MP3格式音乐文件</li>
+                            <li><span class="highlight">专辑封面</span>：显示音乐专辑封面，支持自定义</li>
+                            <li><span class="highlight">播放控制</span>：支持播放、暂停、上一首、下一首</li>
+                            <li><span class="highlight">收藏功能</span>：可收藏喜欢的歌曲</li>
+                        </ul>
+                        
+                        <h3>操作方式</h3>
+                        <ul>
+                            <li>点击歌曲名称可设置歌曲信息</li>
+                            <li>点击专辑封面可更换封面图片</li>
+                            <li>使用播放控制按钮控制音乐播放</li>
+                            <li>点击心形图标可收藏/取消收藏歌曲</li>
+                        </ul>
+                    `
+                },
+                {
+                    id: 'app-1',
+                    category: 'app',
+                    name: '角色书应用',
+                    desc: '创建和管理虚拟角色',
+                    icon: '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 3C16.9706 3 21 7.02944 21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3Z" stroke="white" stroke-width="2"/><path d="M12 7V12L15 15" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>',
+                    detail: `
+                        <h3>角色书应用说明</h3>
+                        <p>角色书应用用于创建和管理虚拟角色，可用于聊天或其他互动场景。</p>
+                        
+                        <h3>主要功能</h3>
+                        <ul>
+                            <li><span class="highlight">添加角色</span>：创建新的虚拟角色，设置名称、描述和头像</li>
+                            <li><span class="highlight">角色管理</span>：查看、编辑和删除已创建的角色</li>
+                            <li><span class="highlight">角色详情</span>：查看角色的详细信息</li>
+                        </ul>
+                        
+                        <h3>操作方式</h3>
+                        <ul>
+                            <li>点击"+"按钮添加新角色</li>
+                            <li>点击角色卡片查看详细信息</li>
+                            <li>长按角色卡片可删除角色</li>
+                        </ul>
+                    `
+                },
+                {
+                    id: 'app-2',
+                    category: 'app',
+                    name: '世界书应用',
+                    desc: '创建和管理虚拟世界',
+                    icon: '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="white" stroke-width="2"/><path d="M8 3H16" stroke="white" stroke-width="2" stroke-linecap="round"/><path d="M8 21H16" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>',
+                    detail: `
+                        <h3>世界书应用说明</h3>
+                        <p>世界书应用用于创建和管理虚拟世界，可与角色进行关联。</p>
+                        
+                        <h3>主要功能</h3>
+                        <ul>
+                            <li><span class="highlight">添加世界</span>：创建新的虚拟世界，设置名称、描述和封面</li>
+                            <li><span class="highlight">世界管理</span>：查看、编辑和删除已创建的世界</li>
+                            <li><span class="highlight">世界详情</span>：查看世界的详细信息</li>
+                        </ul>
+                        
+                        <h3>操作方式</h3>
+                        <ul>
+                            <li>点击"+"按钮添加新世界</li>
+                            <li>点击世界卡片查看详细信息</li>
+                            <li>长按世界卡片可删除世界</li>
+                        </ul>
+                    `
+                },
+                {
+                    id: 'app-3',
+                    category: 'app',
+                    name: '聊天应用',
+                    desc: '与角色进行实时聊天',
+                    icon: '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21 11.5C21.0034 12.8199 20.6951 14.1219 20.1 15.3C19.3948 16.7262 18.3522 17.9555 17.05 18.9C15.7478 19.8445 14.2199 20.4861 12.58 20.77C11.9413 20.8791 11.2916 20.9135 10.64 20.88L7 22L8.12 18.36C7.38368 17.9462 6.71624 17.4224 6.14 16.8C4.72104 15.2441 3.92829 13.2159 4 11.1C4.00344 9.78012 4.31172 8.47814 4.90685 7.30001C5.61203 5.87386 6.65462 4.64455 7.95683 3.69999C9.25903 2.75544 10.7869 2.11382 12.4269 1.82999C14.0669 1.54616 15.7757 1.62764 17.42 2.06999C19.0643 2.51234 20.5975 3.30299 21.9 4.37999C23.2025 5.45699 24.15 7.02999 24.15 8.76999C24.1491 9.55042 24.0492 10.3261 23.85 11.07L24 11L21 11.5Z" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>',
+                    detail: `
+                        <h3>聊天应用说明</h3>
+                        <p>聊天应用用于与虚拟角色进行实时对话交流。</p>
+                        
+                        <h3>主要功能</h3>
+                        <ul>
+                            <li><span class="highlight">消息列表</span>：显示与各角色的聊天记录</li>
+                            <li><span class="highlight">好友列表</span>：管理聊天好友</li>
+                            <li><span class="highlight">添加联系人</span>：添加新的聊天对象</li>
+                            <li><span class="highlight">消息发送</span>：支持文本消息发送</li>
+                        </ul>
+                        
+                        <h3>操作方式</h3>
+                        <ul>
+                            <li>点击"+"按钮添加新联系人</li>
+                            <li>点击联系人进入聊天界面</li>
+                            <li>在聊天界面输入消息并发送</li>
+                            <li>支持消息滑动操作（置顶、删除等）</li>
+                        </ul>
+                    `
+                },
+                {
+                    id: 'app-4',
+                    category: 'app',
+                    name: '动态应用',
+                    desc: '发布和浏览动态内容',
+                    icon: '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 12C2 12 5 3 12 3C19 3 22 12 22 12C22 12 19 21 12 21C5 21 2 12 2 12Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 15C13.6569 15 15 13.6569 15 12C15 10.3431 13.6569 9 12 9C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+                    detail: `
+                        <h3>动态应用说明</h3>
+                        <p>动态应用用于发布和浏览用户或角色的动态内容。</p>
+                        
+                        <h3>主要功能</h3>
+                        <ul>
+                            <li><span class="highlight">发布动态</span>：创建新的动态内容，支持文字和图片</li>
+                            <li><span class="highlight">动态浏览</span>：查看关注用户的最新动态</li>
+                            <li><span class="highlight">互动功能</span>：点赞、评论等社交互动</li>
+                        </ul>
+                        
+                        <h3>操作方式</h3>
+                        <ul>
+                            <li>点击"+"按钮发布新动态</li>
+                            <li>浏览动态流查看最新内容</li>
+                            <li>点击动态可查看详细信息和评论</li>
+                            <li>支持点赞和评论互动</li>
+                        </ul>
+                    `
+                },
+                {
+                    id: 'app-5',
+                    category: 'app',
+                    name: '图标管理应用',
+                    desc: '自定义主屏幕和Dock栏应用图标',
+                    icon: '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="white" stroke-width="2"/><circle cx="12" cy="12" r="3" stroke="white" stroke-width="2"/><path d="M3 12H21" stroke="white" stroke-width="2" stroke-linecap="round"/><path d="M12 3V21" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>',
+                    detail: `
+                        <h3>图标管理应用说明</h3>
+                        <p>图标管理应用用于自定义主屏幕和Dock栏中应用的图标。</p>
+                        
+                        <h3>主要功能</h3>
+                        <ul>
+                            <li><span class="highlight">图标自定义</span>：为每个应用上传自定义图片作为图标</li>
+                            <li><span class="highlight">图标预览</span>：在设置前预览新图标效果</li>
+                            <li><span class="highlight">恢复默认</span>：一键恢复所有应用的默认图标</li>
+                            <li><span class="highlight">独立设置</span>：每个应用图标可独立设置和恢复</li>
+                        </ul>
+                        
+                        <h3>操作方式</h3>
+                        <ul>
+                            <li>点击任意应用图标可选择新图片</li>
+                            <li>在预览界面确认图标效果</li>
+                            <li>点击"保存"应用新图标</li>
+                            <li>使用"恢复所有默认图标"按钮可重置所有图标</li>
+                        </ul>
+                        
+                        <h3>注意事项</h3>
+                        <ul>
+                            <li>图标更改会实时同步到主屏幕</li>
+                            <li>所有设置均保存在本地存储中</li>
+                            <li>支持常见图片格式（JPG、PNG等）</li>
+                        </ul>
+                    `
+                },
+                {
+                    id: 'app-6',
+                    category: 'app',
+                    name: '说明书应用',
+                    desc: '查看系统功能说明和使用指南',
+                    icon: '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 2H20C21.1046 2 22 2.89543 22 4V20C22 21.1046 21.1046 22 20 22H4C2.89543 22 2 21.1046 2 20V4C2 2.89543 2.89543 2 4 2Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 7H15" stroke="white" stroke-width="2" stroke-linecap="round"/><path d="M9 11H15" stroke="white" stroke-width="2" stroke-linecap="round"/><path d="M9 15H13" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>',
+                    detail: `
+                        <h3>说明书应用说明</h3>
+                        <p>说明书应用提供系统功能说明和使用指南。</p>
+                        
+                        <h3>主要功能</h3>
+                        <ul>
+                            <li><span class="highlight">功能说明</span>：详细介绍各个应用和组件的功能</li>
+                            <li><span class="highlight">使用指南</span>：提供操作方式和使用技巧</li>
+                            <li><span class="highlight">分类浏览</span>：按主屏幕、应用、系统功能分类展示</li>
+                        </ul>
+                        
+                        <h3>操作方式</h3>
+                        <ul>
+                            <li>点击功能卡片查看详细说明</li>
+                            <li>使用返回按钮返回主屏幕</li>
+                        </ul>
+                    `
+                },
+                {
+                    id: 'system-1',
+                    category: 'system',
+                    name: '壁纸设置',
+                    desc: '设置和管理设备壁纸',
+                    icon: '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 16L9 11L13 15L20 8" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><rect x="3" y="3" width="18" height="18" rx="3" stroke="white" stroke-width="2"/></svg>',
+                    detail: `
+                        <h3>壁纸设置说明</h3>
+                        <p>壁纸设置功能用于自定义设备的背景壁纸。</p>
+                        
+                        <h3>支持格式</h3>
+                        <ul>
+                            <li><span class="highlight">静态图片</span>：JPG、PNG等常见图片格式</li>
+                            <li><span class="highlight">动态壁纸</span>：支持视频格式作为动态壁纸</li>
+                        </ul>
+                        
+                        <h3>操作方式</h3>
+                        <ul>
+                            <li>选择图片或视频文件作为壁纸</li>
+                            <li>支持预览功能，确认后再应用</li>
+                            <li>可随时更换或恢复默认壁纸</li>
+                        </ul>
+                    `
+                },
+                {
+                    id: 'system-2',
+                    category: 'system',
+                    name: '个人资料',
+                    desc: '管理个人账户信息',
+                    icon: '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="8" r="4" stroke="white" stroke-width="2"/><path d="M4 20C4 15.5817 7.58172 12 12 12C16.4183 12 20 15.5817 20 20" stroke="white" stroke-width="2"/></svg>',
+                    detail: `
+                        <h3>个人资料管理说明</h3>
+                        <p>个人资料功能用于管理用户的账户信息和偏好设置。</p>
+                        
+                        <h3>可设置信息</h3>
+                        <ul>
+                            <li><span class="highlight">基本信息</span>：昵称、个性签名、地区、性别、生日</li>
+                            <li><span class="highlight">头像设置</span>：上传和更换个人头像</li>
+                            <li><span class="highlight">背景图片</span>：设置个人资料页面背景</li>
+                        </ul>
+                        
+                        <h3>操作方式</h3>
+                        <ul>
+                            <li>点击各项信息可进行编辑</li>
+                            <li>支持实时保存功能</li>
+                            <li>所有信息均本地存储，保护用户隐私</li>
+                        </ul>
+                    `
+                }
+            ];
+
+            // 页面加载时初始化
+            window.onload = function() {
+                updateTime();
+                renderFeatures();
+            };
+
+            // 渲染功能卡片
+            function renderFeatures() {
+                const homeFeatures = document.getElementById('homeFeatures');
+                const appFeatures = document.getElementById('appFeatures');
+                const systemFeatures = document.getElementById('systemFeatures');
+
+                // 清空容器
+                homeFeatures.innerHTML = '';
+                appFeatures.innerHTML = '';
+                systemFeatures.innerHTML = '';
+
+                // 分类渲染
+                features.forEach(feature => {
+                    const featureCard = document.createElement('div');
+                    featureCard.className = 'feature-card';
+                    featureCard.innerHTML = `
+                        <div class="feature-header">
+                            <div class="feature-icon">
+                                ${feature.icon}
+                            </div>
+                            <div class="feature-name">${feature.name}</div>
+                        </div>
+                        <div class="feature-desc">${feature.desc}</div>
+                    `;
+                    
+                    // 添加点击事件
+                    featureCard.onclick = () => showDetail(feature);
+                    
+                    // 根据分类添加到对应容器
+                    switch(feature.category) {
+                        case 'home':
+                            homeFeatures.appendChild(featureCard);
+                            break;
+                        case 'app':
+                            appFeatures.appendChild(featureCard);
+                            break;
+                        case 'system':
+                            systemFeatures.appendChild(featureCard);
+                            break;
+                    }
+                });
+            }
+
+            // 显示详情
+            function showDetail(feature) {
+                document.getElementById('modalTitle').textContent = feature.name;
+                document.getElementById('modalBody').innerHTML = feature.detail;
+                document.getElementById('detailModal').classList.add('active');
+            }
+
+            // 关闭弹窗
+            function closeModal() {
+                document.getElementById('detailModal').classList.remove('active');
+            }
+        </script>
+    </div>
+</body>
+</html>

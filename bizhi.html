@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>壁纸设置</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+                'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+                sans-serif;
+            background: linear-gradient(135deg, #1a1a1a, #000);
+            color: #fff;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .phone {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* 状态栏样式 */
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 15px;
+            height: 44px;
+            background-color: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            color: white;
+            font-size: 16px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+
+        .status-left, .status-center, .status-right {
+            display: flex;
+            align-items: center;
+        }
+
+        .status-left {
+            flex: 1;
+        }
+
+        .status-center {
+            flex: 2;
+            justify-content: center;
+        }
+
+        .status-right {
+            flex: 1;
+            justify-content: flex-end;
+        }
+
+        .status-icon {
+            width: 18px;
+            height: 18px;
+            margin: 0 5px;
+        }
+
+        /* 主内容区域 */
+        .main-content {
+            flex: 1;
+            padding: 80px 20px 20px 20px;
+            overflow-y: auto;
+        }
+
+        .wallpaper-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .wallpaper-title {
+            font-size: 20px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .wallpaper-preview {
+            width: 100%;
+            height: 300px;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            background: #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .wallpaper-preview img, .wallpaper-preview video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .upload-options {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+        }
+
+        .upload-btn {
+            flex: 1;
+            padding: 15px;
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.15);
+            border: none;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .upload-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-2px);
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .set-btn {
+            width: 100%;
+            padding: 15px;
+            border-radius: 15px;
+            background: linear-gradient(45deg, #007AFF, #0A84FF);
+            border: none;
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s;
+        }
+
+        .set-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(10, 132, 255, 0.4);
+        }
+
+        .set-btn:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* 返回按钮 */
+        .back-btn {
+            position: fixed;
+            top: 55px;
+            left: 20px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 999;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .back-btn svg {
+            width: 20px;
+            height: 20px;
+            fill: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="phone">
+        <!-- 状态栏 -->
+        <div class="status-bar">
+            <div class="status-left">
+                <span class="time" id="current-time">00:00</span>
+            </div>
+            <div class="status-center">
+                <!-- 中间留空 -->
+            </div>
+            <div class="status-right">
+                <!-- 信号图标 -->
+                <svg class="status-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M5 17L5 12" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M12 17L12 7" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M19 17L19 2" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                <!-- 电池图标 -->
+                <svg class="status-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="2" y="7" width="16" height="10" rx="3" stroke="white" stroke-width="2"/>
+                    <path d="M20 10V14" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                    <rect x="4" y="9" width="12" height="6" rx="2" fill="white"/>
+                </svg>
+            </div>
+        </div>
+
+        <!-- 返回按钮 -->
+        <div class="back-btn" onclick="goBack()">
+            <svg viewBox="0 0 24 24">
+                <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+            </svg>
+        </div>
+
+        <!-- 主内容区域 -->
+        <div class="main-content">
+            <div class="wallpaper-container">
+                <h2 class="wallpaper-title">设置壁纸</h2>
+                
+                <div class="wallpaper-preview" id="wallpaperPreview">
+                    <span>预览区域</span>
+                </div>
+                
+                <div class="upload-options">
+                    <button class="upload-btn" onclick="document.getElementById('imageUpload').click()">
+                        上传图片壁纸
+                    </button>
+                    <button class="upload-btn" onclick="document.getElementById('videoUpload').click()">
+                        上传视频壁纸
+                    </button>
+                </div>
+                
+                <input type="file" id="imageUpload" class="file-input" accept="image/*" onchange="previewImage(event)">
+                <input type="file" id="videoUpload" class="file-input" accept="video/*" onchange="previewVideo(event)">
+                
+                <button class="set-btn" id="setWallpaperBtn" disabled onclick="setWallpaper()">
+                    设置为壁纸
+                </button>
+            </div>
+        </div>
+
+        <script>
+            // 更新时间
+            function updateTime() {
+                const now = new Date();
+                const timeString = now.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+                document.getElementById('current-time').textContent = timeString;
+            }
+
+            // 每秒更新一次时间
+            setInterval(updateTime, 1000);
+            updateTime(); // 初始化时间
+
+            // 返回主屏幕
+            function goBack() {
+                window.location.href = 'zhupingmu.html';
+            }
+
+            // 预览视频
+            function previewVideo(event) {
+                const file = event.target.files[0];
+                console.log('选择的视频文件:', file);
+                if (file) {
+                    // 检查文件大小（限制为1.5MB）
+                    if (file.size > 1.5 * 1024 * 1024) {
+                        alert('视频文件太大，请选择小于1.5MB的文件');
+                        return;
+                    }
+                    
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const preview = document.getElementById('wallpaperPreview');
+                        const videoUrl = e.target.result;
+                        console.log('视频文件读取完成，大小:', videoUrl.length);
+                        
+                        // 在预览区域直接播放视频
+                        preview.innerHTML = `<video src="${videoUrl}" autoplay muted loop style="width:100%;height:100%;object-fit:cover;"></video>`;
+                        preview.dataset.videoUrl = videoUrl; // 保存视频URL
+                        preview.dataset.isFileVideo = "true"; // 标记这是视频壁纸
+                        console.log('视频预览生成完成');
+                        document.getElementById('setWallpaperBtn').disabled = false;
+                    };
+                    reader.onerror = function(e) {
+                        console.error('文件读取错误:', e);
+                        alert('文件读取失败，请重试');
+                    };
+                    reader.readAsDataURL(file);
+                }
+            }
+
+            // 预览图片
+            function previewImage(event) {
+                const file = event.target.files[0];
+                if (file) {
+                    // 检查文件大小（限制为1.5MB）
+                    if (file.size > 1.5 * 1024 * 1024) {
+                        alert('图片文件太大，请选择小于1.5MB的文件');
+                        return;
+                    }
+                    
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const preview = document.getElementById('wallpaperPreview');
+                        preview.innerHTML = `<img src="${e.target.result}" alt="壁纸预览" style="width:100%;height:100%;object-fit:cover;">`;
+                        preview.dataset.imageUrl = e.target.result; // 保存图片URL
+                        preview.dataset.isFileVideo = "false"; // 标记这是图片壁纸
+                        document.getElementById('setWallpaperBtn').disabled = false;
+                    }
+                    reader.readAsDataURL(file);
+                }
+            }
+
+            // 设置壁纸
+            function setWallpaper() {
+                const preview = document.getElementById('wallpaperPreview');
+                const isVideo = preview.dataset.isFileVideo === "true";
+                
+                try {
+                    if (isVideo) {
+                        const videoUrl = preview.dataset.videoUrl;
+                        if (!videoUrl) {
+                            alert('请先选择视频文件');
+                            return;
+                        }
+                        
+                        // 为视频壁纸生成海报图像
+                        const video = document.createElement('video');
+                        video.src = videoUrl;
+                        video.muted = true;
+                        video.playsInline = true;
+                        
+                        video.addEventListener('loadedmetadata', function() {
+                            video.currentTime = 0.1; // 跳到第0.1秒
+                        });
+                        
+                        video.addEventListener('seeked', function() {
+                            // 创建canvas来捕获视频帧作为海报
+                            const canvas = document.createElement('canvas');
+                            canvas.width = Math.min(video.videoWidth, 640); // 降低分辨率
+                            canvas.height = Math.min(video.videoHeight, 480);
+                            const ctx = canvas.getContext('2d');
+                            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                            const posterUrl = canvas.toDataURL('image/jpeg', 0.7); // 降低质量以减少大小
+                            
+                            // 保存视频壁纸数据（包含视频URL和海报）
+                            const wallpaperData = {
+                                type: 'video',
+                                src: videoUrl,
+                                poster: posterUrl,
+                                timestamp: Date.now()
+                            };
+                            
+                            try {
+                                localStorage.setItem('wallpaper', JSON.stringify(wallpaperData));
+                                // 显示成功提示
+                                alert('视频壁纸设置成功！');
+                                // 返回主屏幕
+                                goBack();
+                            } catch (storageError) {
+                                if (storageError.name === 'QuotaExceededError') {
+                                    // 如果还是超限，只保存海报图像
+                                    const imageData = {
+                                        type: 'image',
+                                        src: posterUrl,
+                                        timestamp: Date.now()
+                                    };
+                                    try {
+                                        localStorage.setItem('wallpaper', JSON.stringify(imageData));
+                                        alert('视频文件太大，已保存为静态壁纸。');
+                                    } catch (finalError) {
+                                        if (finalError.name === 'QuotaExceededError') {
+                                            alert('壁纸文件太大，无法保存。请尝试选择更小的文件。');
+                                        } else {
+                                            throw finalError;
+                                        }
+                                    }
+                                    goBack();
+                                } else {
+                                    throw storageError;
+                                }
+                            }
+                        });
+                        
+                        video.load();
+                    } else {
+                        const imageUrl = preview.dataset.imageUrl;
+                        if (!imageUrl) {
+                            alert('请先选择图片文件');
+                            return;
+                        }
+                        
+                        // 检查图片大小，如果太大则压缩
+                        const img = new Image();
+                        img.onload = function() {
+                            // 创建canvas来压缩图片
+                            const canvas = document.createElement('canvas');
+                            const maxWidth = 1920;
+                            const maxHeight = 1080;
+                            let { width, height } = img;
+                            
+                            // 计算压缩比例
+                            if (width > maxWidth || height > maxHeight) {
+                                const ratio = Math.min(maxWidth / width, maxHeight / height);
+                                width = width * ratio;
+                                height = height * ratio;
+                            }
+                            
+                            canvas.width = width;
+                            canvas.height = height;
+                            const ctx = canvas.getContext('2d');
+                            ctx.drawImage(img, 0, 0, width, height);
+                            
+                            // 压缩图片质量
+                            let quality = 0.8;
+                            let compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+                            
+                            // 如果还是太大，继续降低质量
+                            while (compressedDataUrl.length > 1.5 * 1024 * 1024 && quality > 0.1) {
+                                quality -= 0.1;
+                                compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+                            }
+                            
+                            // 保存图片壁纸数据
+                            const wallpaperData = {
+                                type: 'image',
+                                src: compressedDataUrl,
+                                timestamp: Date.now()
+                            };
+                            
+                            try {
+                                localStorage.setItem('wallpaper', JSON.stringify(wallpaperData));
+                                // 显示成功提示
+                                alert('图片壁纸设置成功！');
+                                // 返回主屏幕
+                                goBack();
+                            } catch (storageError) {
+                                if (storageError.name === 'QuotaExceededError') {
+                                    alert('壁纸文件太大，无法保存。请尝试选择更小的文件。');
+                                } else {
+                                    throw storageError;
+                                }
+                            }
+                        };
+                        img.src = imageUrl;
+                    }
+                } catch (e) {
+                    if (e.name === 'QuotaExceededError') {
+                        alert('壁纸文件太大，无法保存。请尝试选择更小的文件。');
+                    } else {
+                        alert('设置壁纸时出错，请重试。');
+                    }
+                    console.error('设置壁纸错误:', e);
+                }
+            }
+
+            // 页面加载时检查是否有保存的壁纸
+            window.onload = function() {
+                updateTime(); // 初始化时间
+                const savedWallpaper = localStorage.getItem('wallpaper');
+                if (savedWallpaper) {
+                    try {
+                        // 解析壁纸数据
+                        const wallpaperData = JSON.parse(savedWallpaper);
+                        const preview = document.getElementById('wallpaperPreview');
+                        
+                        if (wallpaperData.type === 'video') {
+                            // 视频壁纸
+                            preview.innerHTML = `<video src="${wallpaperData.src}" poster="${wallpaperData.poster}" autoplay muted loop style="width:100%;height:100%;object-fit:cover;"></video>`;
+                            preview.dataset.videoUrl = wallpaperData.src;
+                            preview.dataset.isFileVideo = "true";
+                        } else {
+                            // 图片壁纸
+                            preview.innerHTML = `<img src="${wallpaperData.src}" alt="壁纸预览" style="width:100%;height:100%;object-fit:cover;">`;
+                            preview.dataset.imageUrl = wallpaperData.src;
+                            preview.dataset.isFileVideo = "false";
+                        }
+                        document.getElementById('setWallpaperBtn').disabled = false;
+                    } catch (e) {
+                        console.error('解析保存的壁纸数据时出错:', e);
+                    }
+                }
+            }
+        </script>
+    </div>
+</body>
+</html>

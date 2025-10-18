@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>发布动态</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+                'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+                sans-serif;
+            background: linear-gradient(135deg, #1a1a1a, #000);
+            color: #fff;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .phone {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* 状态栏样式 */
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 15px;
+            height: 44px;
+            background-color: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            color: white;
+            font-size: 16px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+
+        .status-left, .status-center, .status-right {
+            display: flex;
+            align-items: center;
+        }
+
+        .status-left {
+            flex: 1;
+        }
+
+        .status-center {
+            flex: 2;
+            justify-content: center;
+        }
+
+        .status-right {
+            flex: 1;
+            justify-content: flex-end;
+        }
+
+        .status-icon {
+            width: 18px;
+            height: 18px;
+            margin: 0 5px;
+        }
+
+        /* 头部导航栏 */
+        .header {
+            display: flex;
+            align-items: center;
+            padding: 0 15px;
+            height: 50px;
+            background-color: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            position: fixed;
+            top: 44px;
+            left: 0;
+            right: 0;
+            z-index: 999;
+        }
+
+        .back-btn {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .back-btn svg {
+            width: 18px;
+            height: 18px;
+            fill: white;
+        }
+
+        .header-title {
+            flex: 1;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .publish-btn {
+            background: #007AFF;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 5px 15px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        /* 发布内容区域 */
+        .publish-content {
+            flex: 1;
+            padding: 110px 15px 20px 15px;
+            overflow-y: auto;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+        }
+
+        .user-name {
+            font-weight: bold;
+        }
+
+        .caption-input {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 15px;
+            padding: 15px;
+            color: white;
+            font-size: 16px;
+            min-height: 100px;
+            margin-bottom: 20px;
+            resize: none;
+        }
+
+        .caption-input:focus {
+            outline: none;
+        }
+
+        .photo-upload-area {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .photo-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .photo-item {
+            aspect-ratio: 1;
+            background: #333;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .photo-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
+        .add-photo-btn {
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px dashed rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .add-photo-btn svg {
+            width: 30px;
+            height: 30px;
+            fill: rgba(255, 255, 255, 0.5);
+            margin-bottom: 5px;
+        }
+
+        .add-photo-btn span {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .remove-photo {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            width: 20px;
+            height: 20px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .remove-photo svg {
+            width: 12px;
+            height: 12px;
+            fill: white;
+        }
+
+        /* 隐藏的文件输入 */
+        #photo-input {
+            display: none;
+        }
+
+        /* 底部导航栏 */
+        .bottom-nav {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            max-width: 300px;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 30px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 0 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 50%;
+            height: 100%;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .nav-item.active {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .nav-icon {
+            width: 24px;
+            height: 24px;
+        }
+    </style>
+</head>
+<body>
+    <div class="phone">
+        <!-- 状态栏 -->
+        <div class="status-bar">
+            <div class="status-left">
+                <span class="time" id="current-time">00:00</span>
+            </div>
+            <div class="status-center">
+                <!-- 中间留空 -->
+            </div>
+            <div class="status-right">
+                <!-- 信号图标 -->
+                <svg class="status-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M5 17L5 12" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M12 17L12 7" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M19 17L19 2" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                <!-- 电池图标 -->
+                <svg class="status-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="2" y="7" width="16" height="10" rx="3" stroke="white" stroke-width="2"/>
+                    <path d="M20 10V14" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                    <rect x="4" y="9" width="12" height="6" rx="2" fill="white"/>
+                </svg>
+            </div>
+        </div>
+
+        <!-- 头部导航栏 -->
+        <div class="header">
+            <div class="back-btn" onclick="goBack()">
+                <svg viewBox="0 0 24 24">
+                    <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+                </svg>
+            </div>
+            <div class="header-title">创建新动态</div>
+            <button class="publish-btn" onclick="publishPost()">发布</button>
+        </div>
+
+        <!-- 发布内容区域 -->
+        <div class="publish-content">
+            <div class="user-info">
+                <div class="user-avatar">
+                    <span>👤</span>
+                </div>
+                <div class="user-name">用户名</div>
+            </div>
+            
+            <textarea class="caption-input" placeholder="分享新鲜事..."></textarea>
+            
+            <div class="photo-upload-area">
+                <div class="photo-grid" id="photo-grid">
+                    <!-- 照片网格将通过JavaScript动态生成 -->
+                    <div class="photo-item">
+                        <div class="add-photo-btn" onclick="document.getElementById('photo-input').click()">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+                            </svg>
+                            <span>添加照片</span>
+                        </div>
+                    </div>
+                </div>
+                <input type="file" id="photo-input" accept="image/*" multiple onchange="handlePhotoUpload(event)">
+            </div>
+        </div>
+
+        <!-- 底部导航栏 -->
+        <div class="bottom-nav">
+            <div class="nav-item" onclick="switchTab('chat')">
+                <div class="nav-icon">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M8 12H8.01" stroke="white" stroke-width="3" stroke-linecap="round"/>
+                        <path d="M12 12H12.01" stroke="white" stroke-width="3" stroke-linecap="round"/>
+                        <path d="M16 12H16.01" stroke="white" stroke-width="3" stroke-linecap="round"/>
+                    </svg>
+                </div>
+            </div>
+            <div class="nav-item" onclick="switchTab('dynamic')">
+                <div class="nav-icon">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M2 12C2 12 5 3 12 3C19 3 22 12 22 12C22 12 19 21 12 21C5 21 2 12 2 12Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M12 15C13.6569 15 15 13.6569 15 12C15 10.3431 13.6569 9 12 9C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            // 更新时间
+            function updateTime() {
+                const now = new Date();
+                const timeString = now.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+                document.getElementById('current-time').textContent = timeString;
+            }
+
+            // 每秒更新一次时间
+            setInterval(updateTime, 1000);
+            updateTime(); // 初始化时间
+
+            // 返回动态页面
+            function goBack() {
+                window.location.href = 'dongtai.html';
+            }
+
+            // 切换底部导航栏标签
+            function switchTab(tabName) {
+                if (tabName === 'chat') {
+                    window.location.href = 'chat.html';
+                } else if (tabName === 'dynamic') {
+                    window.location.href = 'dongtai.html';
+                }
+            }
+
+            // 处理照片上传
+            function handlePhotoUpload(event) {
+                const files = event.target.files;
+                const photoGrid = document.getElementById('photo-grid');
+                
+                // 获取当前已上传的照片数量（不包括添加按钮）
+                const currentPhotos = photoGrid.querySelectorAll('.photo-item img').length;
+                
+                // 限制最多9张照片
+                const maxPhotos = 9;
+                const photosToAdd = Math.min(files.length, maxPhotos - currentPhotos);
+                
+                // 添加新上传的照片
+                for (let i = 0; i < photosToAdd; i++) {
+                    const file = files[i];
+                    const reader = new FileReader();
+                    
+                    reader.onload = function(e) {
+                        // 创建新的照片项
+                        const photoItem = document.createElement('div');
+                        photoItem.className = 'photo-item';
+                        photoItem.innerHTML = `
+                            <img src="${e.target.result}" alt="Uploaded photo">
+                            <div class="remove-photo" onclick="removePhoto(this)">
+                                <svg viewBox="0 0 24 24">
+                                    <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                                </svg>
+                            </div>
+                        `;
+                        
+                        // 查找添加按钮
+                        const addButton = photoGrid.querySelector('.add-photo-btn').parentElement;
+                        
+                        // 在添加按钮之前插入新照片
+                        if (addButton) {
+                            photoGrid.insertBefore(photoItem, addButton);
+                        } else {
+                            // 如果没有添加按钮（已达到9张），直接添加到末尾
+                            photoGrid.appendChild(photoItem);
+                        }
+                        
+                        // 如果已达到9张照片，移除添加按钮
+                        const totalPhotos = photoGrid.querySelectorAll('.photo-item img').length;
+                        if (totalPhotos >= maxPhotos && addButton) {
+                            if (addButton.parentNode) {
+                                addButton.parentNode.removeChild(addButton);
+                            }
+                        }
+                    };
+                    
+                    reader.readAsDataURL(file);
+                }
+            }
+
+            // 创建照片项
+            function createPhotoItem() {
+                const photoItem = document.createElement('div');
+                photoItem.className = 'photo-item';
+                return photoItem;
+            }
+
+            // 移除照片
+            function removePhoto(element) {
+                const photoItem = element.parentElement;
+                photoItem.remove();
+                
+                // 如果照片数量少于9张，确保有"添加照片"按钮
+                const photoGrid = document.getElementById('photo-grid');
+                const currentPhotos = photoGrid.querySelectorAll('.photo-item img').length;
+                
+                // 如果当前没有添加按钮且照片数量小于9，添加"添加照片"按钮
+                const hasAddButton = photoGrid.querySelector('.add-photo-btn');
+                if (!hasAddButton && currentPhotos < 9) {
+                    const addButton = document.createElement('div');
+                    addButton.className = 'photo-item';
+                    addButton.innerHTML = `
+                        <div class="add-photo-btn" onclick="document.getElementById('photo-input').click()">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+                            </svg>
+                            <span>添加照片</span>
+                        </div>
+                    `;
+                    photoGrid.appendChild(addButton);
+                }
+            }
+
+            // 发布动态
+            function publishPost() {
+                alert('动态发布成功！');
+                window.location.href = 'dongtai.html';
+            }
+        </script>
+    </div>
+</body>
+</html>

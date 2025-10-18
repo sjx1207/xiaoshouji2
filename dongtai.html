@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>动态</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+                'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+                sans-serif;
+            background: linear-gradient(135deg, #1a1a1a, #000);
+            color: #fff;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .phone {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* 状态栏样式 */
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 15px;
+            height: 44px;
+            background-color: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            color: white;
+            font-size: 16px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+
+        .status-left, .status-center, .status-right {
+            display: flex;
+            align-items: center;
+        }
+
+        .status-left {
+            flex: 1;
+        }
+
+        .status-center {
+            flex: 2;
+            justify-content: center;
+        }
+
+        .status-right {
+            flex: 1;
+            justify-content: flex-end;
+        }
+
+        .status-icon {
+            width: 18px;
+            height: 18px;
+            margin: 0 5px;
+        }
+
+        /* 头部导航栏 */
+        .header {
+            display: flex;
+            align-items: center;
+            padding: 0 15px;
+            height: 50px;
+            background-color: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            position: fixed;
+            top: 44px;
+            left: 0;
+            right: 0;
+            z-index: 999;
+        }
+
+        .back-btn {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .back-btn svg {
+            width: 18px;
+            height: 18px;
+            fill: white;
+        }
+
+        .header-title {
+            flex: 1;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .add-btn {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* 动态列表区域 */
+        .dynamic-list {
+            flex: 1;
+            padding: 110px 0 80px 0;
+            overflow-y: auto;
+        }
+
+        /* 用户故事区域 */
+        .stories-container {
+            padding: 10px 15px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            margin-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .stories {
+            display: flex;
+            overflow-x: auto;
+            gap: 15px;
+            padding: 5px 0;
+        }
+
+        .story {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex-shrink: 0;
+            position: relative;
+        }
+
+        .story-avatar {
+            width: 66px;
+            height: 66px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .story-avatar::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+            animation: rotateGradient 3s linear infinite;
+            z-index: -1;
+        }
+
+        .story-avatar .avatar-inner {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+            z-index: 1;
+        }
+
+        .story-avatar .avatar-inner img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .add-story-btn {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #007AFF;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #000;
+            cursor: pointer;
+            z-index: 2;
+        }
+
+        .add-story-btn::after {
+            content: '+';
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .story-name {
+            margin-top: 5px;
+            font-size: 12px;
+            max-width: 60px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* 帖子 */
+        .post {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 15px;
+            margin: 15px;
+            padding: 15px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .post-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .post-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            margin-right: 10px;
+        }
+
+        .post-avatar::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+            animation: rotateGradient 3s linear infinite;
+            z-index: -1;
+        }
+
+        .post-avatar .avatar-inner {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+            z-index: 1;
+        }
+
+        .post-avatar .avatar-inner img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .post-user-info {
+            flex: 1;
+        }
+
+        .post-username {
+            font-weight: bold;
+            margin-bottom: 3px;
+        }
+
+        .post-time {
+            font-size: 12px;
+            color: #aaa;
+        }
+
+        .post-content {
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+
+        .post-images {
+            width: 100%;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .image-slider {
+            display: flex;
+            transition: transform 0.3s ease;
+        }
+
+        .post-image {
+            min-width: 100%;
+            border-radius: 10px;
+            background: #444;
+            height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #888;
+        }
+
+        .image-indicators {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 5px;
+        }
+
+        .indicator {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        .indicator.active {
+            background: white;
+        }
+
+        .image-count {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 12px;
+        }
+
+        .post-actions {
+            display: flex;
+            justify-content: space-between;
+            padding-top: 10px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .action-icon {
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+        }
+
+        /* 底部导航栏 */
+        .bottom-nav {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            max-width: 300px;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 30px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 0 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 50%;
+            height: 100%;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .nav-item.active {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .nav-icon {
+            width: 24px;
+            height: 24px;
+        }
+
+        /* 渐变动画 */
+        @keyframes rotateGradient {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="phone">
+        <!-- 状态栏 -->
+        <div class="status-bar">
+            <div class="status-left">
+                <span class="time" id="current-time">00:00</span>
+            </div>
+            <div class="status-center">
+                <!-- 中间留空 -->
+            </div>
+            <div class="status-right">
+                <!-- 信号图标 -->
+                <svg class="status-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M5 17L5 12" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M12 17L12 7" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M19 17L19 2" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                <!-- 电池图标 -->
+                <svg class="status-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="2" y="7" width="16" height="10" rx="3" stroke="white" stroke-width="2"/>
+                    <path d="M20 10V14" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                    <rect x="4" y="9" width="12" height="6" rx="2" fill="white"/>
+                </svg>
+            </div>
+        </div>
+
+        <!-- 头部导航栏 -->
+        <div class="header">
+            <div class="back-btn" onclick="goBack()">
+                <svg viewBox="0 0 24 24">
+                    <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+                </svg>
+            </div>
+            <div class="header-title">动态</div>
+            <div class="add-btn" onclick="goToPublish()">
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="16"></line>
+                    <line x1="8" y1="12" x2="16" y2="12"></line>
+                </svg>
+            </div>
+        </div>
+
+        <!-- 动态列表 -->
+        <div class="dynamic-list">
+            <!-- 用户故事区域 -->
+            <div class="stories-container">
+                <div class="stories">
+                    <div class="story">
+                        <div class="story-avatar">
+                            <div class="avatar-inner">
+                                <span>👤</span>
+                            </div>
+                            <div class="add-story-btn"></div>
+                        </div>
+                        <div class="story-name">我的故事</div>
+                    </div>
+                    <div class="story">
+                        <div class="story-avatar">
+                            <div class="avatar-inner">
+                                <span>👩</span>
+                            </div>
+                        </div>
+                        <div class="story-name">张三</div>
+                    </div>
+                    <div class="story">
+                        <div class="story-avatar">
+                            <div class="avatar-inner">
+                                <span>👨</span>
+                            </div>
+                        </div>
+                        <div class="story-name">李四</div>
+                    </div>
+                    <div class="story">
+                        <div class="story-avatar">
+                            <div class="avatar-inner">
+                                <span>👩‍💼</span>
+                            </div>
+                        </div>
+                        <div class="story-name">王五</div>
+                    </div>
+                    <div class="story">
+                        <div class="story-avatar">
+                            <div class="avatar-inner">
+                                <span>👨‍💻</span>
+                            </div>
+                        </div>
+                        <div class="story-name">赵六</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 帖子 -->
+            <div class="post">
+                <div class="post-header">
+                    <div class="post-avatar">
+                        <div class="avatar-inner">
+                            <span>👩</span>
+                        </div>
+                    </div>
+                    <div class="post-user-info">
+                        <div class="post-username">张三</div>
+                        <div class="post-time">2小时前</div>
+                    </div>
+                </div>
+                <div class="post-content">
+                    今天天气真好，出去散步了！ #美好时光
+                </div>
+                <div class="post-images">
+                    <div class="image-slider">
+                        <div class="post-image">
+                            <img src="https://picsum.photos/400/300?random=1" alt="Post image 1" style="width: 100%; height: 100%; object-fit: cover; border-radius: 10px;">
+                        </div>
+                        <div class="post-image">
+                            <img src="https://picsum.photos/400/300?random=2" alt="Post image 2" style="width: 100%; height: 100%; object-fit: cover; border-radius: 10px;">
+                        </div>
+                        <div class="post-image">
+                            <img src="https://picsum.photos/400/300?random=3" alt="Post image 3" style="width: 100%; height: 100%; object-fit: cover; border-radius: 10px;">
+                        </div>
+                    </div>
+                    <div class="image-count">3</div>
+                    <div class="image-indicators">
+                        <div class="indicator active"></div>
+                        <div class="indicator"></div>
+                        <div class="indicator"></div>
+                    </div>
+                </div>
+                <div class="post-actions">
+                    <!-- 点赞按钮 - 空心爱心 -->
+                    <svg class="action-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 21.35L10.55 20.03C5.4 15.36 2 12.28 2 8.5C2 5.42 4.42 3 7.5 3C9.24 3 10.91 3.81 12 5.09C13.09 3.81 14.76 3 16.5 3C19.58 3 22 5.42 22 8.5C22 12.28 18.6 15.36 13.45 20.04L12 21.35Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <!-- 评论按钮 -->
+                    <svg class="action-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M21 15C21 15.5304 20.7893 16.0391 20.4142 16.4142C20.0391 16.7893 19.5304 17 19 17H7L3 21V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H19C19.5304 3 20.0391 3.21071 20.4142 3.58579C20.7893 3.96086 21 4.46957 21 5V15Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <!-- 转发按钮 - 纸飞机 -->
+                    <svg class="action-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M22 2L11 13M22 2L15 22L11 13M11 13L2 9L22 2" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <!-- 收藏按钮 -->
+                    <svg class="action-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M19 21L12 16L5 21V5C5 4.46957 5.21071 3.96086 5.58579 3.58579C5.96086 3.21071 6.46957 3 7 3H17C17.5304 3 18.0391 3.21071 18.4142 3.58579C18.7893 3.96086 19 4.46957 19 5V21Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+            </div>
+
+            <div class="post">
+                <div class="post-header">
+                    <div class="post-avatar">
+                        <div class="avatar-inner">
+                            <span>👨</span>
+                        </div>
+                    </div>
+                    <div class="post-user-info">
+                        <div class="post-username">李四</div>
+                        <div class="post-time">5小时前</div>
+                    </div>
+                </div>
+                <div class="post-content">
+                    刚刚完成了一个重要项目，感觉很有成就感！
+                </div>
+                <div class="post-images">
+                    <div class="image-slider">
+                        <div class="post-image">
+                            <img src="https://picsum.photos/400/300?random=4" alt="Post image 1" style="width: 100%; height: 100%; object-fit: cover; border-radius: 10px;">
+                        </div>
+                        <div class="post-image">
+                            <img src="https://picsum.photos/400/300?random=5" alt="Post image 2" style="width: 100%; height: 100%; object-fit: cover; border-radius: 10px;">
+                        </div>
+                    </div>
+                    <div class="image-count">2</div>
+                    <div class="image-indicators">
+                        <div class="indicator active"></div>
+                        <div class="indicator"></div>
+                    </div>
+                </div>
+                <div class="post-actions">
+                    <!-- 点赞按钮 - 空心爱心 -->
+                    <svg class="action-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 21.35L10.55 20.03C5.4 15.36 2 12.28 2 8.5C2 5.42 4.42 3 7.5 3C9.24 3 10.91 3.81 12 5.09C13.09 3.81 14.76 3 16.5 3C19.58 3 22 5.42 22 8.5C22 12.28 18.6 15.36 13.45 20.04L12 21.35Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <!-- 评论按钮 -->
+                    <svg class="action-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M21 15C21 15.5304 20.7893 16.0391 20.4142 16.4142C20.0391 16.7893 19.5304 17 19 17H7L3 21V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H19C19.5304 3 20.0391 3.21071 20.4142 3.58579C20.7893 3.96086 21 4.46957 21 5V15Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <!-- 转发按钮 - 纸飞机 -->
+                    <svg class="action-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M22 2L11 13M22 2L15 22L11 13M11 13L2 9L22 2" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <!-- 收藏按钮 -->
+                    <svg class="action-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M19 21L12 16L5 21V5C5 4.46957 5.21071 3.96086 5.58579 3.58579C5.96086 3.21071 6.46957 3 7 3H17C17.5304 3 18.0391 3.21071 18.4142 3.58579C18.7893 3.96086 19 4.46957 19 5V21Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- 底部导航栏 -->
+        <div class="bottom-nav">
+            <div class="nav-item" onclick="switchTab('chat')">
+                <div class="nav-icon">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M8 12H8.01" stroke="white" stroke-width="3" stroke-linecap="round"/>
+                        <path d="M12 12H12.01" stroke="white" stroke-width="3" stroke-linecap="round"/>
+                        <path d="M16 12H16.01" stroke="white" stroke-width="3" stroke-linecap="round"/>
+                    </svg>
+                </div>
+            </div>
+            <div class="nav-item active" onclick="switchTab('dynamic')">
+                <div class="nav-icon">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M2 12C2 12 5 3 12 3C19 3 22 12 22 12C22 12 19 21 12 21C5 21 2 12 2 12Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M12 15C13.6569 15 15 13.6569 15 12C15 10.3431 13.6569 9 12 9C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+            </div>
+            <div class="nav-item" onclick="switchTab('profile')">
+                <div class="nav-icon">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 12C14.2091 12 16 10.2091 16 8C16 5.79086 14.2091 4 12 4C9.79086 4 8 5.79086 8 8C8 10.2091 9.79086 12 12 12Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M12 14C8.13401 14 5 17.134 5 21H19C19 17.134 15.866 14 12 14Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            // 更新时间
+            function updateTime() {
+                const now = new Date();
+                const timeString = now.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+                document.getElementById('current-time').textContent = timeString;
+            }
+
+            // 每秒更新一次时间
+            setInterval(updateTime, 1000);
+            updateTime(); // 初始化时间
+
+            // 页面加载时初始化用户信息
+            window.onload = function() {
+                loadUserInfo();
+            };
+
+            // 加载用户信息并同步头像
+            function loadUserInfo() {
+                const userInfo = JSON.parse(localStorage.getItem('userInfo')) || {};
+                
+                // 如果有头像信息，则更新"我的故事"的头像
+                if (userInfo.avatar) {
+                    const myStoryAvatar = document.querySelector('.story:first-child .avatar-inner');
+                    if (myStoryAvatar) {
+                        myStoryAvatar.innerHTML = `<img src="${userInfo.avatar}" alt="我的头像" style="width: 100%; height: 100%; object-fit: cover;">`;
+                    }
+                }
+            }
+
+            // 返回主屏幕
+            function goBack() {
+                window.location.href = 'zhupingmu.html';
+            }
+
+            // 跳转到发布页面
+            function goToPublish() {
+                window.location.href = 'dongtaifabu.html';
+            }
+
+            // 切换底部导航栏标签
+            function switchTab(tabName) {
+                if (tabName === 'chat') {
+                    window.location.href = 'chat.html';
+                } else if (tabName === 'friend') {
+                    window.location.href = 'friends.html';
+                } else if (tabName === 'profile') {
+                    window.location.href = 'wode.html';
+                }
+                // 动态标签保持当前页面
+            }
+
+            // 图片滑动功能
+            document.addEventListener('DOMContentLoaded', function() {
+                const sliders = document.querySelectorAll('.image-slider');
+                
+                sliders.forEach(slider => {
+                    let currentIndex = 0;
+                    const images = slider.querySelectorAll('.post-image');
+                    const indicatorsContainer = slider.parentElement.querySelector('.image-indicators');
+                    const totalImages = images.length;
+                    
+                    if (totalImages <= 1) return;
+                    
+                    // 添加触摸滑动事件
+                    let startX = 0;
+                    let endX = 0;
+                    
+                    slider.addEventListener('touchstart', function(e) {
+                        startX = e.touches[0].clientX;
+                    });
+                    
+                    slider.addEventListener('touchend', function(e) {
+                        endX = e.changedTouches[0].clientX;
+                        handleSwipe();
+                    });
+                    
+                    // 添加鼠标滑动事件
+                    slider.addEventListener('mousedown', function(e) {
+                        startX = e.clientX;
+                        slider.addEventListener('mouseup', onMouseUp);
+                        slider.addEventListener('mouseleave', onMouseUp);
+                    });
+                    
+                    function onMouseUp(e) {
+                        endX = e.clientX;
+                        handleSwipe();
+                        slider.removeEventListener('mouseup', onMouseUp);
+                        slider.removeEventListener('mouseleave', onMouseUp);
+                    }
+                    
+                    function handleSwipe() {
+                        const threshold = 50; // 最小滑动距离
+                        
+                        if (startX - endX > threshold) {
+                            // 向左滑动
+                            nextImage();
+                        } else if (endX - startX > threshold) {
+                            // 向右滑动
+                            prevImage();
+                        }
+                    }
+                    
+                    function nextImage() {
+                        currentIndex = (currentIndex + 1) % totalImages;
+                        updateSlider();
+                    }
+                    
+                    function prevImage() {
+                        currentIndex = (currentIndex - 1 + totalImages) % totalImages;
+                        updateSlider();
+                    }
+                    
+                    // 初始化指示器点击事件
+                    if (indicatorsContainer) {
+                        const indicators = indicatorsContainer.querySelectorAll('.indicator');
+                        indicators.forEach((indicator, index) => {
+                            indicator.addEventListener('click', function() {
+                                currentIndex = index;
+                                updateSlider();
+                            });
+                        });
+                    }
+                    
+                    function updateSlider() {
+                        slider.style.transform = `translateX(-${currentIndex * 100}%)`;
+                        
+                        // 更新指示器
+                        if (indicatorsContainer) {
+                            const indicators = indicatorsContainer.querySelectorAll('.indicator');
+                            indicators.forEach((indicator, index) => {
+                                if (index === currentIndex) {
+                                    indicator.classList.add('active');
+                                } else {
+                                    indicator.classList.remove('active');
+                                }
+                            });
+                        }
+                    }
+                });
+            });
+        </script>
+    </div>
+</body>
+</html>

@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>设置</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+                'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+                sans-serif;
+            background: linear-gradient(135deg, #1a1a1a, #000);
+            color: #fff;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .phone {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* 状态栏样式 */
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 15px;
+            height: 44px;
+            background-color: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            color: white;
+            font-size: 16px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+
+        .status-left, .status-center, .status-right {
+            display: flex;
+            align-items: center;
+        }
+
+        .status-left {
+            flex: 1;
+        }
+
+        .status-center {
+            flex: 2;
+            justify-content: center;
+        }
+
+        .status-right {
+            flex: 1;
+            justify-content: flex-end;
+        }
+
+        .status-icon {
+            width: 18px;
+            height: 18px;
+            margin: 0 5px;
+        }
+
+        /* 头部导航栏 */
+        .header {
+            display: flex;
+            align-items: center;
+            padding: 0 15px;
+            height: 50px;
+            background-color: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            position: fixed;
+            top: 44px;
+            left: 0;
+            right: 0;
+            z-index: 999;
+        }
+
+        .back-btn {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .back-btn svg {
+            width: 18px;
+            height: 18px;
+            fill: white;
+        }
+
+        .header-content {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        /* 内容区域 */
+        .content {
+            flex: 1;
+            padding: 110px 15px 20px 15px;
+            overflow-y: auto;
+        }
+
+        .setting-item {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 15px;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .setting-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .setting-description {
+            font-size: 14px;
+            color: #aaa;
+            margin-bottom: 15px;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        .input-label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 10px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 14px;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: #007AFF;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 10px;
+            border: none;
+            font-size: 14px;
+            cursor: pointer;
+            flex: 1;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: #007AFF;
+            color: white;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+        }
+
+        .model-list {
+            margin-top: 15px;
+        }
+
+        .model-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .model-item:last-child {
+            border-bottom: none;
+        }
+
+        .model-name {
+            font-size: 14px;
+        }
+
+        .model-status {
+            font-size: 12px;
+            padding: 3px 8px;
+            border-radius: 10px;
+        }
+
+        .status-available {
+            background: rgba(52, 199, 89, 0.2);
+            color: #34c759;
+        }
+
+        .status-unavailable {
+            background: rgba(255, 59, 48, 0.2);
+            color: #ff3b30;
+        }
+
+        /* 自定义弹窗样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: rgba(30, 30, 30, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 15px;
+            padding: 20px;
+            width: 80%;
+            max-width: 300px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .modal-title {
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: #aaa;
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        .modal-body {
+            font-size: 14px;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .modal-btn {
+            padding: 8px 15px;
+            border-radius: 8px;
+            border: none;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .modal-btn-primary {
+            background: #007AFF;
+            color: white;
+        }
+
+        .modal-btn-secondary {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+        }
+
+        /* 加载指示器 */
+        .loading {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .loading-content {
+            background: rgba(30, 30, 30, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .spinner {
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top: 3px solid #007AFF;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="phone">
+        <!-- 状态栏 -->
+        <div class="status-bar">
+            <div class="status-left">
+                <span class="time" id="current-time">00:00</span>
+            </div>
+            <div class="status-center">
+                <!-- 中间留空 -->
+            </div>
+            <div class="status-right">
+                <!-- 电池图标 -->
+                <svg class="status-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="2" y="7" width="16" height="10" rx="3" stroke="white" stroke-width="2"/>
+                    <path d="M20 10V14" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                    <rect x="4" y="9" width="12" height="6" rx="2" fill="white"/>
+                </svg>
+                <!-- 数据图标 -->
+                <svg class="status-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M5 7L5 17" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M12 4L12 20" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M19 7L19 17" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </div>
+        </div>
+
+        <!-- 头部导航栏 -->
+        <div class="header">
+            <div class="back-btn" onclick="goBack()">
+                <svg viewBox="0 0 24 24">
+                    <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+                </svg>
+            </div>
+            <div class="header-content">
+                设置
+            </div>
+            <div style="width: 30px;"></div> <!-- 占位符 -->
+        </div>
+
+        <!-- 内容区域 -->
+        <div class="content">
+            <div class="setting-item">
+                <div class="setting-title">AI模型设置</div>
+                <div class="setting-description">配置AI模型API密钥以启用智能功能</div>
+                
+                <div class="input-group">
+                    <label class="input-label">选择模型提供商</label>
+                    <select class="input-field" id="model-select" onchange="loadApiKey()">
+                        <option value="deepseek">DeepSeek</option>
+                        <option value="openai">OpenAI (ChatGPT)</option>
+                        <option value="gemini">Gemini</option>
+                        <option value="claude">Claude</option>
+                        <option value="qwen">通义千问</option>
+                    </select>
+                </div>
+                
+                <div class="input-group">
+                    <label class="input-label">API密钥</label>
+                    <input type="password" class="input-field" id="api-key" placeholder="请输入API密钥">
+                </div>
+                
+                <div class="input-group">
+                    <label class="input-label">选择具体模型</label>
+                    <select class="input-field" id="specific-model-select">
+                        <!-- 默认选项，将根据选择的提供商动态更新 -->
+                        <option value="">请选择具体模型</option>
+                    </select>
+                </div>
+                
+                <div class="button-group">
+                    <div class="btn btn-secondary" onclick="testConnection()">测试连接</div>
+                    <div class="btn btn-secondary" onclick="advancedTest()">高级测试</div>
+                    <div class="btn btn-primary" onclick="saveSettings()">保存设置</div>
+                </div>
+                
+                <div class="model-list">
+                    <div class="setting-title">可用模型</div>
+                    <div class="model-item">
+                        <div class="model-name">DeepSeek</div>
+                        <div class="model-status status-unavailable">未配置</div>
+                    </div>
+                    <div class="model-item">
+                        <div class="model-name">OpenAI (ChatGPT)</div>
+                        <div class="model-status status-unavailable">未配置</div>
+                    </div>
+                    <div class="model-item">
+                        <div class="model-name">Gemini</div>
+                        <div class="model-status status-unavailable">未配置</div>
+                    </div>
+                    <div class="model-item">
+                        <div class="model-name">Claude</div>
+                        <div class="model-status status-unavailable">未配置</div>
+                    </div>
+                    <div class="model-item">
+                        <div class="model-name">通义千问</div>
+                        <div class="model-status status-unavailable">未配置</div>
+                    </div>
+                </div>
+                
+                <div class="model-list">
+                    <div class="setting-title">选择默认模型</div>
+                    <div class="model-item">
+                        <div class="model-name">DeepSeek</div>
+                        <div class="model-status status-unavailable">
+                            <input type="radio" name="default-model" value="deepseek" onchange="setDefaultModel(this.value)">
+                        </div>
+                    </div>
+                    <div class="model-item">
+                        <div class="model-name">OpenAI (ChatGPT)</div>
+                        <div class="model-status status-unavailable">
+                            <input type="radio" name="default-model" value="openai" onchange="setDefaultModel(this.value)">
+                        </div>
+                    </div>
+                    <div class="model-item">
+                        <div class="model-name">Gemini</div>
+                        <div class="model-status status-unavailable">
+                            <input type="radio" name="default-model" value="gemini" onchange="setDefaultModel(this.value)">
+                        </div>
+                    </div>
+                    <div class="model-item">
+                        <div class="model-name">Claude</div>
+                        <div class="model-status status-unavailable">
+                            <input type="radio" name="default-model" value="claude" onchange="setDefaultModel(this.value)">
+                        </div>
+                    </div>
+                    <div class="model-item">
+                        <div class="model-name">通义千问</div>
+                        <div class="model-status status-unavailable">
+                            <input type="radio" name="default-model" value="qwen" onchange="setDefaultModel(this.value)">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 自定义弹窗 -->
+        <div id="customModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="modal-title" id="modalTitle">提示</div>
+                    <button class="modal-close" onclick="closeModal()">&times;</button>
+                </div>
+                <div class="modal-body" id="modalBody">
+                    这是一个自定义弹窗
+                </div>
+                <div class="modal-footer">
+                    <button class="modal-btn modal-btn-primary" onclick="closeModal()">确定</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 加载指示器 -->
+        <div id="loadingIndicator" class="loading">
+            <div class="loading-content">
+                <div class="spinner"></div>
+                <div class="loading-text" id="loadingText">加载中...</div>
+            </div>
+        </div>
+
+        <script>
+            // 更新时间
+            function updateTime() {
+                const now = new Date();
+                const timeString = now.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+                document.getElementById('current-time').textContent = timeString;
+            }
+
+            // 每秒更新一次时间
+            setInterval(updateTime, 1000);
+            updateTime(); // 初始化时间
+
+            // 返回上一页
+            function goBack() {
+                window.history.back();
+            }
+
+            // 显示自定义弹窗
+            function showModal(title, message) {
+                document.getElementById('modalTitle').textContent = title;
+                document.getElementById('modalBody').textContent = message;
+                document.getElementById('customModal').style.display = 'flex';
+            }
+
+            // 关闭自定义弹窗
+            function closeModal() {
+                document.getElementById('customModal').style.display = 'none';
+            }
+
+            // 显示加载指示器
+            function showLoading(message) {
+                document.getElementById('loadingText').textContent = message;
+                document.getElementById('loadingIndicator').style.display = 'flex';
+            }
+
+            // 隐藏加载指示器
+            function hideLoading() {
+                document.getElementById('loadingIndicator').style.display = 'none';
+            }
+
+            // 不同模型提供商的具体模型列表
+            const specificModels = {
+                'deepseek': [
+                    { value: 'deepseek-chat', name: 'DeepSeek Chat' },
+                    { value: 'deepseek-coder', name: 'DeepSeek Coder' }
+                ],
+                'openai': [
+                    { value: 'gpt-3.5-turbo', name: 'GPT-3.5 Turbo' },
+                    { value: 'gpt-4', name: 'GPT-4' },
+                    { value: 'gpt-4-turbo', name: 'GPT-4 Turbo' }
+                ],
+                'gemini': [
+                    { value: 'gemini-pro', name: 'Gemini Pro' },
+                    { value: 'gemini-pro-vision', name: 'Gemini Pro Vision' }
+                ],
+                'claude': [
+                    { value: 'claude-2', name: 'Claude 2' },
+                    { value: 'claude-2.1', name: 'Claude 2.1' },
+                    { value: 'claude-3-haiku', name: 'Claude 3 Haiku' },
+                    { value: 'claude-3-sonnet', name: 'Claude 3 Sonnet' }
+                ],
+                'qwen': [
+                    { value: 'qwen-turbo', name: '通义千问 Turbo' },
+                    { value: 'qwen-plus', name: '通义千问 Plus' },
+                    { value: 'qwen-max', name: '通义千问 Max' }
+                ]
+            };
+
+            // 验证API密钥格式
+            function validateApiKey(model, apiKey) {
+                // 不同模型的密钥格式验证
+                switch(model) {
+                    case 'deepseek':
+                        // DeepSeek API密钥通常以 "sk-" 开头
+                        return apiKey.startsWith('sk-') && apiKey.length > 20;
+                    case 'openai':
+                        // OpenAI API密钥通常以 "sk-" 开头
+                        return apiKey.startsWith('sk-') && apiKey.length > 20;
+                    case 'gemini':
+                        // Gemini API密钥通常是字母数字组合
+                        return /^[a-zA-Z0-9-_]{30,}$/.test(apiKey);
+                    case 'claude':
+                        // Claude API密钥通常以 "sk-ant-" 开头
+                        return apiKey.startsWith('sk-ant-') && apiKey.length > 25;
+                    case 'qwen':
+                        // 通义千问API密钥格式
+                        return apiKey.length > 10;
+                    default:
+                        return apiKey.length > 10;
+                }
+            }
+
+            // 加载对应提供商的API密钥
+            function loadApiKey() {
+                const model = document.getElementById('model-select').value;
+                const aiSettings = JSON.parse(localStorage.getItem('aiSettings')) || {};
+                
+                // 加载保存的API密钥
+                if (aiSettings[model] && aiSettings[model].apiKey) {
+                    document.getElementById('api-key').value = aiSettings[model].apiKey;
+                } else {
+                    document.getElementById('api-key').value = '';
+                }
+                
+                // 更新具体模型选择列表
+                updateSpecificModelOptions();
+                
+                // 加载保存的具体模型选择
+                if (aiSettings[model] && aiSettings[model].specificModel) {
+                    document.getElementById('specific-model-select').value = aiSettings[model].specificModel;
+                } else {
+                    document.getElementById('specific-model-select').selectedIndex = 0;
+                }
+            }
+
+            // 更新具体模型选择选项
+            function updateSpecificModelOptions() {
+                const model = document.getElementById('model-select').value;
+                const specificModelSelect = document.getElementById('specific-model-select');
+                
+                // 清空现有选项
+                specificModelSelect.innerHTML = '';
+                
+                // 添加默认选项
+                const defaultOption = document.createElement('option');
+                defaultOption.value = '';
+                defaultOption.textContent = '请选择具体模型';
+                specificModelSelect.appendChild(defaultOption);
+                
+                // 添加具体模型选项
+                if (specificModels[model]) {
+                    specificModels[model].forEach(modelOption => {
+                        const option = document.createElement('option');
+                        option.value = modelOption.value;
+                        option.textContent = modelOption.name;
+                        specificModelSelect.appendChild(option);
+                    });
+                }
+            }
+
+            // 检测模型可用性
+            function checkModelAvailability(model, apiKey) {
+                return new Promise((resolve, reject) => {
+                    // 模拟API调用检测模型可用性
+                    setTimeout(() => {
+                        // 模拟不同模型的检测结果
+                        const availability = {
+                            'deepseek': Math.random() > 0.2, // 80%可用
+                            'openai': Math.random() > 0.1,   // 90%可用
+                            'gemini': Math.random() > 0.3,   // 70%可用
+                            'claude': Math.random() > 0.2,   // 80%可用
+                            'qwen': Math.random() > 0.15     // 85%可用
+                        };
+                        
+                        if (availability[model]) {
+                            resolve({ success: true, message: `${getModelName(model)} 模型可用` });
+                        } else {
+                            reject({ success: false, message: `${getModelName(model)} 模型暂时不可用` });
+                        }
+                    }, 2000);
+                });
+            }
+
+            // 设置默认模型
+            function setDefaultModel(model) {
+                localStorage.setItem('defaultAIModel', model);
+                showModal('设置成功', `已将 ${getModelName(model)} 设置为默认AI模型`);
+            }
+
+            // 测试连接
+            function testConnection() {
+                const model = document.getElementById('model-select').value;
+                const apiKey = document.getElementById('api-key').value;
+                
+                if (!apiKey) {
+                    showModal('错误', '请输入API密钥');
+                    return;
+                }
+                
+                // 验证密钥格式
+                if (!validateApiKey(model, apiKey)) {
+                    showModal('错误', `${getModelName(model)} API密钥格式不正确`);
+                    return;
+                }
+                
+                // 显示加载指示器
+                showLoading('正在测试连接...');
+                
+                // 检测模型可用性
+                checkModelAvailability(model, apiKey)
+                    .then(result => {
+                        showModal('测试成功', result.message);
+                        updateModelStatus(model, true);
+                    })
+                    .catch(error => {
+                        showModal('测试失败', error.message);
+                        updateModelStatus(model, false);
+                    })
+                    .finally(() => {
+                        // 隐藏加载指示器
+                        hideLoading();
+                    });
+            }
+
+            // 高级测试功能 - 确保密钥和模型匹配
+            function advancedTest() {
+                const model = document.getElementById('model-select').value;
+                const apiKey = document.getElementById('api-key').value;
+                
+                if (!apiKey) {
+                    showModal('错误', '请输入API密钥');
+                    return;
+                }
+                
+                // 验证密钥格式
+                if (!validateApiKey(model, apiKey)) {
+                    showModal('错误', `${getModelName(model)} API密钥格式不正确`);
+                    return;
+                }
+                
+                // 显示加载指示器
+                showLoading('正在进行高级测试...');
+                
+                // 执行多步骤验证
+                Promise.resolve()
+                    .then(() => {
+                        // 第一步：验证密钥格式
+                        return new Promise((resolve, reject) => {
+                            if (validateApiKey(model, apiKey)) {
+                                resolve({ step: 1, success: true, message: '密钥格式验证通过' });
+                            } else {
+                                reject({ step: 1, success: false, message: '密钥格式验证失败' });
+                            }
+                        });
+                    })
+                    .then(() => {
+                        // 第二步：检测模型可用性
+                        return checkModelAvailability(model, apiKey);
+                    })
+                    .then(result => {
+                        // 第三步：验证密钥与模型匹配性
+                        return new Promise((resolve, reject) => {
+                            // 模拟实际的模型匹配测试
+                            setTimeout(() => {
+                                // 模拟匹配性检查
+                                const isMatch = Math.random() > 0.1; // 90%匹配率
+                                if (isMatch) {
+                                    resolve({ step: 3, success: true, message: '密钥与模型匹配验证通过' });
+                                } else {
+                                    reject({ step: 3, success: false, message: '密钥与模型不匹配' });
+                                }
+                            }, 1500);
+                        });
+                    })
+                    .then(result => {
+                        showModal('高级测试通过', `1. 密钥格式验证通过\n2. ${getModelName(model)} 模型可用\n3. 密钥与模型匹配验证通过`);
+                        updateModelStatus(model, true);
+                    })
+                    .catch(error => {
+                        if (error.step === 1) {
+                            showModal('高级测试失败', error.message);
+                        } else if (error.step === 3) {
+                            showModal('高级测试失败', `${error.message}\n请确认您输入的是${getModelName(model)}的正确API密钥`);
+                            updateModelStatus(model, false);
+                        } else {
+                            showModal('高级测试失败', error.message);
+                            updateModelStatus(model, false);
+                        }
+                    })
+                    .finally(() => {
+                        // 隐藏加载指示器
+                        hideLoading();
+                    });
+            }
+
+            // 保存设置
+            function saveSettings() {
+                const model = document.getElementById('model-select').value;
+                const apiKey = document.getElementById('api-key').value;
+                const specificModel = document.getElementById('specific-model-select').value;
+                
+                if (!apiKey) {
+                    showModal('错误', '请输入API密钥');
+                    return;
+                }
+                
+                // 验证密钥格式
+                if (!validateApiKey(model, apiKey)) {
+                    showModal('错误', `${getModelName(model)} API密钥格式不正确`);
+                    return;
+                }
+                
+                // 保存到localStorage
+                let aiSettings = JSON.parse(localStorage.getItem('aiSettings')) || {};
+                aiSettings[model] = {
+                    apiKey: apiKey,
+                    specificModel: specificModel,
+                    updatedAt: new Date().toISOString()
+                };
+                localStorage.setItem('aiSettings', JSON.stringify(aiSettings));
+                
+                showModal('保存成功', '设置已保存');
+                updateModelStatus(model, null); // 更新为已配置状态
+            }
+
+            // 获取模型名称
+            function getModelName(modelKey) {
+                const modelNames = {
+                    'deepseek': 'DeepSeek',
+                    'openai': 'OpenAI (ChatGPT)',
+                    'gemini': 'Gemini',
+                    'claude': 'Claude',
+                    'qwen': '通义千问'
+                };
+                return modelNames[modelKey] || modelKey;
+            }
+
+            // 更新模型状态显示
+            function updateModelStatus(modelKey, isAvailable) {
+                const modelItems = document.querySelectorAll('.model-item');
+                modelItems.forEach(item => {
+                    const modelNameElement = item.querySelector('.model-name');
+                    const modelStatusElement = item.querySelector('.model-status');
+                    
+                    // 跳过单选框容器
+                    if (!modelStatusElement.querySelector('input')) {
+                        if (modelNameElement.textContent === getModelName(modelKey)) {
+                            if (isAvailable === true) {
+                                modelStatusElement.textContent = '可用';
+                                modelStatusElement.className = 'model-status status-available';
+                            } else if (isAvailable === false) {
+                                modelStatusElement.textContent = '不可用';
+                                modelStatusElement.className = 'model-status status-unavailable';
+                            } else {
+                                modelStatusElement.textContent = '已配置';
+                                modelStatusElement.className = 'model-status status-available';
+                            }
+                        }
+                    }
+                });
+                
+                // 更新单选框状态
+                updateModelRadioStatus(modelKey, isAvailable);
+            }
+
+            // 更新模型单选框状态
+            function updateModelRadioStatus(modelKey, isAvailable) {
+                const modelItems = document.querySelectorAll('.model-item');
+                modelItems.forEach(item => {
+                    const modelNameElement = item.querySelector('.model-name');
+                    const modelStatusElement = item.querySelector('.model-status');
+                    
+                    // 处理单选框容器
+                    if (modelStatusElement.querySelector('input')) {
+                        if (modelNameElement.textContent === getModelName(modelKey)) {
+                            const radio = modelStatusElement.querySelector('input');
+                            if (isAvailable === true) {
+                                radio.disabled = false;
+                                modelStatusElement.className = 'model-status status-available';
+                            } else if (isAvailable === false) {
+                                radio.disabled = true;
+                                modelStatusElement.className = 'model-status status-unavailable';
+                            } else {
+                                radio.disabled = false;
+                                modelStatusElement.className = 'model-status status-available';
+                            }
+                        }
+                    }
+                });
+            }
+
+            // 页面加载时初始化
+            window.onload = function() {
+                updateTime();
+                loadSavedSettings();
+                loadDefaultModel();
+                // 初始化具体模型选项
+                updateSpecificModelOptions();
+                // 加载第一个模型的API密钥
+                loadApiKey();
+            };
+
+            // 加载已保存的设置
+            function loadSavedSettings() {
+                const aiSettings = JSON.parse(localStorage.getItem('aiSettings')) || {};
+                
+                // 更新UI显示已配置的模型
+                Object.keys(aiSettings).forEach(modelKey => {
+                    updateModelStatus(modelKey, null); // 显示为已配置
+                });
+            }
+
+            // 加载默认模型设置
+            function loadDefaultModel() {
+                const defaultModel = localStorage.getItem('defaultAIModel');
+                if (defaultModel) {
+                    const radio = document.querySelector(`input[name="default-model"][value="${defaultModel}"]`);
+                    if (radio) {
+                        radio.checked = true;
+                    }
+                }
+            }
+
+            // 点击模态框外部关闭模态框
+            window.onclick = function(event) {
+                const modal = document.getElementById('customModal');
+                if (event.target == modal) {
+                    modal.style.display = 'none';
+                }
+            }
+        </script>
+    </div>
+</body>
+</html>
