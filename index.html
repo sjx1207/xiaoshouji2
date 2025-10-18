@@ -2780,19 +2780,18 @@
                 console.log('左侧头像数据:', savedAvatarLeft ? '已保存' : '未保存');
                 
                 if (savedAvatarLeft) {
-                    const avatarImg = document.createElement('img');
-                    avatarImg.src = savedAvatarLeft;
-                    avatarImg.alt = '头像';
-                    // 添加样式确保头像正确显示
-                    avatarImg.style.width = '100%';
-                    avatarImg.style.height = '100%';
-                    avatarImg.style.objectFit = 'cover';
-                    avatarImg.style.objectPosition = 'center';
-                    avatarImg.style.borderRadius = '50%';
-                    
                     const avatarContainer = document.getElementById('avatarLeft');
                     if (avatarContainer) {
                         avatarContainer.innerHTML = '';
+                        const avatarImg = document.createElement('img');
+                        avatarImg.src = savedAvatarLeft;
+                        avatarImg.alt = '头像';
+                        // 添加样式确保头像正确显示
+                        avatarImg.style.width = '100%';
+                        avatarImg.style.height = '100%';
+                        avatarImg.style.objectFit = 'cover';
+                        avatarImg.style.objectPosition = 'center';
+                        avatarImg.style.borderRadius = '50%';
                         avatarContainer.appendChild(avatarImg);
                         console.log('左侧头像加载成功');
                     } else {
@@ -2805,19 +2804,18 @@
                 console.log('右侧头像数据:', savedAvatarRight ? '已保存' : '未保存');
                 
                 if (savedAvatarRight) {
-                    const avatarImg = document.createElement('img');
-                    avatarImg.src = savedAvatarRight;
-                    avatarImg.alt = '头像';
-                    // 添加样式确保头像正确显示
-                    avatarImg.style.width = '100%';
-                    avatarImg.style.height = '100%';
-                    avatarImg.style.objectFit = 'cover';
-                    avatarImg.style.objectPosition = 'center';
-                    avatarImg.style.borderRadius = '50%';
-                    
                     const avatarContainer = document.getElementById('avatarRight');
                     if (avatarContainer) {
                         avatarContainer.innerHTML = '';
+                        const avatarImg = document.createElement('img');
+                        avatarImg.src = savedAvatarRight;
+                        avatarImg.alt = '头像';
+                        // 添加样式确保头像正确显示
+                        avatarImg.style.width = '100%';
+                        avatarImg.style.height = '100%';
+                        avatarImg.style.objectFit = 'cover';
+                        avatarImg.style.objectPosition = 'center';
+                        avatarImg.style.borderRadius = '50%';
                         avatarContainer.appendChild(avatarImg);
                         console.log('右侧头像加载成功');
                     } else {
