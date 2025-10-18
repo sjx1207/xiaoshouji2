@@ -660,7 +660,107 @@
             align-items: center;
         }
 
-        /* 专辑封面 */
+        /* 语音组件样式 */
+        .voice-component {
+            position: absolute;
+            top: 585px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 350px;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            padding: 0 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            z-index: 100;
+        }
+        
+        .voice-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            cursor: pointer;
+        }
+        
+        .voice-wave {
+            flex: 1;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .wave-bar {
+            width: 3px;
+            height: 10px;
+            background: rgba(255, 255, 255, 0.6);
+            margin: 0 2px;
+            border-radius: 2px;
+            animation: waveAnimation 1s infinite ease-in-out;
+        }
+        
+        .wave-bar:nth-child(2) {
+            animation-delay: 0.1s;
+            height: 15px;
+        }
+        
+        .wave-bar:nth-child(3) {
+            animation-delay: 0.2s;
+            height: 20px;
+        }
+        
+        .wave-bar:nth-child(4) {
+            animation-delay: 0.3s;
+            height: 25px;
+        }
+        
+        .wave-bar:nth-child(5) {
+            animation-delay: 0.4s;
+            height: 20px;
+        }
+        
+        .wave-bar:nth-child(6) {
+            animation-delay: 0.5s;
+            height: 15px;
+        }
+        
+        .wave-bar:nth-child(7) {
+            animation-delay: 0.6s;
+            height: 10px;
+        }
+        
+        @keyframes waveAnimation {
+            0%, 100% {
+                transform: scaleY(1);
+            }
+            50% {
+                transform: scaleY(1.5);
+            }
+        }
+        
+        .star-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 10px;
+            cursor: pointer;
+        }
+
         .album-cover {
             width: 80px;
             height: 80px;
@@ -1032,6 +1132,33 @@
 
                 <!-- 第二页 -->
                 <div class="page" id="page2">
+                    <!-- 语音组件（新增） -->
+                    <div class="voice-component" id="voiceComponent" onclick="playVoiceAudio()">
+                        <!-- 头像 -->
+                        <div class="voice-avatar" onclick="changeVoiceAvatar(); event.stopPropagation();">
+                            <img id="voiceAvatarImg" src="" alt="头像" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: none;">
+                            <span id="voiceAvatarPlaceholder" style="font-size: 20px;">👤</span>
+                        </div>
+                        
+                        <!-- 语音波纹条 -->
+                        <div class="voice-wave" id="voiceWave">
+                            <div class="wave-bar"></div>
+                            <div class="wave-bar"></div>
+                            <div class="wave-bar"></div>
+                            <div class="wave-bar"></div>
+                            <div class="wave-bar"></div>
+                            <div class="wave-bar"></div>
+                            <div class="wave-bar"></div>
+                        </div>
+                        
+                        <!-- 星星图标 -->
+                        <div class="star-icon" onclick="uploadVoiceAudio(); event.stopPropagation();">
+                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 20px; height: 20px;">
+                                <path d="M12 2L15.09 8.26L22 9L17 14L18.18 21L12 17.77L5.82 21L7 14L2 9L8.91 8.26L12 2Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                    </div>
+
                     <!-- 主屏幕内容 -->
                     <div class="home-screen">
                         <!-- 日记应用图标 - 第三行第一列 -->
@@ -1249,6 +1376,7 @@
                 loadDisplayPhoto(); // 加载展示照片
                 loadWeatherData(); // 加载天气数据
                 loadCustomIcons(); // 加载自定义图标
+                loadVoiceAvatar(); // 加载语音头像
                 
                 // 从本地存储加载天气状态，如果没有则默认为晴天
                 const savedWeatherState = localStorage.getItem('weatherState') || 'sunny';
@@ -2169,6 +2297,117 @@
             function toggleWeatherState() {
                 // 不再使用旧的切换逻辑，而是打开天气选择弹窗
                 openWeatherModal();
+            }
+
+            // 添加更换语音头像的函数
+            function changeVoiceAvatar() {
+                // 创建文件输入元素
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = 'image/*';
+                input.onchange = function(event) {
+                    const file = event.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            // 更新语音头像显示
+                            const avatarImg = document.getElementById('voiceAvatarImg');
+                            const avatarPlaceholder = document.getElementById('voiceAvatarPlaceholder');
+                            avatarImg.src = e.target.result;
+                            avatarImg.style.display = 'block';
+                            avatarPlaceholder.style.display = 'none';
+                            // 保存到本地存储
+                            localStorage.setItem('voiceAvatar', e.target.result);
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                };
+                input.click();
+            }
+            
+            // 加载保存的语音头像
+            function loadVoiceAvatar() {
+                const savedAvatar = localStorage.getItem('voiceAvatar');
+                if (savedAvatar) {
+                    const avatarImg = document.getElementById('voiceAvatarImg');
+                    const avatarPlaceholder = document.getElementById('voiceAvatarPlaceholder');
+                    avatarImg.src = savedAvatar;
+                    avatarImg.style.display = 'block';
+                    avatarPlaceholder.style.display = 'none';
+                }
+            }
+            
+            // 上传语音音频文件
+            function uploadVoiceAudio() {
+                // 创建文件输入元素
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = 'audio/*';
+                input.onchange = function(event) {
+                    const file = event.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            // 保存音频数据到本地存储
+                            localStorage.setItem('voiceAudio', e.target.result);
+                            localStorage.setItem('voiceAudioName', file.name);
+                            // 显示提示信息
+                            alert('语音音频已上传成功！');
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                };
+                input.click();
+            }
+            
+            // 播放语音音频
+            let voiceAudio = null; // 全局音频对象
+            let isVoicePlaying = false; // 播放状态标志
+            
+            function playVoiceAudio() {
+                const voiceAudioData = localStorage.getItem('voiceAudio');
+                if (voiceAudioData) {
+                    // 如果还没有创建音频对象，则创建一个
+                    if (!voiceAudio) {
+                        voiceAudio = new Audio(voiceAudioData);
+                        
+                        // 监听播放结束事件
+                        voiceAudio.addEventListener('ended', function() {
+                            isVoicePlaying = false;
+                            // 恢复波纹动画
+                            const waveBars = document.querySelectorAll('.wave-bar');
+                            waveBars.forEach(bar => {
+                                bar.style.animation = 'waveAnimation 1s infinite ease-in-out';
+                            });
+                        });
+                    }
+                    
+                    // 切换播放/暂停状态
+                    if (isVoicePlaying) {
+                        // 当前正在播放，需要暂停
+                        voiceAudio.pause();
+                        isVoicePlaying = false;
+                        // 恢复波纹动画
+                        const waveBars = document.querySelectorAll('.wave-bar');
+                        waveBars.forEach(bar => {
+                            bar.style.animation = 'waveAnimation 1s infinite ease-in-out';
+                        });
+                    } else {
+                        // 当前已暂停或未播放，需要播放
+                        voiceAudio.play().catch(e => {
+                            console.error('播放失败:', e);
+                            alert('音频播放失败，请重试');
+                        });
+                        isVoicePlaying = true;
+                        // 加快波纹动画
+                        const waveBars = document.querySelectorAll('.wave-bar');
+                        waveBars.forEach(bar => {
+                            bar.style.animation = 'waveAnimation 0.5s infinite ease-in-out';
+                        });
+                    }
+                } else {
+                    alert('请先上传音频文件');
+                }
             }
 
             // ========= 滑动页面功能相关函数 =========
