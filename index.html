@@ -1581,7 +1581,10 @@
                 loadVoiceAvatar(); // 加载语音头像
                 
                 // 延迟加载浪漫头像，确保DOM完全渲染
-                setTimeout(loadRomanticAvatars, 100); // 延迟100毫秒
+                setTimeout(function() {
+                    loadRomanticAvatars();
+                    console.log('浪漫头像加载完成');
+                }, 500); // 延迟500毫秒，确保页面完全加载
                 
                 // 从本地存储加载天气状态，如果没有则默认为晴天
                 const savedWeatherState = localStorage.getItem('weatherState') || 'sunny';
@@ -2504,53 +2507,14 @@
                 openWeatherModal();
             }
 
-            // 添加更换头像的函数
-            function changeAvatar(side) {
-                // 创建文件输入元素
-                const input = document.createElement('input');
-                input.type = 'file';
-                input.accept = 'image/*';
-                input.onchange = function(event) {
-                    const file = event.target.files[0];
-                    if (file) {
-                        const reader = new FileReader();
-                        reader.onload = function(e) {
-                            // 创建头像图片元素
-                            const avatarImg = document.createElement('img');
-                            avatarImg.src = e.target.result;
-                            avatarImg.alt = '头像';
-                            // 添加样式确保头像正确显示
-                            avatarImg.style.width = '100%';
-                            avatarImg.style.height = '100%';
-                            avatarImg.style.objectFit = 'cover';
-                            avatarImg.style.objectPosition = 'center';
-                            avatarImg.style.borderRadius = '50%';
-                            
-                            // 更新对应侧的头像显示
-                            if (side === 'left') {
-                                const avatarContainer = document.getElementById('avatarLeft');
-                                avatarContainer.innerHTML = '';
-                                avatarContainer.appendChild(avatarImg);
-                                // 保存到本地存储
-                                localStorage.setItem('romanticAvatarLeft', e.target.result);
-                            } else if (side === 'right') {
-                                const avatarContainer = document.getElementById('avatarRight');
-                                avatarContainer.innerHTML = '';
-                                avatarContainer.appendChild(avatarImg);
-                                // 保存到本地存储
-                                localStorage.setItem('romanticAvatarRight', e.target.result);
-                            }
-                        };
-                        reader.readAsDataURL(file);
-                    }
-                };
-                input.click();
-            }
-            
             // 加载保存的头像
             function loadRomanticAvatars() {
+                console.log('开始加载浪漫头像');
+                
                 // 加载左侧头像
                 const savedAvatarLeft = localStorage.getItem('romanticAvatarLeft');
+                console.log('左侧头像数据:', savedAvatarLeft ? '已保存' : '未保存');
+                
                 if (savedAvatarLeft) {
                     const avatarImg = document.createElement('img');
                     avatarImg.src = savedAvatarLeft;
@@ -2566,6 +2530,7 @@
                     if (avatarContainer) {
                         avatarContainer.innerHTML = '';
                         avatarContainer.appendChild(avatarImg);
+                        console.log('左侧头像加载成功');
                     } else {
                         console.error('未找到左侧头像容器');
                     }
@@ -2573,6 +2538,8 @@
                 
                 // 加载右侧头像
                 const savedAvatarRight = localStorage.getItem('romanticAvatarRight');
+                console.log('右侧头像数据:', savedAvatarRight ? '已保存' : '未保存');
+                
                 if (savedAvatarRight) {
                     const avatarImg = document.createElement('img');
                     avatarImg.src = savedAvatarRight;
@@ -2588,6 +2555,7 @@
                     if (avatarContainer) {
                         avatarContainer.innerHTML = '';
                         avatarContainer.appendChild(avatarImg);
+                        console.log('右侧头像加载成功');
                     } else {
                         console.error('未找到右侧头像容器');
                     }
