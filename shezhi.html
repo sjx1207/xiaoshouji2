@@ -890,6 +890,8 @@
                 updateSpecificModelOptions();
                 // 加载第一个模型的API密钥
                 loadApiKey();
+                // 加载天气API密钥
+                loadWeatherApiKey();
             };
 
             // 加载已保存的设置
@@ -913,6 +915,67 @@
                 }
             }
 
+            // 测试天气API连接
+            function testWeatherApi() {
+                const apiKey = document.getElementById('weather-api-key').value;
+                
+                if (!apiKey) {
+                    showModal('错误', '请输入WeatherAPI密钥');
+                    return;
+                }
+                
+                // 显示加载指示器
+                showLoading('正在测试天气API连接...');
+                
+                // 使用北京作为测试城市
+                const url = `https://api.weatherapi.com/v1/current.json?key=${apiKey}&q=北京&lang=zh`;
+                
+                fetch(url)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('API调用失败');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.error) {
+                            throw new Error(data.error.message);
+                        }
+                        showModal('测试成功', `天气API连接正常\n城市: ${data.location.name}\n温度: ${data.current.temp_c}°C\n天气: ${data.current.condition.text}`);
+                    })
+                    .catch(error => {
+                        console.error('天气API测试失败:', error);
+                        showModal('测试失败', `天气API连接失败: ${error.message}`);
+                    })
+                    .finally(() => {
+                        // 隐藏加载指示器
+                        hideLoading();
+                    });
+            }
+            
+            // 保存天气API设置
+            function saveWeatherApiSettings() {
+                const apiKey = document.getElementById('weather-api-key').value;
+                
+                if (!apiKey) {
+                    showModal('错误', '请输入WeatherAPI密钥');
+                    return;
+                }
+                
+                // 保存到localStorage
+                localStorage.setItem('weatherApiKey', apiKey);
+                
+                showModal('保存成功', '天气API密钥已保存');
+            }
+            
+            // 加载已保存的天气API密钥
+            function loadWeatherApiKey() {
+                const savedApiKey = localStorage.getItem('weatherApiKey');
+                if (savedApiKey) {
+                    document.getElementById('weather-api-key').value = savedApiKey;
+                }
+            }
+            
             // 点击模态框外部关闭模态框
             window.onclick = function(event) {
                 const modal = document.getElementById('customModal');
@@ -923,5 +986,4 @@
         </script>
     </div>
 </body>
-
 </html>
