@@ -2517,6 +2517,12 @@
                             const avatarImg = document.createElement('img');
                             avatarImg.src = e.target.result;
                             avatarImg.alt = '头像';
+                            // 添加样式确保头像正确显示
+                            avatarImg.style.width = '100%';
+                            avatarImg.style.height = '100%';
+                            avatarImg.style.objectFit = 'cover';
+                            avatarImg.style.objectPosition = 'center';
+                            avatarImg.style.borderRadius = '50%';
                             
                             // 更新对应侧的头像显示
                             if (side === 'left') {
