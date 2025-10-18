@@ -1647,6 +1647,17 @@
                 const now = new Date();
                 const timeString = now.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
                 document.getElementById('current-time').textContent = timeString;
+                
+                // 更新天气组件中的星期和日期
+                const weekdays = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+                const months = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'];
+                
+                const weekday = weekdays[now.getDay()];
+                const month = months[now.getMonth()];
+                const date = now.getDate();
+                
+                document.getElementById('weatherDay').textContent = weekday;
+                document.getElementById('weatherDate').textContent = `${month}${date}日`;
             }
 
             // 每秒更新一次时间
