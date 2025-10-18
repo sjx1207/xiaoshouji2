@@ -2547,6 +2547,12 @@
                     const avatarImg = document.createElement('img');
                     avatarImg.src = savedAvatarLeft;
                     avatarImg.alt = '头像';
+                    // 添加样式确保头像正确显示
+                    avatarImg.style.width = '100%';
+                    avatarImg.style.height = '100%';
+                    avatarImg.style.objectFit = 'cover';
+                    avatarImg.style.objectPosition = 'center';
+                    avatarImg.style.borderRadius = '50%';
                     
                     const avatarContainer = document.getElementById('avatarLeft');
                     avatarContainer.innerHTML = '';
@@ -2559,6 +2565,12 @@
                     const avatarImg = document.createElement('img');
                     avatarImg.src = savedAvatarRight;
                     avatarImg.alt = '头像';
+                    // 添加样式确保头像正确显示
+                    avatarImg.style.width = '100%';
+                    avatarImg.style.height = '100%';
+                    avatarImg.style.objectFit = 'cover';
+                    avatarImg.style.objectPosition = 'center';
+                    avatarImg.style.borderRadius = '50%';
                     
                     const avatarContainer = document.getElementById('avatarRight');
                     avatarContainer.innerHTML = '';
