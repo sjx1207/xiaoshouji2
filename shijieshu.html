@@ -654,7 +654,35 @@
                 loadWorlds();
                 // 自动清理和修复数据
                 cleanAndFixWorlds();
+                
+                // 添加测试函数
+                window.testDeleteFunction = function() {
+                    console.log('测试删除功能');
+                    // 检查确认删除弹窗是否存在
+                    const confirmModal = document.getElementById('confirmDeleteModal');
+                    if (confirmModal) {
+                        console.log('确认删除弹窗存在');
+                    } else {
+                        console.log('确认删除弹窗不存在');
+                    }
+                };
             };
+            
+            // 测试删除功能
+            function testDelete() {
+                console.log('测试删除功能');
+                // 创建一个测试世界
+                const testWorld = {
+                    id: Date.now(),
+                    name: '测试世界',
+                    desc: '这是一个测试世界',
+                    avatar: null,
+                    createdAt: new Date().toISOString()
+                };
+                
+                // 显示删除确认弹窗
+                showDeleteConfirm(testWorld, 0);
+            }
             
             // 数据清理和修复函数
             function cleanAndFixWorlds() {
@@ -986,25 +1014,47 @@
 
             // 显示删除确认弹窗
             function showDeleteConfirm(world, index) {
+                console.log('显示删除确认弹窗:', world, index);
                 currentWorld = world;
                 currentWorldIndex = index;
-                document.getElementById('confirmDeleteModal').classList.add('active');
+                const confirmModal = document.getElementById('confirmDeleteModal');
+                if (confirmModal) {
+                    confirmModal.classList.add('active');
+                    // 在手机上确保弹窗可见
+                    setTimeout(() => {
+                        confirmModal.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }, 100);
+                } else {
+                    console.error('确认删除弹窗不存在');
+                    showPageAlert('系统错误，请刷新页面后重试');
+                }
             }
 
             // 关闭删除确认弹窗
             function closeConfirmDeleteModal() {
-                document.getElementById('confirmDeleteModal').classList.remove('active');
+                const confirmModal = document.getElementById('confirmDeleteModal');
+                if (confirmModal) {
+                    confirmModal.classList.remove('active');
+                } else {
+                    console.error('确认删除弹窗不存在');
+                }
                 currentWorld = null;
                 currentWorldIndex = null;
                 
                 // 移除所有卡片的长按样式
                 document.querySelectorAll('.world-card').forEach(card => {
                     card.classList.remove('long-press');
+                    // 恢复背景颜色
+                    card.style.backgroundColor = '';
                 });
             }
 
             // 确认删除世界
             function confirmDeleteWorld() {
+                console.log('确认删除世界函数被调用');
+                console.log('当前世界:', currentWorld);
+                console.log('当前世界索引:', currentWorldIndex);
+                
                 if (currentWorld && currentWorldIndex !== null) {
                     // 获取保存的世界数据
                     const savedWorlds = localStorage.getItem('worlds');
@@ -1013,16 +1063,46 @@
                     if (savedWorlds) {
                         try {
                             worlds = JSON.parse(savedWorlds);
+                            console.log('从localStorage获取的世界数据:', worlds);
                         } catch (e) {
                             console.error('解析世界数据时出错:', e);
+                            showPageAlert('数据解析错误，请尝试数据修复功能');
+                            return;
                         }
                     }
                     
+                    // 确保worlds是数组
+                    if (!Array.isArray(worlds)) {
+                        console.error('世界数据不是数组格式');
+                        showPageAlert('数据格式错误，请尝试数据修复功能');
+                        return;
+                    }
+                    
+                    // 检查索引是否有效
+                    if (currentWorldIndex < 0 || currentWorldIndex >= worlds.length) {
+                        console.error('世界索引无效:', currentWorldIndex);
+                        showPageAlert('世界索引无效，请重新选择要删除的世界');
+                        closeConfirmDeleteModal();
+                        return;
+                    }
+                    
                     // 从数组中移除世界
+                    console.log('删除索引为', currentWorldIndex, '的世界');
                     worlds.splice(currentWorldIndex, 1);
                     
                     // 保存到本地存储
-                    localStorage.setItem('worlds', JSON.stringify(worlds));
+                    try {
+                        localStorage.setItem('worlds', JSON.stringify(worlds));
+                        console.log('世界数据保存成功');
+                    } catch (e) {
+                        console.error('保存世界数据时出错:', e);
+                        if (e.name === 'QuotaExceededError') {
+                            showPageAlert('存储空间不足，请清理一些数据后再试');
+                        } else {
+                            showPageAlert('保存数据时出错，请重试');
+                        }
+                        return;
+                    }
                     
                     // 重新加载世界列表
                     loadWorlds();
@@ -1035,6 +1115,9 @@
                     
                     // 显示删除成功提示
                     showPageAlert('世界删除成功！');
+                } else {
+                    console.log('没有选中的世界或索引无效');
+                    showPageAlert('没有选中的世界');
                 }
             }
 
@@ -1309,9 +1392,16 @@
 
             // 删除世界（从详情弹窗中调用）
             function deleteWorld() {
+                console.log('删除世界按钮被点击');
+                console.log('当前世界:', currentWorld);
+                console.log('当前世界索引:', currentWorldIndex);
                 if (currentWorld && currentWorldIndex !== null) {
                     showDeleteConfirm(currentWorld, currentWorldIndex);
-                    closeWorldDetailModal();
+                    // 修复：不再立即关闭详情弹窗，而是在用户确认删除后再关闭
+                    // closeWorldDetailModal();
+                } else {
+                    console.log('没有选中的世界或索引无效');
+                    showPageAlert('没有选中的世界');
                 }
             }
 
