@@ -645,9 +645,11 @@
                     <button class="confirm-btn confirm-cancel-btn" onclick="closeConfirmDeleteModal()">取消</button>
                     <button class="confirm-btn confirm-delete-btn" onclick="confirmDeleteCharacter()">删除</button>
                 </div>
-                <!-- 添加紧急修复按钮 -->
-                <div style="margin-top: 15px; text-align: center;">
+                <!-- 添加手机端修复工具按钮 -->
+                <div style="margin-top: 15px; text-align: center; display: flex; flex-direction: column; gap: 10px;">
                     <button class="confirm-btn confirm-cancel-btn" onclick="emergencyFixCharacters()" style="background: linear-gradient(135deg, #FF9500, #FFA500); font-size: 14px; padding: 8px;">紧急修复</button>
+                    <button class="confirm-btn confirm-cancel-btn" onclick="mobileDataRepair()" style="background: linear-gradient(135deg, #5856D6, #AF52DE); font-size: 14px; padding: 8px;">数据修复</button>
+                    <button class="confirm-btn confirm-delete-btn" onclick="mobileEmergencyReset()" style="font-size: 14px; padding: 8px;">紧急重置</button>
                 </div>
             </div>
         </div>
@@ -931,19 +933,25 @@
                 event.preventDefault();
                 event.stopPropagation();
                 
-                // 设置长按定时器
+                // 在手机上立即显示反馈
+                const characterCard = event.target.closest('.character-card');
+                if (characterCard) {
+                    characterCard.style.backgroundColor = 'rgba(255, 59, 48, 0.3)'; // 红色背景反馈
+                }
+                
+                // 设置长按定时器（手机上可以稍微缩短时间）
                 longPressTimer = setTimeout(() => {
-                    console.log('长按500ms触发');
-                    // 长按500ms后触发
-                    const characterCard = event.target.closest('.character-card');
+                    console.log('长按触发');
+                    // 长按触发
                     if (characterCard) {
-                        console.log('找到角色卡片，添加长按样式');
                         characterCard.classList.add('long-press');
+                        // 震动反馈（如果设备支持）
+                        if (navigator.vibrate) {
+                            navigator.vibrate(50); // 50ms震动
+                        }
                         showDeleteConfirm(character, index);
-                    } else {
-                        console.log('未找到角色卡片');
                     }
-                }, 500);
+                }, 300); // 手机上300ms更合适
             }
 
             // 处理长按结束
@@ -979,8 +987,13 @@
                 const confirmModal = document.getElementById('confirmDeleteModal');
                 if (confirmModal) {
                     confirmModal.classList.add('active');
+                    // 在手机上确保弹窗可见
+                    setTimeout(() => {
+                        confirmModal.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }, 100);
                 } else {
                     console.error('确认删除弹窗不存在');
+                    showPageAlert('系统错误，请刷新页面后重试');
                 }
             }
 
@@ -999,115 +1012,130 @@
                 });
             }
 
-            // 确认删除角色
+            // 手机优化的确认删除角色功能
             function confirmDeleteCharacter() {
                 console.log('确认删除角色函数被调用');
-                console.log('currentCharacter:', currentCharacter);
-                console.log('currentCharacterIndex:', currentCharacterIndex);
                 
-                // 获取保存的角色数据
+                // 获取最新的角色数据
                 const savedCharacters = localStorage.getItem('characters');
-                let characters = [];
-                
-                if (savedCharacters) {
-                    try {
-                        characters = JSON.parse(savedCharacters);
-                        console.log('从localStorage获取的角色数据:', characters);
-                    } catch (e) {
-                        console.error('解析角色数据时出错:', e);
-                        showPageAlert('数据解析错误，请重试');
-                        closeConfirmDeleteModal();
-                        return;
-                    }
-                }
-                
-                // 处理各种删除情况
-                let deleted = false;
-                
-                if (currentCharacter && currentCharacterIndex !== null) {
-                    // 情况1: 有角色对象和索引
-                    console.log('情况1: 有角色对象和索引');
-                    
-                    // 验证索引有效性
-                    if (currentCharacterIndex >= 0 && currentCharacterIndex < characters.length) {
-                        // 通过索引删除
-                        console.log('通过索引删除角色');
-                        characters.splice(currentCharacterIndex, 1);
-                        deleted = true;
-                    } else {
-                        // 索引无效，通过查找角色ID删除
-                        console.log('索引无效，通过查找角色删除');
-                        const foundIndex = characters.findIndex(char => 
-                            char && char.id === currentCharacter.id);
-                        if (foundIndex !== -1) {
-                            characters.splice(foundIndex, 1);
-                            deleted = true;
-                        } else {
-                            // 通过角色名称查找
-                            const nameIndex = characters.findIndex(char => 
-                                char && char.name === currentCharacter.name);
-                            if (nameIndex !== -1) {
-                                characters.splice(nameIndex, 1);
-                                deleted = true;
-                            }
-                        }
-                    }
-                } else if (currentCharacter) {
-                    // 情况2: 只有角色对象，没有索引
-                    console.log('情况2: 只有角色对象，没有索引');
-                    const foundIndex = characters.findIndex(char => 
-                        char && char.id === currentCharacter.id);
-                    if (foundIndex !== -1) {
-                        characters.splice(foundIndex, 1);
-                        deleted = true;
-                    } else {
-                        // 通过角色名称查找
-                        const nameIndex = characters.findIndex(char => 
-                            char && char.name === currentCharacter.name);
-                        if (nameIndex !== -1) {
-                            characters.splice(nameIndex, 1);
-                            deleted = true;
-                        }
-                    }
-                } else if (currentCharacterIndex !== null && currentCharacterIndex >= 0 && currentCharacterIndex < characters.length) {
-                    // 情况3: 只有有效索引，没有角色对象
-                    console.log('情况3: 只有有效索引，没有角色对象');
-                    characters.splice(currentCharacterIndex, 1);
-                    deleted = true;
-                }
-                
-                // 如果没有找到要删除的角色
-                if (!deleted) {
-                    console.error('未找到要删除的角色');
-                    console.log('currentCharacter:', currentCharacter);
-                    console.log('currentCharacterIndex:', currentCharacterIndex);
-                    console.log('角色数组:', characters);
-                    showPageAlert('未找到要删除的角色');
+                if (!savedCharacters) {
+                    showPageAlert('没有找到角色数据');
                     closeConfirmDeleteModal();
                     return;
                 }
                 
-                // 保存到本地存储，添加错误处理
+                let characters;
+                try {
+                    characters = JSON.parse(savedCharacters);
+                } catch (e) {
+                    console.error('解析角色数据时出错:', e);
+                    showPageAlert('数据损坏，请尝试数据修复功能');
+                    closeConfirmDeleteModal();
+                    return;
+                }
+                
+                // 确保characters是数组
+                if (!Array.isArray(characters)) {
+                    showPageAlert('数据格式错误');
+                    closeConfirmDeleteModal();
+                    return;
+                }
+                
+                // 多重策略删除角色
+                let deleteSuccess = false;
+                let deleteIndex = -1;
+                
+                // 策略1: 使用当前索引（如果有效）
+                if (currentCharacterIndex !== null && 
+                    currentCharacterIndex >= 0 && 
+                    currentCharacterIndex < characters.length) {
+                    
+                    // 验证索引位置的角色是否匹配
+                    const characterAtIndex = characters[currentCharacterIndex];
+                    if (characterAtIndex && 
+                        ((currentCharacter && characterAtIndex.id === currentCharacter.id) ||
+                         (currentCharacter && characterAtIndex.name === currentCharacter.name))) {
+                        // 索引匹配，直接删除
+                        characters.splice(currentCharacterIndex, 1);
+                        deleteSuccess = true;
+                        deleteIndex = currentCharacterIndex;
+                        console.log('通过索引删除成功');
+                    }
+                }
+                
+                // 策略2: 通过ID查找删除（如果策略1失败）
+                if (!deleteSuccess && currentCharacter && currentCharacter.id) {
+                    const foundIndex = characters.findIndex(char => 
+                        char && char.id === currentCharacter.id);
+                    if (foundIndex !== -1) {
+                        characters.splice(foundIndex, 1);
+                        deleteSuccess = true;
+                        deleteIndex = foundIndex;
+                        console.log('通过ID删除成功');
+                    }
+                }
+                
+                // 策略3: 通过名称查找删除（如果策略2失败）
+                if (!deleteSuccess && currentCharacter && currentCharacter.name) {
+                    const foundIndex = characters.findIndex(char => 
+                        char && char.name === currentCharacter.name);
+                    if (foundIndex !== -1) {
+                        characters.splice(foundIndex, 1);
+                        deleteSuccess = true;
+                        deleteIndex = foundIndex;
+                        console.log('通过名称删除成功');
+                    }
+                }
+                
+                // 策略4: 如果还是失败，删除第一个匹配的角色（最后手段）
+                if (!deleteSuccess && currentCharacter) {
+                    const foundIndex = characters.findIndex(char => {
+                        if (!char) return false;
+                        // 比较关键属性
+                        return (currentCharacter.name && char.name === currentCharacter.name) ||
+                               (currentCharacter.desc && char.desc === currentCharacter.desc);
+                    });
+                    
+                    if (foundIndex !== -1) {
+                        characters.splice(foundIndex, 1);
+                        deleteSuccess = true;
+                        deleteIndex = foundIndex;
+                        console.log('通过属性匹配删除成功');
+                    }
+                }
+                
+                // 如果所有策略都失败
+                if (!deleteSuccess) {
+                    console.error('删除失败，未找到匹配的角色');
+                    console.log('当前角色:', currentCharacter);
+                    console.log('当前索引:', currentCharacterIndex);
+                    console.log('角色列表:', characters);
+                    showPageAlert('删除失败，请尝试刷新页面后重试');
+                    closeConfirmDeleteModal();
+                    return;
+                }
+                
+                // 保存更新后的数据
                 try {
                     localStorage.setItem('characters', JSON.stringify(characters));
-                    console.log('角色数据已保存到localStorage');
+                    console.log('角色数据保存成功，删除索引:', deleteIndex);
                 } catch (e) {
                     if (e.name === 'QuotaExceededError') {
-                        // 即使是删除操作也可能遇到存储问题，尝试清理数据
-                        console.log('删除后仍然遇到存储问题，尝试清理数据');
+                        // 存储空间不足，尝试清理后重试
+                        console.log('存储空间不足，尝试清理');
                         try {
-                            // 清理空数据和无效数据
-                            const cleanedCharacters = characters.filter(char => char && char.name);
+                            // 清理空数据
+                            const cleanedCharacters = characters.filter(char => 
+                                char && char.name && typeof char.name === 'string');
                             localStorage.setItem('characters', JSON.stringify(cleanedCharacters));
-                            console.log('清理后数据已保存');
                         } catch (cleanError) {
                             console.error('清理后仍然无法保存:', cleanError);
-                            showPageAlert('存储空间异常，请尝试紧急修复');
+                            showPageAlert('存储空间异常，请尝试数据修复');
                             closeConfirmDeleteModal();
                             return;
                         }
                     } else {
-                        console.error('保存角色数据时出错:', e);
+                        console.error('保存数据时出错:', e);
                         showPageAlert('保存数据时出错，请重试');
                         closeConfirmDeleteModal();
                         return;
@@ -1116,19 +1144,18 @@
                 
                 // 重新加载角色列表
                 loadCharacters();
-                console.log('角色列表已重新加载');
                 
-                // 关闭确认弹窗
+                // 关闭所有弹窗
                 closeConfirmDeleteModal();
-                console.log('确认删除弹窗已关闭');
-                
-                // 关闭详情弹窗（如果打开的话）
                 closeCharacterDetailModal();
-                console.log('角色详情弹窗已关闭');
                 
-                // 显示删除成功提示
+                // 显示成功消息
                 showPageAlert('角色删除成功！');
-                console.log('显示删除成功提示');
+                
+                // 手机震动反馈（如果支持）
+                if (navigator.vibrate) {
+                    navigator.vibrate([100]); // 100ms震动
+                }
             }
 
             // 打开添加角色弹窗
@@ -1141,20 +1168,21 @@
                 document.getElementById('addCharacterModal').classList.remove('active');
             }
 
-            // 处理头像上传
+            // 处理头像上传 - 为手机优化
             function handleAvatarUpload(event) {
                 const file = event.target.files[0];
                 if (file) {
-                    // 检查文件大小
-                    if (file.size > 200 * 1024) { // 200KB限制
-                        showPageAlert('头像文件太大，请选择小于200KB的图片');
+                    // 移除文件大小限制，允许上传更大的图片
+                    // 检查文件大小 - 在手机端不限制
+                    if (file.size > 10 * 1024 * 1024) { // 10MB限制（仅作为基本保护）
+                        showPageAlert('头像文件太大，请选择小于10MB的图片');
                         return;
                     }
                     
                     const reader = new FileReader();
                     reader.onload = function(e) {
-                        // 压缩图片
-                        compressImage(e.target.result, 100, 100, 0.7) // 100x100像素，70%质量
+                        // 为手机优化的图片压缩
+                        compressImageForMobile(e.target.result)
                             .then(compressedData => {
                                 // 保存头像数据到临时变量
                                 window.tempAvatar = compressedData;
@@ -1165,31 +1193,39 @@
                                 `;
                             })
                             .catch(error => {
-                                console.error('图片压缩失败:', error);
-                                showPageAlert('图片处理失败，请重试');
+                                console.error('图片处理失败:', error);
+                                // 移除大小检查，直接使用原始数据
+                                window.tempAvatar = e.target.result;
+                                document.querySelector('.upload-area').innerHTML = `
+                                    <img src="${e.target.result}" style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover; margin: 0 auto 10px;">
+                                    <div class="upload-text" id="uploadText">头像已选择</div>
+                                `;
                             });
                     };
                     reader.readAsDataURL(file);
                 }
             }
             
-            // 压缩图片
-            function compressImage(src, maxWidth, maxHeight, quality) {
+            // 为手机优化的图片压缩
+            function compressImageForMobile(src) {
                 return new Promise((resolve, reject) => {
                     const img = new Image();
                     img.onload = () => {
-                        // 计算新尺寸
+                        // 为手机屏幕优化尺寸，但保持更高的分辨率
                         let width = img.width;
                         let height = img.height;
+                        const maxWidth = 300;  // 为手机优化，提高分辨率
+                        const maxHeight = 300; // 为手机优化，提高分辨率
                         
+                        // 按比例缩放，但保持更高的质量
                         if (width > height) {
                             if (width > maxWidth) {
-                                height = (height * maxWidth) / width;
+                                height = Math.round((height * maxWidth) / width);
                                 width = maxWidth;
                             }
                         } else {
                             if (height > maxHeight) {
-                                width = (width * maxHeight) / height;
+                                width = Math.round((width * maxHeight) / height);
                                 height = maxHeight;
                             }
                         }
@@ -1199,10 +1235,30 @@
                         canvas.width = width;
                         canvas.height = height;
                         const ctx = canvas.getContext('2d');
+                        
+                        // 绘制图片
                         ctx.drawImage(img, 0, 0, width, height);
                         
-                        // 转换为base64
-                        const compressedData = canvas.toDataURL('image/jpeg', quality);
+                        // 尝试不同的质量级别，但保持更高的质量
+                        let quality = 0.9; // 更高的质量
+                        let compressedData;
+                        
+                        do {
+                            compressedData = canvas.toDataURL('image/jpeg', quality);
+                            if (compressedData.length < 500 * 1024) { // 500KB目标（更宽松）
+                                break;
+                            }
+                            quality -= 0.1;
+                        } while (quality > 0.3); // 保持更高的最低质量
+                        
+                        // 如果还是太大，使用更小的尺寸压缩
+                        if (compressedData.length >= 500 * 1024) {
+                            canvas.width = Math.round(width * 0.9);
+                            canvas.height = Math.round(height * 0.9);
+                            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                            compressedData = canvas.toDataURL('image/jpeg', 0.8);
+                        }
+                        
                         resolve(compressedData);
                     };
                     img.onerror = reject;
@@ -1233,8 +1289,8 @@
                 }
                 
                 // 检查存储空间是否足够（限制角色数量）
-                if (characters.length >= 50) {
-                    showPageAlert('角色数量已达上限（50个），请删除一些角色后再添加');
+                if (characters.length >= 100) { // 增加角色数量限制到100个
+                    showPageAlert('角色数量已达上限（100个），请删除一些角色后再添加');
                     return;
                 }
                 
@@ -1260,7 +1316,7 @@
                 try {
                     const charactersString = JSON.stringify(characters);
                     // 检查数据大小
-                    if (charactersString.length > 5 * 1024 * 1024) { // 5MB限制
+                    if (charactersString.length > 10 * 1024 * 1024) { // 10MB限制（更宽松）
                         showPageAlert('数据太大无法保存，请减少角色数量或简化头像');
                         return;
                     }
@@ -1309,13 +1365,13 @@
             // 压缩图片数据
             function compressImageData(imageData) {
                 // 如果图片数据太大，尝试压缩
-                if (imageData.length > 100 * 1024) { // 100KB
+                if (imageData.length > 500 * 1024) { // 500KB（更宽松的限制）
                     // 这里可以添加图片压缩逻辑
                     // 简单处理：截取部分数据避免过大
                     console.log('图片数据较大，进行压缩处理');
-                    // 为了简单起见，我们只保留前100KB数据
-                    if (imageData.length > 100 * 1024) {
-                        return imageData.substring(0, 100 * 1024);
+                    // 为了简单起见，我们只保留前500KB数据
+                    if (imageData.length > 500 * 1024) {
+                        return imageData.substring(0, 500 * 1024);
                     }
                 }
                 return imageData;
@@ -1338,8 +1394,8 @@
                 const avatarImg = document.getElementById('detailAvatar');
                 if (character.avatar) {
                     // 如果头像数据太大，进行压缩处理
-                    if (character.avatar.length > 100 * 1024) { // 100KB
-                        compressImage(character.avatar, 100, 100, 0.7)
+                    if (character.avatar.length > 500 * 1024) { // 500KB（更宽松的限制）
+                        compressImage(character.avatar, 150, 150, 0.8)
                             .then(compressedData => {
                                 avatarImg.src = compressedData;
                                 avatarImg.alt = character.name;
@@ -1370,19 +1426,84 @@
                 currentCharacterIndex = null;
             }
 
-            // 删除角色（从详情弹窗中调用）
+            // 增强的删除角色功能 - 专为手机优化
             function deleteCharacter() {
                 console.log('删除角色函数被调用');
-                if (currentCharacter && currentCharacterIndex !== null) {
-                    console.log('当前角色:', currentCharacter);
-                    console.log('当前角色索引:', currentCharacterIndex);
-                    showDeleteConfirm(currentCharacter, currentCharacterIndex);
-                    closeCharacterDetailModal();
+                console.log('当前角色:', currentCharacter);
+                console.log('当前角色索引:', currentCharacterIndex);
+                
+                // 检查是否有选中的角色
+                if (!currentCharacter) {
+                    // 尝试从localStorage中获取最新的角色数据
+                    const savedCharacters = localStorage.getItem('characters');
+                    if (savedCharacters) {
+                        try {
+                            const characters = JSON.parse(savedCharacters);
+                            if (characters && characters.length > 0) {
+                                // 如果有角色数据但currentCharacter为空，提示用户重新选择
+                                showPageAlert('请重新选择要删除的角色');
+                                closeCharacterDetailModal();
+                                loadCharacters(); // 重新加载确保数据同步
+                                return;
+                            }
+                        } catch (e) {
+                            console.error('解析角色数据时出错:', e);
+                        }
+                    }
+                    showPageAlert('没有选中的角色');
+                    return;
+                }
+                
+                // 显示删除确认弹窗
+                showDeleteConfirm(currentCharacter, currentCharacterIndex);
+                closeCharacterDetailModal();
+            }
+
+            // 手机友好的长按处理
+            function handleLongPressStart(event, character, index) {
+                console.log('长按开始事件触发');
+                console.log('角色:', character);
+                console.log('索引:', index);
+                
+                // 防止事件冒泡
+                event.preventDefault();
+                event.stopPropagation();
+                
+                // 在手机上立即显示反馈
+                const characterCard = event.target.closest('.character-card');
+                if (characterCard) {
+                    characterCard.style.backgroundColor = 'rgba(255, 59, 48, 0.3)'; // 红色背景反馈
+                }
+                
+                // 设置长按定时器（手机上可以稍微缩短时间）
+                longPressTimer = setTimeout(() => {
+                    console.log('长按触发');
+                    // 长按触发
+                    if (characterCard) {
+                        characterCard.classList.add('long-press');
+                        // 震动反馈（如果设备支持）
+                        if (navigator.vibrate) {
+                            navigator.vibrate(50); // 50ms震动
+                        }
+                        showDeleteConfirm(character, index);
+                    }
+                }, 300); // 手机上300ms更合适
+            }
+
+            // 改进的删除确认功能
+            function showDeleteConfirm(character, index) {
+                currentCharacter = character;
+                currentCharacterIndex = index;
+                const confirmModal = document.getElementById('confirmDeleteModal');
+                if (confirmModal) {
+                    confirmModal.classList.add('active');
+                    // 在手机上确保弹窗可见
+                    setTimeout(() => {
+                        confirmModal.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }, 100);
                 } else {
-                    console.error('无法删除角色：当前角色或索引为空');
-                    console.log('currentCharacter:', currentCharacter);
-                    console.log('currentCharacterIndex:', currentCharacterIndex);
-                    showPageAlert('删除角色时出错，请重试');
+                    console.error('确认删除弹窗不存在');
+                    showPageAlert('系统错误，请刷新页面后重试');
                 }
             }
 
@@ -1451,9 +1572,137 @@
                         
                         // 显示成功提示
                         showPageAlert('角色数据已紧急修复！');
+                        
+                        // 手机震动反馈
+                        if (navigator.vibrate) {
+                            navigator.vibrate([200, 100, 200]);
+                        }
                     } catch (e) {
                         console.error('紧急修复时出错:', e);
                         showPageAlert('紧急修复时出错，请重试');
+                    }
+                }
+            }
+            
+            // 手机端专用数据修复工具
+            function mobileDataRepair() {
+                console.log('开始手机端数据修复');
+                showPageAlert('正在修复数据...');
+                
+                try {
+                    // 获取当前数据
+                    const savedCharacters = localStorage.getItem('characters');
+                    if (!savedCharacters) {
+                        showPageAlert('没有数据需要修复');
+                        return;
+                    }
+                    
+                    let characters;
+                    try {
+                        characters = JSON.parse(savedCharacters);
+                    } catch (parseError) {
+                        console.error('数据解析失败:', parseError);
+                        // 尝试修复损坏的数据
+                        localStorage.removeItem('characters');
+                        showPageAlert('数据已重置，之前的损坏数据已清除');
+                        loadCharacters();
+                        return;
+                    }
+                    
+                    // 确保是数组
+                    if (!Array.isArray(characters)) {
+                        console.log('数据不是数组格式，重置为数组');
+                        characters = [];
+                    }
+                    
+                    // 清理和验证数据
+                    const validCharacters = [];
+                    let repairedCount = 0;
+                    
+                    for (let i = 0; i < characters.length; i++) {
+                        const char = characters[i];
+                        
+                        // 跳过空数据
+                        if (!char) {
+                            repairedCount++;
+                            continue;
+                        }
+                        
+                        // 修复缺少必要字段的角色
+                        if (!char.id) {
+                            char.id = Date.now() + i; // 生成唯一ID
+                            repairedCount++;
+                        }
+                        
+                        if (!char.name || typeof char.name !== 'string') {
+                            char.name = '未命名角色_' + i;
+                            repairedCount++;
+                        }
+                        
+                        if (!char.createdAt) {
+                            char.createdAt = new Date().toISOString();
+                            repairedCount++;
+                        }
+                        
+                        // 限制字段长度
+                        if (char.name.length > 50) {
+                            char.name = char.name.substring(0, 50);
+                            repairedCount++;
+                        }
+                        
+                        if (char.desc && char.desc.length > 200) {
+                            char.desc = char.desc.substring(0, 200);
+                            repairedCount++;
+                        }
+                        
+                        // 优化图片数据
+                        if (char.avatar) {
+                            if (typeof char.avatar !== 'string') {
+                                char.avatar = null;
+                                repairedCount++;
+                            } else if (char.avatar.length > 200 * 1024) { // 200KB限制
+                                // 截取部分数据或设为null
+                                char.avatar = null;
+                                repairedCount++;
+                            }
+                        }
+                        
+                        validCharacters.push(char);
+                    }
+                    
+                    // 保存修复后的数据
+                    localStorage.setItem('characters', JSON.stringify(validCharacters));
+                    
+                    // 重新加载
+                    loadCharacters();
+                    
+                    if (repairedCount > 0) {
+                        showPageAlert(`数据修复完成，修复了${repairedCount}个问题`);
+                    } else {
+                        showPageAlert('数据检查完成，没有发现问题');
+                    }
+                    
+                } catch (error) {
+                    console.error('数据修复过程中出错:', error);
+                    showPageAlert('数据修复失败，请尝试紧急重置');
+                }
+            }
+            
+            // 手机端紧急重置功能
+            function mobileEmergencyReset() {
+                if (confirm('这将删除所有角色数据，确定要继续吗？\n\n注意：此操作不可撤销！')) {
+                    try {
+                        localStorage.removeItem('characters');
+                        loadCharacters();
+                        showPageAlert('所有角色数据已删除');
+                        
+                        // 手机震动反馈
+                        if (navigator.vibrate) {
+                            navigator.vibrate([200, 100, 200]); // 震动模式
+                        }
+                    } catch (e) {
+                        console.error('紧急重置失败:', e);
+                        showPageAlert('重置失败，请手动清除浏览器数据');
                     }
                 }
             }
