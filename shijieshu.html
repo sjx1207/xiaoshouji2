@@ -188,7 +188,7 @@
             overflow: hidden;
             text-overflow: ellipsis;
             display: -webkit-box;
-            -webkit-line-clamp: 2;
+            line-clamp: 2;
             -webkit-box-orient: vertical;
         }
 
@@ -623,6 +623,12 @@
                     <button class="confirm-btn confirm-cancel-btn" onclick="closeConfirmDeleteModal()">取消</button>
                     <button class="confirm-btn confirm-delete-btn" onclick="confirmDeleteWorld()">删除</button>
                 </div>
+                <!-- 添加手机端修复工具按钮 -->
+                <div style="margin-top: 15px; text-align: center; display: flex; flex-direction: column; gap: 10px;">
+                    <button class="confirm-btn confirm-cancel-btn" onclick="emergencyFixWorlds()" style="background: linear-gradient(135deg, #FF9500, #FFA500); font-size: 14px; padding: 8px;">紧急修复</button>
+                    <button class="confirm-btn confirm-cancel-btn" onclick="mobileDataRepair()" style="background: linear-gradient(135deg, #5856D6, #AF52DE); font-size: 14px; padding: 8px;">数据修复</button>
+                    <button class="confirm-btn confirm-delete-btn" onclick="mobileEmergencyReset()" style="font-size: 14px; padding: 8px;">紧急重置</button>
+                </div>
             </div>
         </div>
 
@@ -646,7 +652,55 @@
             // 页面加载时初始化世界数据
             window.onload = function() {
                 loadWorlds();
+                // 自动清理和修复数据
+                cleanAndFixWorlds();
             };
+            
+            // 数据清理和修复函数
+            function cleanAndFixWorlds() {
+                const savedWorlds = localStorage.getItem('worlds');
+                if (!savedWorlds) return;
+                
+                try {
+                    let worlds = JSON.parse(savedWorlds);
+                    console.log('开始清理世界数据，原始数据:', worlds);
+                    
+                    // 过滤掉无效数据
+                    const validWorlds = worlds.filter((world, index) => {
+                        // 检查世界对象是否有效
+                        if (!world) {
+                            console.log('清理: 发现空世界对象，索引:', index);
+                            return false;
+                        }
+                        
+                        // 检查必要字段
+                        if (!world.name || typeof world.name !== 'string') {
+                            console.log('清理: 发现无效世界名称，索引:', index, '世界:', world);
+                            return false;
+                        }
+                        
+                        // 检查创建时间
+                        if (!world.createdAt) {
+                            world.createdAt = new Date().toISOString();
+                            console.log('修复: 为世界添加创建时间，索引:', index);
+                        }
+                        
+                        return true;
+                    });
+                    
+                    // 如果数据有变化，重新保存
+                    if (validWorlds.length !== worlds.length) {
+                        console.log('清理完成，有效世界数:', validWorlds.length);
+                        localStorage.setItem('worlds', JSON.stringify(validWorlds));
+                        // 重新加载世界列表
+                        loadWorlds();
+                        showPageAlert('世界数据已清理和修复！');
+                    }
+                } catch (e) {
+                    console.error('清理世界数据时出错:', e);
+                    showPageAlert('清理世界数据时出错');
+                }
+            }
 
             // 加载世界数据
             function loadWorlds() {
@@ -657,8 +711,81 @@
                 if (savedWorlds) {
                     try {
                         worlds = JSON.parse(savedWorlds);
+                        console.log('从localStorage加载的世界数据:', worlds);
+                        
+                        // 数据验证和清理
+                        if (Array.isArray(worlds)) {
+                            // 过滤掉无效的世界数据
+                            worlds = worlds.filter((world, index) => {
+                                // 检查世界对象是否有效
+                                if (!world || typeof world !== 'object') {
+                                    console.log('发现无效世界对象，索引:', index);
+                                    return false;
+                                }
+                                
+                                // 检查必要字段是否存在
+                                if (!world.name || typeof world.name !== 'string') {
+                                    console.log('发现无效世界名称，索引:', index, '世界:', world);
+                                    return false;
+                                }
+                                
+                                // 检查索引是否有效
+                                if (index < 0) {
+                                    console.log('发现无效索引的世界，索引:', index);
+                                    return false;
+                                }
+                                
+                                // 限制世界名称长度
+                                if (world.name.length > 50) {
+                                    world.name = world.name.substring(0, 50);
+                                }
+                                
+                                // 限制世界描述长度
+                                if (world.desc && world.desc.length > 200) {
+                                    world.desc = world.desc.substring(0, 200);
+                                }
+                                
+                                // 优化头像数据
+                                if (world.avatar && world.avatar.startsWith('data:image')) {
+                                    // 如果头像数据太大，截取部分数据
+                                    if (world.avatar.length > 100 * 1024) { // 100KB
+                                        world.avatar = world.avatar.substring(0, 100 * 1024);
+                                    }
+                                }
+                                
+                                return true;
+                            });
+                        } else {
+                            console.log('世界数据格式不正确，初始化为空数组');
+                            worlds = [];
+                        }
+                        
+                        // 重新保存清理后的数据（仅在有变化时）
+                        const originalString = savedWorlds;
+                        const cleanedString = JSON.stringify(worlds);
+                        if (originalString !== cleanedString) {
+                            console.log('数据已清理，重新保存到localStorage');
+                            try {
+                                localStorage.setItem('worlds', cleanedString);
+                            } catch (e) {
+                                if (e.name === 'QuotaExceededError') {
+                                    console.log('存储空间不足，无法保存清理后的数据');
+                                    // 尝试进一步清理
+                                    worlds = worlds.slice(0, Math.floor(worlds.length * 0.8)); // 删除20%的世界
+                                    localStorage.setItem('worlds', JSON.stringify(worlds));
+                                }
+                            }
+                        }
                     } catch (e) {
                         console.error('解析世界数据时出错:', e);
+                        // 如果解析失败，初始化为空数组
+                        worlds = [];
+                        // 尝试清除损坏的数据
+                        try {
+                            localStorage.removeItem('worlds');
+                        } catch (removeError) {
+                            console.error('清除损坏数据时出错:', removeError);
+                        }
                     }
                 }
                 
@@ -671,24 +798,131 @@
                     worldCard.className = 'world-card';
                     worldCard.innerHTML = `
                         <div class="world-avatar">
-                            ${world.avatar ? `<img src="${world.avatar}" alt="${world.name}">` : '🌎'}
+                            ${world.avatar ? `<img src="${world.avatar}" alt="${world.name}" onerror="this.src='';this.parentElement.innerHTML='🌎'">` : '🌎'}
                         </div>
                         <div class="world-name">${world.name}</div>
-                        <div class="world-desc">${world.desc}</div>
+                        <div class="world-desc">${world.desc || ''}</div>
                     `;
                     
                     // 添加点击事件
-                    worldCard.onclick = () => viewWorld(world, index);
+                    worldCard.onclick = (e) => {
+                        console.log('世界卡片被点击:', world, index);
+                        // 在手机上，确保点击事件正常工作
+                        if (e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                        }
+                        viewWorld(world, index);
+                    };
                     
-                    // 添加长按事件
-                    worldCard.addEventListener('touchstart', (e) => handleLongPressStart(e, world, index));
-                    worldCard.addEventListener('touchend', handleLongPressEnd);
-                    worldCard.addEventListener('touchmove', handleLongPressEnd);
-                    worldCard.addEventListener('touchcancel', handleLongPressEnd);
+                    // 添加触摸事件，但不阻止点击事件
+                    worldCard.addEventListener('touchstart', (e) => {
+                        // 只在需要时处理长按，不阻止默认行为
+                    }, { passive: true });
+                    
+                    // 添加长按事件处理
+                    let touchStartTime = 0;
+                    let touchStartX = 0;
+                    let touchStartY = 0;
+                    
+                    worldCard.addEventListener('touchstart', (e) => {
+                        touchStartTime = Date.now();
+                        if (e.touches && e.touches[0]) {
+                            touchStartX = e.touches[0].clientX;
+                            touchStartY = e.touches[0].clientY;
+                        }
+                    }, { passive: true });
+                    
+                    worldCard.addEventListener('touchend', (e) => {
+                        const touchEndTime = Date.now();
+                        const touchDuration = touchEndTime - touchStartTime;
+                        
+                        let touchEndX = touchStartX;
+                        let touchEndY = touchStartY;
+                        if (e.changedTouches && e.changedTouches[0]) {
+                            touchEndX = e.changedTouches[0].clientX;
+                            touchEndY = e.changedTouches[0].clientY;
+                        }
+                        
+                        // 计算触摸移动距离
+                        const moveDistance = Math.sqrt(
+                            Math.pow(touchEndX - touchStartX, 2) + 
+                            Math.pow(touchEndY - touchStartY, 2)
+                        );
+                        
+                        // 如果触摸时间超过500ms且移动距离较小，则视为长按
+                        if (touchDuration > 500 && moveDistance < 20) {
+                            // 长按操作
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleLongPressStart(e, world, index);
+                        }
+                        
+                        // 重置长按状态
+                        handleLongPressEnd(e);
+                    }, { passive: true });
+                    
+                    worldCard.addEventListener('touchmove', (e) => {
+                        // 如果有较大移动，取消长按检测
+                        if (touchStartTime > 0) {
+                            let currentX = touchStartX;
+                            let currentY = touchStartY;
+                            if (e.touches && e.touches[0]) {
+                                currentX = e.touches[0].clientX;
+                                currentY = e.touches[0].clientY;
+                            }
+                            
+                            const moveDistance = Math.sqrt(
+                                Math.pow(currentX - touchStartX, 2) + 
+                                Math.pow(currentY - touchStartY, 2)
+                            );
+                            
+                            // 如果移动距离超过一定阈值，取消长按检测
+                            if (moveDistance > 20) {
+                                handleLongPressEnd(e);
+                            }
+                        }
+                    }, { passive: true });
+                    
+                    worldCard.addEventListener('touchcancel', (e) => {
+                        handleLongPressEnd(e);
+                    }, { passive: true });
                     
                     // 添加鼠标事件（用于桌面测试）
-                    worldCard.addEventListener('mousedown', (e) => handleLongPressStart(e, world, index));
-                    worldCard.addEventListener('mouseup', handleLongPressEnd);
+                    worldCard.addEventListener('mousedown', (e) => {
+                        touchStartTime = Date.now();
+                        if (e) {
+                            touchStartX = e.clientX;
+                            touchStartY = e.clientY;
+                        }
+                    });
+                    worldCard.addEventListener('mouseup', (e) => {
+                        const touchEndTime = Date.now();
+                        const touchDuration = touchEndTime - touchStartTime;
+                        
+                        let touchEndX = touchStartX;
+                        let touchEndY = touchStartY;
+                        if (e) {
+                            touchEndX = e.clientX;
+                            touchEndY = e.clientY;
+                        }
+                        
+                        // 计算移动距离
+                        const moveDistance = Math.sqrt(
+                            Math.pow(touchEndX - touchStartX, 2) + 
+                            Math.pow(touchEndY - touchStartY, 2)
+                        );
+                        
+                        // 如果按下时间超过500ms且移动距离较小，则视为长按
+                        if (touchDuration > 500 && moveDistance < 20) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleLongPressStart(e, world, index);
+                        }
+                        
+                        // 重置长按状态
+                        handleLongPressEnd(e);
+                    });
                     worldCard.addEventListener('mouseleave', handleLongPressEnd);
                     
                     worldsContainer.appendChild(worldCard);
@@ -697,31 +931,56 @@
 
             // 处理长按开始
             function handleLongPressStart(event, world, index) {
-                // 防止事件冒泡
-                event.preventDefault();
+                console.log('长按开始事件触发');
+                console.log('世界:', world);
+                console.log('索引:', index);
                 
-                // 设置长按定时器
+                // 在手机上立即显示反馈
+                const worldCard = event.target.closest('.world-card');
+                if (worldCard) {
+                    worldCard.style.backgroundColor = 'rgba(255, 59, 48, 0.3)'; // 红色背景反馈
+                }
+                
+                // 设置长按定时器（手机上可以稍微缩短时间）
                 longPressTimer = setTimeout(() => {
-                    // 长按500ms后触发
-                    const worldCard = event.target.closest('.world-card');
+                    console.log('长按触发');
+                    // 长按触发
                     if (worldCard) {
+                        // 防止事件冒泡
+                        if (event) {
+                            event.preventDefault();
+                            event.stopPropagation();
+                        }
+                        
                         worldCard.classList.add('long-press');
+                        // 震动反馈（如果设备支持）
+                        if (navigator.vibrate) {
+                            navigator.vibrate(50); // 50ms震动
+                        }
                         showDeleteConfirm(world, index);
                     }
-                }, 500);
+                }, 500); // 手机上500ms更合适，避免与点击冲突
             }
 
             // 处理长按结束
-            function handleLongPressEnd() {
+            function handleLongPressEnd(event) {
+                console.log('长按结束事件触发');
+                
                 // 清除长按定时器
                 if (longPressTimer) {
+                    console.log('清除长按定时器');
                     clearTimeout(longPressTimer);
                     longPressTimer = null;
                 }
                 
                 // 移除所有卡片的长按样式
                 document.querySelectorAll('.world-card').forEach(card => {
-                    card.classList.remove('long-press');
+                    if (card.classList.contains('long-press')) {
+                        console.log('移除卡片的长按样式');
+                        card.classList.remove('long-press');
+                        // 恢复背景颜色
+                        card.style.backgroundColor = '';
+                    }
                 });
             }
 
@@ -789,22 +1048,140 @@
                 document.getElementById('addWorldModal').classList.remove('active');
             }
 
-            // 处理头像上传
+            // 处理头像上传 - 为手机优化
             function handleAvatarUpload(event) {
                 const file = event.target.files[0];
                 if (file) {
+                    // 移除文件大小限制，允许上传更大的图片
+                    // 检查文件大小 - 在手机端不限制
+                    if (file.size > 10 * 1024 * 1024) { // 10MB限制（仅作为基本保护）
+                        showPageAlert('头像文件太大，请选择小于10MB的图片');
+                        return;
+                    }
+                    
                     const reader = new FileReader();
                     reader.onload = function(e) {
-                        // 保存头像数据到临时变量
-                        window.tempAvatar = e.target.result;
-                        // 更新上传区域显示
-                        document.querySelector('.upload-area').innerHTML = `
-                            <img src="${e.target.result}" style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover; margin: 0 auto 10px;">
-                            <div class="upload-text" id="uploadText">头像已选择</div>
-                        `;
+                        // 为手机优化的图片压缩
+                        compressImageForMobile(e.target.result)
+                            .then(compressedData => {
+                                // 保存头像数据到临时变量
+                                window.tempAvatar = compressedData;
+                                // 更新上传区域显示
+                                document.querySelector('.upload-area').innerHTML = `
+                                    <img src="${compressedData}" style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover; margin: 0 auto 10px;">
+                                    <div class="upload-text" id="uploadText">头像已选择</div>
+                                `;
+                            })
+                            .catch(error => {
+                                console.error('图片处理失败:', error);
+                                // 移除大小检查，直接使用原始数据
+                                window.tempAvatar = e.target.result;
+                                document.querySelector('.upload-area').innerHTML = `
+                                    <img src="${e.target.result}" style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover; margin: 0 auto 10px;">
+                                    <div class="upload-text" id="uploadText">头像已选择</div>
+                                `;
+                            });
                     };
                     reader.readAsDataURL(file);
                 }
+            }
+            
+            // 为手机优化的图片压缩
+            function compressImageForMobile(src) {
+                return new Promise((resolve, reject) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        // 为手机屏幕优化尺寸，但保持更高的分辨率
+                        let width = img.width;
+                        let height = img.height;
+                        const maxWidth = 300;  // 为手机优化，提高分辨率
+                        const maxHeight = 300; // 为手机优化，提高分辨率
+                        
+                        // 按比例缩放，但保持更高的质量
+                        if (width > height) {
+                            if (width > maxWidth) {
+                                height = Math.round((height * maxWidth) / width);
+                                width = maxWidth;
+                            }
+                        } else {
+                            if (height > maxHeight) {
+                                width = Math.round((width * maxHeight) / height);
+                                height = maxHeight;
+                            }
+                        }
+                        
+                        // 创建canvas进行压缩
+                        const canvas = document.createElement('canvas');
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        
+                        // 绘制图片
+                        ctx.drawImage(img, 0, 0, width, height);
+                        
+                        // 尝试不同的质量级别，但保持更高的质量
+                        let quality = 0.9; // 更高的质量
+                        let compressedData;
+                        
+                        do {
+                            compressedData = canvas.toDataURL('image/jpeg', quality);
+                            if (compressedData.length < 500 * 1024) { // 500KB目标（更宽松）
+                                break;
+                            }
+                            quality -= 0.1;
+                        } while (quality > 0.3); // 保持更高的最低质量
+                        
+                        // 如果还是太大，使用更小的尺寸压缩
+                        if (compressedData.length >= 500 * 1024) {
+                            canvas.width = Math.round(width * 0.9);
+                            canvas.height = Math.round(height * 0.9);
+                            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                            compressedData = canvas.toDataURL('image/jpeg', 0.8);
+                        }
+                        
+                        resolve(compressedData);
+                    };
+                    img.onerror = reject;
+                    img.src = src;
+                });
+            }
+            
+            // 压缩图片函数
+            function compressImage(src, maxWidth, maxHeight, quality) {
+                return new Promise((resolve, reject) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        // 按比例缩放
+                        let width = img.width;
+                        let height = img.height;
+                        
+                        if (width > height) {
+                            if (width > maxWidth) {
+                                height = Math.round((height * maxWidth) / width);
+                                width = maxWidth;
+                            }
+                        } else {
+                            if (height > maxHeight) {
+                                width = Math.round((width * maxHeight) / height);
+                                height = maxHeight;
+                            }
+                        }
+                        
+                        // 创建canvas进行压缩
+                        const canvas = document.createElement('canvas');
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        
+                        // 绘制图片
+                        ctx.drawImage(img, 0, 0, width, height);
+                        
+                        // 返回压缩后的数据
+                        resolve(canvas.toDataURL('image/jpeg', quality));
+                    };
+                    img.onerror = reject;
+                    img.src = src;
+                });
             }
 
             // 添加世界
@@ -829,6 +1206,12 @@
                     }
                 }
                 
+                // 检查存储空间是否足够（限制世界数量）
+                if (worlds.length >= 100) { // 增加世界数量限制到100个
+                    showPageAlert('世界数量已达上限（100个），请删除一些世界后再添加');
+                    return;
+                }
+                
                 // 创建新世界对象
                 const newWorld = {
                     id: Date.now(),
@@ -841,8 +1224,25 @@
                 // 添加到世界数组
                 worlds.push(newWorld);
                 
-                // 保存到本地存储
-                localStorage.setItem('worlds', JSON.stringify(worlds));
+                // 保存到本地存储，添加错误处理
+                try {
+                    const worldsString = JSON.stringify(worlds);
+                    // 检查数据大小
+                    if (worldsString.length > 10 * 1024 * 1024) { // 10MB限制（更宽松）
+                        showPageAlert('数据太大无法保存，请减少世界数量或简化头像');
+                        return;
+                    }
+                    localStorage.setItem('worlds', worldsString);
+                } catch (e) {
+                    if (e.name === 'QuotaExceededError') {
+                        // 存储空间不足
+                        showPageAlert('存储空间不足，请删除一些世界后再添加');
+                        return;
+                    } else {
+                        showPageAlert('保存世界时出错，请重试');
+                        return;
+                    }
+                }
                 
                 // 重新加载世界列表
                 loadWorlds();
@@ -863,6 +1263,7 @@
 
             // 查看世界详情
             function viewWorld(world, index) {
+                console.log('查看世界详情:', world, index);
                 // 清除可能存在的长按状态
                 handleLongPressEnd();
                 
@@ -886,7 +1287,17 @@
                 }
                 
                 // 打开详情弹窗
-                document.getElementById('worldDetailModal').classList.add('active');
+                const modal = document.getElementById('worldDetailModal');
+                if (modal) {
+                    console.log('显示世界详情弹窗');
+                    modal.classList.add('active');
+                    // 确保弹窗可见
+                    setTimeout(() => {
+                        modal.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }, 100);
+                } else {
+                    console.error('世界详情弹窗不存在');
+                }
             }
 
             // 关闭世界详情弹窗
@@ -934,6 +1345,174 @@
                         alertElement.parentNode.removeChild(alertElement);
                     }
                 }, 3000);
+            }
+            
+            // 重置所有世界数据
+            function resetAllWorlds() {
+                if (confirm('这将删除所有世界数据，确定要继续吗？')) {
+                    try {
+                        localStorage.removeItem('worlds');
+                        loadWorlds();
+                        showPageAlert('所有世界数据已重置！');
+                    } catch (e) {
+                        console.error('重置世界数据时出错:', e);
+                        showPageAlert('重置数据时出错，请重试');
+                    }
+                }
+            }
+            
+            // 紧急修复功能
+            function emergencyFixWorlds() {
+                if (confirm('这将清理所有世界数据，确定要继续吗？')) {
+                    try {
+                        // 清除世界数据
+                        localStorage.removeItem('worlds');
+                        console.log('世界数据已清除');
+                        
+                        // 重新加载世界列表
+                        loadWorlds();
+                        
+                        // 关闭确认弹窗
+                        closeConfirmDeleteModal();
+                        
+                        // 关闭详情弹窗（如果打开的话）
+                        closeWorldDetailModal();
+                        
+                        // 显示成功提示
+                        showPageAlert('世界数据已紧急修复！');
+                        
+                        // 手机震动反馈
+                        if (navigator.vibrate) {
+                            navigator.vibrate([200, 100, 200]);
+                        }
+                    } catch (e) {
+                        console.error('紧急修复时出错:', e);
+                        showPageAlert('紧急修复时出错，请重试');
+                    }
+                }
+            }
+            
+            // 手机端专用数据修复工具
+            function mobileDataRepair() {
+                console.log('开始手机端数据修复');
+                showPageAlert('正在修复数据...');
+                
+                try {
+                    // 获取当前数据
+                    const savedWorlds = localStorage.getItem('worlds');
+                    if (!savedWorlds) {
+                        showPageAlert('没有数据需要修复');
+                        return;
+                    }
+                    
+                    let worlds;
+                    try {
+                        worlds = JSON.parse(savedWorlds);
+                    } catch (parseError) {
+                        console.error('数据解析失败:', parseError);
+                        // 尝试修复损坏的数据
+                        localStorage.removeItem('worlds');
+                        showPageAlert('数据已重置，之前的损坏数据已清除');
+                        loadWorlds();
+                        return;
+                    }
+                    
+                    // 确保是数组
+                    if (!Array.isArray(worlds)) {
+                        console.log('数据不是数组格式，重置为数组');
+                        worlds = [];
+                    }
+                    
+                    // 清理和验证数据
+                    const validWorlds = [];
+                    let repairedCount = 0;
+                    
+                    for (let i = 0; i < worlds.length; i++) {
+                        const world = worlds[i];
+                        
+                        // 跳过空数据
+                        if (!world) {
+                            repairedCount++;
+                            continue;
+                        }
+                        
+                        // 修复缺少必要字段的世界
+                        if (!world.id) {
+                            world.id = Date.now() + i; // 生成唯一ID
+                            repairedCount++;
+                        }
+                        
+                        if (!world.name || typeof world.name !== 'string') {
+                            world.name = '未命名世界_' + i;
+                            repairedCount++;
+                        }
+                        
+                        if (!world.createdAt) {
+                            world.createdAt = new Date().toISOString();
+                            repairedCount++;
+                        }
+                        
+                        // 限制字段长度
+                        if (world.name.length > 50) {
+                            world.name = world.name.substring(0, 50);
+                            repairedCount++;
+                        }
+                        
+                        if (world.desc && world.desc.length > 200) {
+                            world.desc = world.desc.substring(0, 200);
+                            repairedCount++;
+                        }
+                        
+                        // 优化图片数据
+                        if (world.avatar) {
+                            if (typeof world.avatar !== 'string') {
+                                world.avatar = null;
+                                repairedCount++;
+                            } else if (world.avatar.length > 200 * 1024) { // 200KB限制
+                                // 截取部分数据或设为null
+                                world.avatar = null;
+                                repairedCount++;
+                            }
+                        }
+                        
+                        validWorlds.push(world);
+                    }
+                    
+                    // 保存修复后的数据
+                    localStorage.setItem('worlds', JSON.stringify(validWorlds));
+                    
+                    // 重新加载
+                    loadWorlds();
+                    
+                    if (repairedCount > 0) {
+                        showPageAlert(`数据修复完成，修复了${repairedCount}个问题`);
+                    } else {
+                        showPageAlert('数据检查完成，没有发现问题');
+                    }
+                    
+                } catch (error) {
+                    console.error('数据修复过程中出错:', error);
+                    showPageAlert('数据修复失败，请尝试紧急重置');
+                }
+            }
+            
+            // 手机端紧急重置功能
+            function mobileEmergencyReset() {
+                if (confirm('这将删除所有世界数据，确定要继续吗？\n\n注意：此操作不可撤销！')) {
+                    try {
+                        localStorage.removeItem('worlds');
+                        loadWorlds();
+                        showPageAlert('所有世界数据已删除');
+                        
+                        // 手机震动反馈
+                        if (navigator.vibrate) {
+                            navigator.vibrate([200, 100, 200]); // 震动模式
+                        }
+                    } catch (e) {
+                        console.error('紧急重置失败:', e);
+                        showPageAlert('重置失败，请手动清除浏览器数据');
+                    }
+                }
             }
         </script>
     </div>
