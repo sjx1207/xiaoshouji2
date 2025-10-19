@@ -188,7 +188,7 @@
             overflow: hidden;
             text-overflow: ellipsis;
             display: -webkit-box;
-            -webkit-line-clamp: 2;
+            line-clamp: 2;
             -webkit-box-orient: vertical;
         }
 
@@ -515,6 +515,26 @@
         .confirm-delete-btn {
             background: linear-gradient(135deg, #FF3B30, #FF453A);
         }
+        
+        /* 确保删除按钮正常显示 */
+        .delete-btn {
+            width: 100%;
+            padding: 15px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #FF3B30, #FF453A);
+            border: none;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+
+        .delete-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 59, 48, 0.4);
+        }
     </style>
 </head>
 <body>
@@ -608,6 +628,8 @@
                     <div class="character-detail-desc" id="detailDesc"></div>
                 </div>
                 <button class="delete-btn" onclick="deleteCharacter()">删除角色</button>
+                <!-- 添加数据清理按钮 -->
+                <button class="delete-btn" onclick="cleanAndFixCharacters()" style="background: linear-gradient(135deg, #007AFF, #0A84FF); margin-top: 10px;">清理数据</button>
             </div>
         </div>
 
@@ -622,6 +644,10 @@
                 <div class="confirm-modal-actions">
                     <button class="confirm-btn confirm-cancel-btn" onclick="closeConfirmDeleteModal()">取消</button>
                     <button class="confirm-btn confirm-delete-btn" onclick="confirmDeleteCharacter()">删除</button>
+                </div>
+                <!-- 添加紧急修复按钮 -->
+                <div style="margin-top: 15px; text-align: center;">
+                    <button class="confirm-btn confirm-cancel-btn" onclick="emergencyFixCharacters()" style="background: linear-gradient(135deg, #FF9500, #FFA500); font-size: 14px; padding: 8px;">紧急修复</button>
                 </div>
             </div>
         </div>
@@ -643,9 +669,74 @@
             let currentCharacterIndex = null;
             let longPressTimer = null;
 
+            // 数据清理和修复函数
+            function cleanAndFixCharacters() {
+                const savedCharacters = localStorage.getItem('characters');
+                if (!savedCharacters) return;
+                
+                try {
+                    let characters = JSON.parse(savedCharacters);
+                    console.log('开始清理角色数据，原始数据:', characters);
+                    
+                    // 过滤掉无效数据
+                    const validCharacters = characters.filter((character, index) => {
+                        // 检查角色对象是否有效
+                        if (!character) {
+                            console.log('清理: 发现空角色对象，索引:', index);
+                            return false;
+                        }
+                        
+                        // 检查必要字段
+                        if (!character.name || typeof character.name !== 'string') {
+                            console.log('清理: 发现无效角色名称，索引:', index, '角色:', character);
+                            return false;
+                        }
+                        
+                        // 检查创建时间
+                        if (!character.createdAt) {
+                            character.createdAt = new Date().toISOString();
+                            console.log('修复: 为角色添加创建时间，索引:', index);
+                        }
+                        
+                        return true;
+                    });
+                    
+                    // 如果数据有变化，重新保存
+                    if (validCharacters.length !== characters.length) {
+                        console.log('清理完成，有效角色数:', validCharacters.length);
+                        localStorage.setItem('characters', JSON.stringify(validCharacters));
+                        // 重新加载角色列表
+                        loadCharacters();
+                        showPageAlert('角色数据已清理和修复！');
+                    }
+                } catch (e) {
+                    console.error('清理角色数据时出错:', e);
+                    showPageAlert('清理角色数据时出错');
+                }
+            }
+            
             // 页面加载时初始化角色数据
             window.onload = function() {
                 loadCharacters();
+                // 自动清理和修复数据
+                cleanAndFixCharacters();
+                
+                // 添加一个简单的测试函数，用于调试删除功能
+                window.testDeleteFunction = function() {
+                    console.log('测试删除功能');
+                    // 检查确认删除弹窗是否存在
+                    const confirmModal = document.getElementById('confirmDeleteModal');
+                    if (confirmModal) {
+                        console.log('确认删除弹窗存在');
+                    } else {
+                        console.log('确认删除弹窗不存在');
+                    }
+                };
+                
+                // 添加数据清理测试函数
+                window.testCleanFunction = function() {
+                    cleanAndFixCharacters();
+                };
             };
 
             // 加载角色数据
@@ -657,8 +748,40 @@
                 if (savedCharacters) {
                     try {
                         characters = JSON.parse(savedCharacters);
+                        console.log('从localStorage加载的角色数据:', characters);
+                        
+                        // 数据清理：过滤掉无效的角色数据
+                        characters = characters.filter((character, index) => {
+                            // 检查角色对象是否有效
+                            if (!character) {
+                                console.log('发现空角色对象，索引:', index);
+                                return false;
+                            }
+                            
+                            // 检查必要字段是否存在
+                            if (!character.name || typeof character.name !== 'string') {
+                                console.log('发现无效角色名称，索引:', index, '角色:', character);
+                                return false;
+                            }
+                            
+                            // 检查索引是否有效
+                            if (index < 0) {
+                                console.log('发现无效索引的角色，索引:', index);
+                                return false;
+                            }
+                            
+                            return true;
+                        });
+                        
+                        // 重新保存清理后的数据
+                        if (characters.length !== JSON.parse(savedCharacters).length) {
+                            console.log('数据已清理，重新保存到localStorage');
+                            localStorage.setItem('characters', JSON.stringify(characters));
+                        }
                     } catch (e) {
                         console.error('解析角色数据时出错:', e);
+                        // 如果解析失败，初始化为空数组
+                        characters = [];
                     }
                 }
                 
@@ -674,22 +797,54 @@
                             ${character.avatar ? `<img src="${character.avatar}" alt="${character.name}">` : '👤'}
                         </div>
                         <div class="character-name">${character.name}</div>
-                        <div class="character-desc">${character.desc}</div>
+                        <div class="character-desc">${character.desc || ''}</div>
                     `;
                     
                     // 添加点击事件
-                    characterCard.onclick = () => viewCharacter(character, index);
+                    characterCard.onclick = (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        viewCharacter(character, index);
+                    };
                     
                     // 添加长按事件
-                    characterCard.addEventListener('touchstart', (e) => handleLongPressStart(e, character, index));
-                    characterCard.addEventListener('touchend', handleLongPressEnd);
-                    characterCard.addEventListener('touchmove', handleLongPressEnd);
-                    characterCard.addEventListener('touchcancel', handleLongPressEnd);
+                    characterCard.addEventListener('touchstart', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handleLongPressStart(e, character, index);
+                    }, { passive: false });
+                    characterCard.addEventListener('touchend', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handleLongPressEnd(e);
+                    }, { passive: false });
+                    characterCard.addEventListener('touchmove', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handleLongPressEnd(e);
+                    }, { passive: false });
+                    characterCard.addEventListener('touchcancel', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handleLongPressEnd(e);
+                    }, { passive: false });
                     
                     // 添加鼠标事件（用于桌面测试）
-                    characterCard.addEventListener('mousedown', (e) => handleLongPressStart(e, character, index));
-                    characterCard.addEventListener('mouseup', handleLongPressEnd);
-                    characterCard.addEventListener('mouseleave', handleLongPressEnd);
+                    characterCard.addEventListener('mousedown', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handleLongPressStart(e, character, index);
+                    });
+                    characterCard.addEventListener('mouseup', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handleLongPressEnd(e);
+                    });
+                    characterCard.addEventListener('mouseleave', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handleLongPressEnd(e);
+                    });
                     
                     charactersContainer.appendChild(characterCard);
                 });
@@ -697,31 +852,52 @@
 
             // 处理长按开始
             function handleLongPressStart(event, character, index) {
+                console.log('长按开始事件触发');
+                console.log('角色:', character);
+                console.log('索引:', index);
+                
                 // 防止事件冒泡
                 event.preventDefault();
+                event.stopPropagation();
                 
                 // 设置长按定时器
                 longPressTimer = setTimeout(() => {
+                    console.log('长按500ms触发');
                     // 长按500ms后触发
                     const characterCard = event.target.closest('.character-card');
                     if (characterCard) {
+                        console.log('找到角色卡片，添加长按样式');
                         characterCard.classList.add('long-press');
                         showDeleteConfirm(character, index);
+                    } else {
+                        console.log('未找到角色卡片');
                     }
                 }, 500);
             }
 
             // 处理长按结束
-            function handleLongPressEnd() {
+            function handleLongPressEnd(event) {
+                console.log('长按结束事件触发');
+                
+                // 防止事件冒泡
+                if (event) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                
                 // 清除长按定时器
                 if (longPressTimer) {
+                    console.log('清除长按定时器');
                     clearTimeout(longPressTimer);
                     longPressTimer = null;
                 }
                 
                 // 移除所有卡片的长按样式
                 document.querySelectorAll('.character-card').forEach(card => {
-                    card.classList.remove('long-press');
+                    if (card.classList.contains('long-press')) {
+                        console.log('移除卡片的长按样式');
+                        card.classList.remove('long-press');
+                    }
                 });
             }
 
@@ -729,12 +905,20 @@
             function showDeleteConfirm(character, index) {
                 currentCharacter = character;
                 currentCharacterIndex = index;
-                document.getElementById('confirmDeleteModal').classList.add('active');
+                const confirmModal = document.getElementById('confirmDeleteModal');
+                if (confirmModal) {
+                    confirmModal.classList.add('active');
+                } else {
+                    console.error('确认删除弹窗不存在');
+                }
             }
 
             // 关闭删除确认弹窗
             function closeConfirmDeleteModal() {
-                document.getElementById('confirmDeleteModal').classList.remove('active');
+                const confirmModal = document.getElementById('confirmDeleteModal');
+                if (confirmModal) {
+                    confirmModal.classList.remove('active');
+                }
                 currentCharacter = null;
                 currentCharacterIndex = null;
                 
@@ -746,37 +930,118 @@
 
             // 确认删除角色
             function confirmDeleteCharacter() {
+                console.log('确认删除角色函数被调用');
+                console.log('currentCharacter:', currentCharacter);
+                console.log('currentCharacterIndex:', currentCharacterIndex);
+                
+                // 获取保存的角色数据
+                const savedCharacters = localStorage.getItem('characters');
+                let characters = [];
+                
+                if (savedCharacters) {
+                    try {
+                        characters = JSON.parse(savedCharacters);
+                        console.log('从localStorage获取的角色数据:', characters);
+                    } catch (e) {
+                        console.error('解析角色数据时出错:', e);
+                        showPageAlert('数据解析错误，请重试');
+                        closeConfirmDeleteModal();
+                        return;
+                    }
+                }
+                
+                // 处理各种删除情况
                 if (currentCharacter && currentCharacterIndex !== null) {
-                    // 获取保存的角色数据
-                    const savedCharacters = localStorage.getItem('characters');
-                    let characters = [];
+                    // 情况1: 有角色对象和索引
+                    console.log('情况1: 有角色对象和索引');
                     
-                    if (savedCharacters) {
-                        try {
-                            characters = JSON.parse(savedCharacters);
-                        } catch (e) {
-                            console.error('解析角色数据时出错:', e);
+                    // 验证索引有效性
+                    if (currentCharacterIndex >= 0 && currentCharacterIndex < characters.length) {
+                        // 通过索引删除
+                        console.log('通过索引删除角色');
+                        characters.splice(currentCharacterIndex, 1);
+                    } else {
+                        // 索引无效，通过查找角色ID删除
+                        console.log('索引无效，通过查找角色删除');
+                        const foundIndex = characters.findIndex(char => 
+                            char && char.id === currentCharacter.id);
+                        if (foundIndex !== -1) {
+                            characters.splice(foundIndex, 1);
+                        } else {
+                            // 通过角色名称查找
+                            const nameIndex = characters.findIndex(char => 
+                                char && char.name === currentCharacter.name);
+                            if (nameIndex !== -1) {
+                                characters.splice(nameIndex, 1);
+                            } else {
+                                console.error('未找到要删除的角色');
+                                showPageAlert('未找到要删除的角色');
+                                closeConfirmDeleteModal();
+                                return;
+                            }
                         }
                     }
-                    
-                    // 从数组中移除角色
+                } else if (currentCharacter) {
+                    // 情况2: 只有角色对象，没有索引
+                    console.log('情况2: 只有角色对象，没有索引');
+                    const foundIndex = characters.findIndex(char => 
+                        char && char.id === currentCharacter.id);
+                    if (foundIndex !== -1) {
+                        characters.splice(foundIndex, 1);
+                    } else {
+                        // 通过角色名称查找
+                        const nameIndex = characters.findIndex(char => 
+                            char && char.name === currentCharacter.name);
+                        if (nameIndex !== -1) {
+                            characters.splice(nameIndex, 1);
+                        } else {
+                            console.error('未找到要删除的角色');
+                            showPageAlert('未找到要删除的角色');
+                            closeConfirmDeleteModal();
+                            return;
+                        }
+                    }
+                } else if (currentCharacterIndex !== null && currentCharacterIndex >= 0 && currentCharacterIndex < characters.length) {
+                    // 情况3: 只有有效索引，没有角色对象
+                    console.log('情况3: 只有有效索引，没有角色对象');
                     characters.splice(currentCharacterIndex, 1);
-                    
-                    // 保存到本地存储
-                    localStorage.setItem('characters', JSON.stringify(characters));
-                    
-                    // 重新加载角色列表
-                    loadCharacters();
-                    
-                    // 关闭确认弹窗
+                } else {
+                    // 所有情况都无效
+                    console.error('无法确定要删除的角色');
+                    console.log('currentCharacter:', currentCharacter);
+                    console.log('currentCharacterIndex:', currentCharacterIndex);
+                    console.log('角色数组:', characters);
+                    showPageAlert('删除角色时出错，请重试');
                     closeConfirmDeleteModal();
-                    
-                    // 关闭详情弹窗（如果打开的话）
-                    closeCharacterDetailModal();
-                    
-                    // 显示删除成功提示
-                    showPageAlert('角色删除成功！');
+                    return;
                 }
+                
+                // 保存到本地存储
+                try {
+                    localStorage.setItem('characters', JSON.stringify(characters));
+                    console.log('角色数据已保存到localStorage');
+                } catch (e) {
+                    console.error('保存角色数据时出错:', e);
+                    showPageAlert('保存数据时出错，请重试');
+                    closeConfirmDeleteModal();
+                    return;
+                }
+                
+                // 重新加载角色列表
+                loadCharacters();
+                console.log('角色列表已重新加载');
+                
+                // 关闭确认弹窗
+                closeConfirmDeleteModal();
+                console.log('确认删除弹窗已关闭');
+                
+                // 关闭详情弹窗（如果打开的话）
+                closeCharacterDetailModal();
+                console.log('角色详情弹窗已关闭');
+                
+                // 显示删除成功提示
+                showPageAlert('角色删除成功！');
+                console.log('显示删除成功提示');
             }
 
             // 打开添加角色弹窗
@@ -898,9 +1163,17 @@
 
             // 删除角色（从详情弹窗中调用）
             function deleteCharacter() {
+                console.log('删除角色函数被调用');
                 if (currentCharacter && currentCharacterIndex !== null) {
+                    console.log('当前角色:', currentCharacter);
+                    console.log('当前角色索引:', currentCharacterIndex);
                     showDeleteConfirm(currentCharacter, currentCharacterIndex);
                     closeCharacterDetailModal();
+                } else {
+                    console.error('无法删除角色：当前角色或索引为空');
+                    console.log('currentCharacter:', currentCharacter);
+                    console.log('currentCharacterIndex:', currentCharacterIndex);
+                    showPageAlert('删除角色时出错，请重试');
                 }
             }
 
@@ -934,6 +1207,32 @@
                         alertElement.parentNode.removeChild(alertElement);
                     }
                 }, 3000);
+            }
+            
+            // 紧急修复功能
+            function emergencyFixCharacters() {
+                if (confirm('这将清理所有角色数据，确定要继续吗？')) {
+                    try {
+                        // 清除角色数据
+                        localStorage.removeItem('characters');
+                        console.log('角色数据已清除');
+                        
+                        // 重新加载角色列表
+                        loadCharacters();
+                        
+                        // 关闭确认弹窗
+                        closeConfirmDeleteModal();
+                        
+                        // 关闭详情弹窗（如果打开的话）
+                        closeCharacterDetailModal();
+                        
+                        // 显示成功提示
+                        showPageAlert('角色数据已紧急修复！');
+                    } catch (e) {
+                        console.error('紧急修复时出错:', e);
+                        showPageAlert('紧急修复时出错，请重试');
+                    }
+                }
             }
         </script>
     </div>
