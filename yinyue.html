@@ -153,18 +153,19 @@
         }
 
         .song-item {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 20px;
             padding: 15px;
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             cursor: pointer;
             transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
         }
 
         .song-item:hover {
-            background: rgba(255, 255, 255, 0.15);
+            background: rgba(255, 255, 255, 0.25);
             transform: translateY(-2px);
         }
 
@@ -217,19 +218,21 @@
         /* 底部播放栏 */
         .bottom-player {
             position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
+            bottom: 20px;
+            left: 15px;
+            right: 15px;
             height: 80px;
-            background: rgba(30, 30, 30, 0.95);
+            background: rgba(255, 255, 255, 0.15);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
             padding: 10px 15px;
             z-index: 998;
             display: flex;
             align-items: center;
             gap: 15px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
         }
 
         .player-cover {
@@ -597,24 +600,39 @@
             let tempCover = null;
             let tempBackground = null;
 
-            // 页面加载时初始化
-            window.onload = function() {
-                loadSongs();
+            // 页面加载时应用背景和歌曲数据
+            window.addEventListener('load', function() {
                 loadBackground();
-            };
+                loadSongs();
+            });
 
             // 加载歌曲数据
             function loadSongs() {
-                const savedSongs = localStorage.getItem('musicSongs');
-                if (savedSongs) {
-                    try {
+                try {
+                    const savedSongs = localStorage.getItem('musicSongs');
+                    if (savedSongs) {
                         songs = JSON.parse(savedSongs);
-                    } catch (e) {
-                        console.error('解析歌曲数据时出错:', e);
+                        console.log('已加载歌曲数据:', songs.length, '首歌曲');
+                    } else {
+                        console.log('未找到保存的歌曲数据');
                         songs = [];
                     }
+                } catch (e) {
+                    console.error('解析歌曲数据时出错:', e);
+                    songs = [];
                 }
                 renderSongsList();
+            }
+
+            // 保存歌曲数据
+            function saveSongs() {
+                try {
+                    localStorage.setItem('musicSongs', JSON.stringify(songs));
+                    console.log('歌曲数据已保存:', songs.length, '首歌曲');
+                } catch (e) {
+                    console.error('保存歌曲数据时出错:', e);
+                    alert('保存失败，请重试');
+                }
             }
 
             // 渲染歌曲列表
@@ -772,16 +790,6 @@
                 alert('歌曲添加成功！');
             }
 
-            // 保存歌曲数据
-            function saveSongs() {
-                try {
-                    localStorage.setItem('musicSongs', JSON.stringify(songs));
-                } catch (e) {
-                    console.error('保存歌曲数据时出错:', e);
-                    alert('保存失败，请重试');
-                }
-            }
-
             // 打开背景设置弹窗
             function openBackgroundModal() {
                 document.getElementById('backgroundModal').style.display = 'flex';
@@ -819,6 +827,7 @@
                     applyBackground(tempBackground);
                     closeBackgroundModal();
                     alert('背景设置成功！');
+                    console.log('背景已保存');
                 } catch (e) {
                     console.error('保存背景时出错:', e);
                     alert('保存失败，请重试');
@@ -827,9 +836,16 @@
 
             // 加载背景
             function loadBackground() {
-                const savedBackground = localStorage.getItem('musicBackground');
-                if (savedBackground) {
-                    applyBackground(savedBackground);
+                try {
+                    const savedBackground = localStorage.getItem('musicBackground');
+                    if (savedBackground) {
+                        applyBackground(savedBackground);
+                        console.log('背景已加载');
+                    } else {
+                        console.log('未找到保存的背景');
+                    }
+                } catch (e) {
+                    console.error('加载背景时出错:', e);
                 }
             }
 
@@ -837,9 +853,6 @@
             function applyBackground(backgroundData) {
                 document.body.style.background = `url(${backgroundData}) center/cover no-repeat, linear-gradient(135deg, #1a1a1a, #000)`;
             }
-
-            // 页面加载时应用背景
-            window.addEventListener('load', loadBackground);
         </script>
     </div>
 </body>
