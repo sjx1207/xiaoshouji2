@@ -717,39 +717,77 @@
                 }
             }
 
-            // 加载歌曲数据
-            function loadSongs() {
-                console.log('开始加载歌曲数据...');
-                try {
-                    // 检查localStorage是否可用
-                    if (typeof(Storage) === "undefined") {
-                        console.error("浏览器不支持localStorage");
-                        songs = [];
-                        renderSongsList();
+            // 压缩图片
+            function compressImage(file, quality = 0.6, maxWidth = 300, maxHeight = 300) {
+                return new Promise((resolve, reject) => {
+                    if (!file.type.startsWith('image/')) {
+                        reject(new Error('不是图片文件'));
                         return;
                     }
                     
-                    const savedSongs = localStorage.getItem('musicSongs');
-                    console.log('从localStorage获取到的数据:', savedSongs);
-                    if (savedSongs) {
-                        const parsedSongs = JSON.parse(savedSongs);
-                        console.log('解析后的歌曲数据:', parsedSongs);
-                        if (Array.isArray(parsedSongs)) {
-                            songs = parsedSongs;
-                            console.log('已加载歌曲数据:', songs.length, '首歌曲');
-                        } else {
-                            console.error('解析的数据不是数组格式');
-                            songs = [];
-                        }
-                    } else {
-                        console.log('未找到保存的歌曲数据');
-                        songs = [];
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const img = new Image();
+                        img.onload = function() {
+                            // 计算新尺寸
+                            let { width, height } = img;
+                            if (width > height) {
+                                if (width > maxWidth) {
+                                    height = (height * maxWidth) / width;
+                                    width = maxWidth;
+                                }
+                            } else {
+                                if (height > maxHeight) {
+                                    width = (width * maxHeight) / height;
+                                    height = maxHeight;
+                                }
+                            }
+                            
+                            // 创建canvas并绘制图片
+                            const canvas = document.createElement('canvas');
+                            canvas.width = width;
+                            canvas.height = height;
+                            const ctx = canvas.getContext('2d');
+                            ctx.drawImage(img, 0, 0, width, height);
+                            
+                            // 转换为base64
+                            const dataUrl = canvas.toDataURL('image/jpeg', quality);
+                            resolve(dataUrl);
+                        };
+                        img.onerror = reject;
+                        img.src = e.target.result;
+                    };
+                    reader.onerror = reject;
+                    reader.readAsDataURL(file);
+                });
+            }
+
+            // 处理封面上传
+            function handleCoverUpload(event) {
+                const file = event.target.files[0];
+                if (file) {
+                    // 检查文件大小 (限制为500KB)
+                    if (file.size > 500 * 1024) {
+                        alert('图片文件过大，请选择小于500KB的图片');
+                        return;
                     }
-                } catch (e) {
-                    console.error('解析歌曲数据时出错:', e);
-                    songs = [];
+                    
+                    // 压缩图片
+                    compressImage(file, 0.6, 300, 300)
+                        .then(compressedData => {
+                            // 检查压缩后的数据大小
+                            if (compressedData.length > 100 * 1024) {
+                                alert('图片压缩后仍然过大，请选择较小的图片');
+                                return;
+                            }
+                            tempCover = compressedData;
+                            document.getElementById('coverUploadText').textContent = '封面已选择';
+                        })
+                        .catch(error => {
+                            console.error('图片压缩失败:', error);
+                            alert('图片处理失败，请重试');
+                        });
                 }
-                renderSongsList();
             }
 
             // 添加歌曲
@@ -765,6 +803,12 @@
                 
                 if (!url) {
                     alert('请输入歌曲URL');
+                    return;
+                }
+                
+                // 检查URL是否有效
+                if (!url.startsWith('http')) {
+                    alert('请输入有效的歌曲URL（以http或https开头）');
                     return;
                 }
                 
@@ -789,30 +833,106 @@
             // 保存歌曲数据
             function saveSongs() {
                 try {
+                    // 限制歌曲数量，最多保存50首歌曲
+                    if (songs.length > 50) {
+                        songs = songs.slice(-50); // 只保留最新的50首
+                        alert('歌曲数量已达上限，已自动清理旧歌曲');
+                    }
+                    
+                    // 清理没有URL的无效歌曲
+                    songs = songs.filter(song => song.url && song.url.trim() !== '');
+                    
+                    // 清理过大的封面数据
+                    songs.forEach(song => {
+                        if (song.cover && song.cover.length > 100 * 1024) {
+                            // 如果封面过大，移除封面
+                            delete song.cover;
+                        }
+                    });
+                    
                     const songsData = JSON.stringify(songs);
                     console.log('准备保存的歌曲数据大小:', songsData.length, '字符');
                     
-                    // 检查数据大小是否超出限制
-                    if (songsData.length > 5 * 1024 * 1024) { // 5MB限制
-                        console.error('数据过大，超出存储限制');
-                        alert('数据过大，无法保存更多歌曲');
+                    // 检查数据大小是否超出限制 (2MB)
+                    if (songsData.length > 2 * 1024 * 1024) {
+                        // 如果数据仍然过大，进一步清理
+                        // 移除所有封面数据
+                        songs.forEach(song => {
+                            delete song.cover;
+                        });
+                        
+                        const retryData = JSON.stringify(songs);
+                        if (retryData.length > 2 * 1024 * 1024) {
+                            // 如果仍然过大，限制歌曲数量到20首
+                            songs = songs.slice(0, 20);
+                            const finalData = JSON.stringify(songs);
+                            localStorage.setItem('musicSongs', finalData);
+                        } else {
+                            localStorage.setItem('musicSongs', retryData);
+                        }
+                    } else {
+                        localStorage.setItem('musicSongs', songsData);
+                    }
+                    
+                    console.log('歌曲数据已保存:', songs.length, '首歌曲');
+                } catch (e) {
+                    console.error('保存歌曲数据时出错:', e);
+                    if (e.name === 'QuotaExceededError' || e.message.includes('quota')) {
+                        // 存储空间不足，清理所有数据
+                        try {
+                            localStorage.clear();
+                            songs = [];
+                            renderSongsList();
+                            alert('存储空间严重不足，已清空所有数据');
+                        } catch (clearError) {
+                            console.error('清空数据失败:', clearError);
+                            alert('无法保存数据，请清理浏览器缓存');
+                        }
+                    } else {
+                        alert('保存失败，请重试: ' + e.message);
+                    }
+                }
+            }
+
+            // 加载歌曲数据
+            function loadSongs() {
+                console.log('开始加载歌曲数据...');
+                try {
+                    // 检查localStorage是否可用
+                    if (typeof(Storage) === "undefined") {
+                        console.error("浏览器不支持localStorage");
+                        songs = [];
+                        renderSongsList();
                         return;
                     }
                     
-                    localStorage.setItem('musicSongs', songsData);
-                    console.log('歌曲数据已保存:', songs.length, '首歌曲');
-                    
-                    // 验证数据是否真的保存成功
-                    const savedData = localStorage.getItem('musicSongs');
-                    console.log('验证保存的数据大小:', savedData ? savedData.length : 0, '字符');
-                } catch (e) {
-                    console.error('保存歌曲数据时出错:', e);
-                    if (e.name === 'QuotaExceededError') {
-                        alert('存储空间不足，无法保存更多歌曲');
+                    const savedSongs = localStorage.getItem('musicSongs');
+                    console.log('从localStorage获取到的数据大小:', savedSongs ? savedSongs.length : 0, '字符');
+                    if (savedSongs) {
+                        const parsedSongs = JSON.parse(savedSongs);
+                        console.log('解析后的歌曲数据:', parsedSongs);
+                        if (Array.isArray(parsedSongs)) {
+                            songs = parsedSongs;
+                            console.log('已加载歌曲数据:', songs.length, '首歌曲');
+                        } else {
+                            console.error('解析的数据不是数组格式');
+                            songs = [];
+                        }
                     } else {
-                        alert('保存失败，请重试');
+                        console.log('未找到保存的歌曲数据');
+                        songs = [];
                     }
+                } catch (e) {
+                    console.error('解析歌曲数据时出错:', e);
+                    // 数据损坏，清理损坏的数据
+                    try {
+                        localStorage.removeItem('musicSongs');
+                    } catch (removeError) {
+                        console.error('清理损坏数据失败:', removeError);
+                    }
+                    songs = [];
                 }
+                renderSongsList();
             }
 
             // 渲染歌曲列表
@@ -860,19 +980,6 @@
                 document.getElementById('songUrl').value = '';
                 document.getElementById('coverUploadText').textContent = '点击选择封面图片';
                 tempCover = null;
-            }
-
-            // 处理封面上传
-            function handleCoverUpload(event) {
-                const file = event.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        tempCover = e.target.result;
-                        document.getElementById('coverUploadText').textContent = '封面已选择';
-                    };
-                    reader.readAsDataURL(file);
-                }
             }
 
             // 打开背景设置弹窗
