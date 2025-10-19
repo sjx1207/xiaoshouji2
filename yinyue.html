@@ -1393,7 +1393,7 @@
                     </svg>
                 </div>
                 <!-- 星星按钮 -->
-                <div class="header-btn" onclick="openBackgroundModal()">
+                <div class="header-btn" onclick="openMusicBackgroundModal()">
                     <svg viewBox="0 0 24 24" width="18" height="18">
                         <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" fill="white"/>
                     </svg>
@@ -1459,7 +1459,7 @@
                         </svg>
                     </div>
                     <!-- 星星按钮 -->
-                    <div class="header-btn" onclick="openBackgroundModal()">
+                    <div class="header-btn" onclick="openPlayerBackgroundModal()">
                         <svg viewBox="0 0 24 24" width="18" height="18">
                             <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" fill="white"/>
                         </svg>
@@ -1505,7 +1505,7 @@
                 <div class="control-buttons">
                     <button class="control-btn" onclick="toggleRepeatMode()">
                         <svg viewBox="0 0 24 24" id="repeatIcon">
-                            <path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z" fill="white"/>
+                            <path d="M4 4h4v4H4V4zm6 0h4v4h-4V4zm6 0h4v4h-4V4zM4 12h4v4H4v-4zm6 0h4v4h-4v-4zm6 0h4v4h-4v-4z" fill="white"/>
                         </svg>
                     </button>
                     <button class="control-btn" onclick="prevSong()">
@@ -1568,11 +1568,30 @@
 
 
 
-        <!-- 背景设置弹窗 -->
+        <!-- 音乐页面背景设置弹窗 -->
+        <div class="modal" id="musicBackgroundModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="modal-title">设置音乐页面背景</div>
+                    <button class="modal-close" onclick="closeMusicBackgroundModal()">&times;</button>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">音乐页面背景图片</label>
+                    <div class="upload-area" onclick="document.getElementById('musicBackgroundUpload').click()">
+                        <div class="upload-icon">🖼️</div>
+                        <div class="upload-text" id="musicBackgroundUploadText">点击选择音乐页面背景图片</div>
+                    </div>
+                    <input type="file" id="musicBackgroundUpload" class="hidden-file-input" accept="image/*" onchange="handleMusicBackgroundUpload(event)">
+                </div>
+                <button class="submit-btn" onclick="saveMusicBackground()">保存背景</button>
+            </div>
+        </div>
+        
+        <!-- 背景设置弹窗（播放器页面专用） -->
         <div class="modal" id="backgroundModal">
             <div class="modal-content">
                 <div class="modal-header">
-                    <div class="modal-title">设置背景</div>
+                    <div class="modal-title">设置播放器背景</div>
                     <button class="modal-close" onclick="closeBackgroundModal()">&times;</button>
                 </div>
                 <div class="form-group">
@@ -1591,7 +1610,7 @@
                     </div>
                     <input type="file" id="togetherBackgroundUpload" class="hidden-file-input" accept="image/*" onchange="handleTogetherBackgroundUpload(event)">
                 </div>
-                <button class="submit-btn" onclick="saveBackground()">保存背景</button>
+                <button class="submit-btn" onclick="savePlayerBackground()">保存背景</button>
             </div>
         </div>
 
@@ -1753,18 +1772,20 @@
             let currentSongIndex = -1;
             let isPlaying = false;
             let tempCover = null;
-            let tempPlayerBackground = null;
-            let tempTogetherBackground = null;
+            let tempMusicBackground = null;  // 音乐页面背景
+            let tempPlayerBackground = null;  // 播放器页面背景
+            let tempTogetherBackground = null;  // 一起听歌背景
             let currentLyrics = [];
             let lyricsMap = {};
             let audioPlayer = null;
             let isFavorite = false;
-            let isShuffle = false;
-            let isRepeat = false;
+            let isShuffle = false;  // 随机播放模式
+            let isRepeat = false;   // 单曲循环模式
             let shuffleOrder = [];
             let togetherStartTime = null;
             let togetherTimer = null;
-            let togetherDuration = 0;
+            let togetherDuration = 0; // 当前会话时长
+            let totalTogetherDuration = 0; // 总时长
             let characterList = [
                 { id: 1, name: '小明', avatar: '👤' },
                 { id: 2, name: '小红', avatar: '👤' },
@@ -1785,6 +1806,15 @@
                 console.log('DOM内容加载完成，开始加载数据...');
                 // 初始化音频播放器
                 audioPlayer = document.getElementById('audioPlayer');
+                
+                // 加载背景
+                loadBackground();
+                
+                // 加载歌曲
+                loadSongs();
+                
+                // 加载一起听歌时长
+                loadTogetherDuration();
                 
                 // 添加音频播放器事件监听器
                 audioPlayer.addEventListener('ended', function() {
@@ -1823,9 +1853,6 @@
                         sendMessage();
                     }
                 });
-                
-                loadBackground();
-                loadSongs();
             });
 
             // 打开播放器页面
@@ -1855,6 +1882,7 @@
                     // 当前是顺序播放，切换到单曲循环
                     isRepeat = true;
                     isShuffle = false;
+                    // 单曲循环图标
                     document.getElementById('repeatIcon').innerHTML = '<path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z" fill="white"/>';
                 } else if (isRepeat && !isShuffle) {
                     // 当前是单曲循环，切换到随机播放
@@ -1870,12 +1898,14 @@
                         const j = Math.floor(Math.random() * (i + 1));
                         [shuffleOrder[i], shuffleOrder[j]] = [shuffleOrder[j], shuffleOrder[i]];
                     }
+                    // 随机播放图标
                     document.getElementById('repeatIcon').innerHTML = '<path d="M10.59 9.17L5.41 4 4 5.41l5.17 5.17 1.42-1.41zM14.5 4l2.04 2.04L4 18.59 5.41 20 17.96 7.46 20 9.5V4h-5.5zm.33 9.41l-1.41 1.41 3.13 3.13L14.5 20H20v-5.5l-2.04 2.04-3.13-3.13z" fill="white"/>';
                 } else {
                     // 当前是随机播放，切换到顺序播放
                     isRepeat = false;
                     isShuffle = false;
-                    document.getElementById('repeatIcon').innerHTML = '<path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z" fill="white"/>';
+                    // 顺序播放图标（三个向右的箭头）
+                    document.getElementById('repeatIcon').innerHTML = '<path d="M4 4h4v4H4V4zm6 0h4v4h-4V4zm6 0h4v4h-4V4zM4 12h4v4H4v-4zm6 0h4v4h-4v-4zm6 0h4v4h-4v-4z" fill="white"/>';
                 }
                 
                 console.log('播放模式已切换');
@@ -2115,6 +2145,10 @@
                     audioPlayer.play()
                         .then(() => {
                             console.log('开始播放:', song.title);
+                            // 如果一起听歌弹窗打开，开始计时
+                            if (document.getElementById('togetherModal').querySelector('.together-modal').classList.contains('open')) {
+                                startTogetherTimer();
+                            }
                         })
                         .catch((error) => {
                             console.error('播放失败:', error);
@@ -2128,23 +2162,6 @@
                 // 如果播放列表是打开的，更新播放列表显示
                 if (document.getElementById('playlistModal').classList.contains('open')) {
                     renderPlaylist();
-                }
-            }
-
-            // 切换一起听歌弹窗
-            function toggleTogether() {
-                const togetherModal = document.getElementById('togetherModal');
-                const togetherModalElement = togetherModal.querySelector('.together-modal');
-                togetherModalElement.classList.toggle('open');
-                
-                if (togetherModalElement.classList.contains('open')) {
-                    togetherModal.style.display = 'block';
-                    // 开始计时
-                    startTogetherTimer();
-                } else {
-                    togetherModal.style.display = 'none';
-                    // 停止计时
-                    stopTogetherTimer();
                 }
             }
 
@@ -2184,7 +2201,102 @@
                     const now = new Date();
                     togetherDuration += (now - togetherStartTime);
                     togetherStartTime = null;
+                    // 保存时长
+                    saveTogetherDuration();
                 }
+            }
+
+            // 页面卸载时保存时长
+            window.addEventListener('beforeunload', function() {
+                // 停止计时器并保存时长
+                stopTogetherTimer();
+            });
+
+            // 切换播放/暂停
+            function togglePlay(event) {
+                // 阻止事件冒泡到父元素
+                if (event) {
+                    event.stopPropagation();
+                }
+                
+                if (currentSongIndex < 0) {
+                    if (songs.length > 0) {
+                        playSong(0);
+                    }
+                    return;
+                }
+                
+                isPlaying = !isPlaying;
+                if (isPlaying) {
+                    // 播放
+                    audioPlayer.play()
+                        .then(() => {
+                            console.log('继续播放');
+                            // 如果一起听歌弹窗打开，开始计时
+                            if (document.getElementById('togetherModal').querySelector('.together-modal').classList.contains('open')) {
+                                startTogetherTimer();
+                            }
+                        })
+                        .catch((error) => {
+                            console.error('播放失败:', error);
+                        });
+                } else {
+                    // 暂停
+                    audioPlayer.pause();
+                    console.log('暂停播放');
+                    // 如果一起听歌弹窗打开，停止计时
+                    if (document.getElementById('togetherModal').querySelector('.together-modal').classList.contains('open')) {
+                        stopTogetherTimer();
+                    }
+                }
+                
+                updatePlayerUI();
+            }
+
+            // 上一首
+            function prevSong(event) {
+                // 阻止事件冒泡到父元素
+                if (event) {
+                    event.stopPropagation();
+                }
+                
+                if (songs.length === 0) return;
+                
+                // 根据播放模式确定上一首歌曲
+                if (isShuffle && shuffleOrder.length > 0) {
+                    // 随机播放模式
+                    const currentIndexInShuffle = shuffleOrder.indexOf(currentSongIndex);
+                    const prevIndexInShuffle = (currentIndexInShuffle - 1 + shuffleOrder.length) % shuffleOrder.length;
+                    currentSongIndex = shuffleOrder[prevIndexInShuffle];
+                } else {
+                    // 普通播放模式
+                    currentSongIndex = (currentSongIndex - 1 + songs.length) % songs.length;
+                }
+                
+                playSong(currentSongIndex);
+            }
+
+            // 下一首
+            function nextSong(event) {
+                // 阻止事件冒泡到父元素
+                if (event) {
+                    event.stopPropagation();
+                }
+                
+                if (songs.length === 0) return;
+                
+                // 根据播放模式确定下一首歌曲
+                if (isShuffle && shuffleOrder.length > 0) {
+                    // 随机播放模式
+                    const currentIndexInShuffle = shuffleOrder.indexOf(currentSongIndex);
+                    const nextIndexInShuffle = (currentIndexInShuffle + 1) % shuffleOrder.length;
+                    currentSongIndex = shuffleOrder[nextIndexInShuffle];
+                } else {
+                    // 普通播放模式
+                    currentSongIndex = (currentSongIndex + 1) % songs.length;
+                }
+                
+                playSong(currentSongIndex);
             }
 
             // 打开角色选择弹窗
@@ -2824,7 +2936,24 @@
                 }
             }
 
-            // 关闭背景设置弹窗
+            // 打开音乐页面背景设置弹窗
+            function openMusicBackgroundModal() {
+                document.getElementById('musicBackgroundModal').style.display = 'flex';
+            }
+
+            // 关闭音乐页面背景设置弹窗
+            function closeMusicBackgroundModal() {
+                document.getElementById('musicBackgroundModal').style.display = 'none';
+                document.getElementById('musicBackgroundUploadText').textContent = '点击选择音乐页面背景图片';
+                tempMusicBackground = null;
+            }
+
+            // 打开播放器页面背景设置弹窗
+            function openPlayerBackgroundModal() {
+                document.getElementById('backgroundModal').style.display = 'flex';
+            }
+
+            // 关闭播放器页面背景设置弹窗
             function closeBackgroundModal() {
                 document.getElementById('backgroundModal').style.display = 'none';
                 document.getElementById('playerBackgroundUploadText').textContent = '点击选择播放器背景图片';
@@ -2859,8 +2988,39 @@
                 }
             }
 
-            // 保存背景
-            function saveBackground() {
+            // 处理音乐页面背景上传
+            function handleMusicBackgroundUpload(event) {
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        tempMusicBackground = e.target.result;
+                        document.getElementById('musicBackgroundUploadText').textContent = '音乐页面背景已选择';
+                    };
+                    reader.readAsDataURL(file);
+                }
+            }
+
+            // 保存音乐页面背景
+            function saveMusicBackground() {
+                if (!tempMusicBackground) {
+                    alert('请选择音乐页面背景图片');
+                    return;
+                }
+                
+                try {
+                    localStorage.setItem('musicPageBackground', tempMusicBackground);
+                    applyMusicBackground(tempMusicBackground);
+                    closeMusicBackgroundModal();
+                    alert('音乐页面背景设置成功！');
+                } catch (e) {
+                    console.error('保存音乐页面背景时出错:', e);
+                    alert('保存失败，请重试');
+                }
+            }
+
+            // 保存播放器页面背景
+            function savePlayerBackground() {
                 if (!tempPlayerBackground && !tempTogetherBackground) {
                     alert('请至少选择一个背景图片');
                     return;
@@ -2869,8 +3029,8 @@
                 try {
                     // 保存播放器背景
                     if (tempPlayerBackground) {
-                        localStorage.setItem('musicBackground', tempPlayerBackground);
-                        applyBackground(tempPlayerBackground);
+                        localStorage.setItem('playerBackground', tempPlayerBackground);
+                        applyPlayerBackground(tempPlayerBackground);
                     }
                     
                     // 保存一起听歌背景
@@ -2880,7 +3040,7 @@
                     }
                     
                     closeBackgroundModal();
-                    alert('背景设置成功！');
+                    alert('播放器背景设置成功！');
                     console.log('背景已保存');
                 } catch (e) {
                     console.error('保存背景时出错:', e);
@@ -2891,19 +3051,22 @@
             // 加载背景
             function loadBackground() {
                 try {
-                    const savedBackground = localStorage.getItem('musicBackground');
-                    if (savedBackground) {
-                        applyBackground(savedBackground);
+                    // 加载音乐页面背景
+                    const savedMusicBackground = localStorage.getItem('musicPageBackground');
+                    if (savedMusicBackground) {
+                        applyMusicBackground(savedMusicBackground);
+                        console.log('音乐页面背景已加载');
+                    } else {
+                        console.log('未找到保存的音乐页面背景');
+                    }
+                    
+                    // 加载播放器背景
+                    const savedPlayerBackground = localStorage.getItem('playerBackground');
+                    if (savedPlayerBackground) {
+                        applyPlayerBackground(savedPlayerBackground);
                         console.log('播放器背景已加载');
                     } else {
                         console.log('未找到保存的播放器背景');
-                    }
-                    
-                    // 加载聊天背景
-                    const savedChatBackground = localStorage.getItem('chatBackground');
-                    if (savedChatBackground) {
-                        applyChatBackground(savedChatBackground);
-                        console.log('聊天背景已加载');
                     }
                     
                     // 加载一起听歌背景
@@ -2917,24 +3080,95 @@
                 }
             }
 
-            // 应用背景
-            function applyBackground(backgroundData) {
-                document.body.style.background = `url(${backgroundData}) center/cover no-repeat, linear-gradient(135deg, #1a1a1a, #000)`;
+            // 应用音乐页面背景
+            function applyMusicBackground(backgroundData) {
+                if (backgroundData) {
+                    // 应用到音乐页面（body元素）
+                    document.body.style.background = `url(${backgroundData}) center/cover no-repeat, linear-gradient(135deg, #1a1a1a, #000)`;
+                }
             }
 
-            // 应用聊天背景
-            function applyChatBackground(backgroundData) {
-                const chatMessages = document.getElementById('chatMessages');
-                if (chatMessages) {
-                    chatMessages.style.background = `url(${backgroundData}) center/cover no-repeat, rgba(255, 255, 255, 0.05)`;
+            // 应用播放器背景
+            function applyPlayerBackground(backgroundData) {
+                if (backgroundData) {
+                    // 只在播放器页面应用背景
+                    const playerPage = document.getElementById('playerPage');
+                    if (playerPage) {
+                        playerPage.style.background = `url(${backgroundData}) center/cover no-repeat, linear-gradient(135deg, #1a1a1a, #000)`;
+                    }
                 }
             }
 
             // 应用一起听歌背景
             function applyTogetherBackground(backgroundData) {
                 const togetherModal = document.querySelector('.together-modal');
-                if (togetherModal) {
-                    togetherModal.style.background = `url(${backgroundData}) center/cover no-repeat, rgba(30, 30, 30, 0.95)`;
+                if (togetherModal && backgroundData) {
+                    togetherModal.style.background = `url(${backgroundData}) center/cover no-repeat`;
+                    // 保留原有的背景色和透明度
+                    togetherModal.style.backgroundBlendMode = 'overlay';
+                }
+            }
+
+            // 保存一起听歌时长
+            function saveTogetherDuration() {
+                try {
+                    const data = {
+                        totalDuration: totalTogetherDuration + togetherDuration,
+                        lastUpdated: new Date().toISOString()
+                    };
+                    localStorage.setItem('togetherDuration', JSON.stringify(data));
+                } catch (e) {
+                    console.error('保存一起听歌时长时出错:', e);
+                }
+            }
+
+            // 加载一起听歌时长
+            function loadTogetherDuration() {
+                try {
+                    const savedData = localStorage.getItem('togetherDuration');
+                    if (savedData) {
+                        const data = JSON.parse(savedData);
+                        totalTogetherDuration = data.totalDuration || 0;
+                        
+                        // 更新显示
+                        updateTogetherDurationDisplay();
+                    }
+                } catch (e) {
+                    console.error('加载一起听歌时长时出错:', e);
+                }
+            }
+
+            // 更新一起听歌时长显示
+            function updateTogetherDurationDisplay() {
+                const totalDuration = totalTogetherDuration + togetherDuration;
+                const seconds = Math.floor(totalDuration / 1000) % 60;
+                const minutes = Math.floor(totalDuration / (1000 * 60)) % 60;
+                const hours = Math.floor(totalDuration / (1000 * 60 * 60));
+                
+                document.getElementById('togetherDuration').textContent = 
+                    `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }
+
+            // 页面卸载时保存时长
+            window.addEventListener('beforeunload', function() {
+                // 停止计时器并保存时长
+                stopTogetherTimer();
+            });
+
+            // 切换一起听歌弹窗
+            function toggleTogether() {
+                const togetherModal = document.getElementById('togetherModal');
+                const togetherModalElement = togetherModal.querySelector('.together-modal');
+                togetherModalElement.classList.toggle('open');
+                
+                if (togetherModalElement.classList.contains('open')) {
+                    togetherModal.style.display = 'block';
+                    // 开始计时
+                    startTogetherTimer();
+                } else {
+                    togetherModal.style.display = 'none';
+                    // 停止计时
+                    stopTogetherTimer();
                 }
             }
         </script>
