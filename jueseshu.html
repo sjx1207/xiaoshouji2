@@ -715,11 +715,41 @@
                 }
             }
             
-            // 页面加载时初始化角色数据
+            // 检查存储空间使用情况
+            function checkStorageUsage() {
+                try {
+                    const savedCharacters = localStorage.getItem('characters');
+                    if (savedCharacters) {
+                        const sizeInBytes = new Blob([savedCharacters]).size;
+                        const sizeInKB = (sizeInBytes / 1024).toFixed(2);
+                        const percentage = ((sizeInBytes / (5 * 1024 * 1024)) * 100).toFixed(2); // 假设5MB限制
+                        
+                        console.log(`角色数据存储使用情况: ${sizeInKB} KB (${percentage}% of 5MB)`);
+                        
+                        // 如果使用超过80%，显示警告
+                        if (percentage > 80) {
+                            showPageAlert(`存储空间使用率过高 (${percentage}%)，建议删除一些角色`);
+                        }
+                        
+                        return {
+                            sizeInBytes: sizeInBytes,
+                            sizeInKB: sizeInKB,
+                            percentage: percentage
+                        };
+                    }
+                } catch (e) {
+                    console.error('检查存储使用情况时出错:', e);
+                }
+                return null;
+            }
+            
+            // 页面加载时检查存储使用情况
             window.onload = function() {
                 loadCharacters();
                 // 自动清理和修复数据
                 cleanAndFixCharacters();
+                // 检查存储使用情况
+                checkStorageUsage();
                 
                 // 添加一个简单的测试函数，用于调试删除功能
                 window.testDeleteFunction = function() {
@@ -750,38 +780,79 @@
                         characters = JSON.parse(savedCharacters);
                         console.log('从localStorage加载的角色数据:', characters);
                         
-                        // 数据清理：过滤掉无效的角色数据
-                        characters = characters.filter((character, index) => {
-                            // 检查角色对象是否有效
-                            if (!character) {
-                                console.log('发现空角色对象，索引:', index);
-                                return false;
-                            }
-                            
-                            // 检查必要字段是否存在
-                            if (!character.name || typeof character.name !== 'string') {
-                                console.log('发现无效角色名称，索引:', index, '角色:', character);
-                                return false;
-                            }
-                            
-                            // 检查索引是否有效
-                            if (index < 0) {
-                                console.log('发现无效索引的角色，索引:', index);
-                                return false;
-                            }
-                            
-                            return true;
-                        });
+                        // 数据验证和清理
+                        if (Array.isArray(characters)) {
+                            // 过滤掉无效的角色数据
+                            characters = characters.filter((character, index) => {
+                                // 检查角色对象是否有效
+                                if (!character || typeof character !== 'object') {
+                                    console.log('发现无效角色对象，索引:', index);
+                                    return false;
+                                }
+                                
+                                // 检查必要字段是否存在
+                                if (!character.name || typeof character.name !== 'string') {
+                                    console.log('发现无效角色名称，索引:', index, '角色:', character);
+                                    return false;
+                                }
+                                
+                                // 检查索引是否有效
+                                if (index < 0) {
+                                    console.log('发现无效索引的角色，索引:', index);
+                                    return false;
+                                }
+                                
+                                // 限制角色名称长度
+                                if (character.name.length > 50) {
+                                    character.name = character.name.substring(0, 50);
+                                }
+                                
+                                // 限制角色描述长度
+                                if (character.desc && character.desc.length > 200) {
+                                    character.desc = character.desc.substring(0, 200);
+                                }
+                                
+                                // 优化头像数据
+                                if (character.avatar && character.avatar.startsWith('data:image')) {
+                                    // 如果头像数据太大，截取部分数据
+                                    if (character.avatar.length > 100 * 1024) { // 100KB
+                                        character.avatar = character.avatar.substring(0, 100 * 1024);
+                                    }
+                                }
+                                
+                                return true;
+                            });
+                        } else {
+                            console.log('角色数据格式不正确，初始化为空数组');
+                            characters = [];
+                        }
                         
-                        // 重新保存清理后的数据
-                        if (characters.length !== JSON.parse(savedCharacters).length) {
+                        // 重新保存清理后的数据（仅在有变化时）
+                        const originalString = savedCharacters;
+                        const cleanedString = JSON.stringify(characters);
+                        if (originalString !== cleanedString) {
                             console.log('数据已清理，重新保存到localStorage');
-                            localStorage.setItem('characters', JSON.stringify(characters));
+                            try {
+                                localStorage.setItem('characters', cleanedString);
+                            } catch (e) {
+                                if (e.name === 'QuotaExceededError') {
+                                    console.log('存储空间不足，无法保存清理后的数据');
+                                    // 尝试进一步清理
+                                    characters = characters.slice(0, Math.floor(characters.length * 0.8)); // 删除20%的角色
+                                    localStorage.setItem('characters', JSON.stringify(characters));
+                                }
+                            }
                         }
                     } catch (e) {
                         console.error('解析角色数据时出错:', e);
                         // 如果解析失败，初始化为空数组
                         characters = [];
+                        // 尝试清除损坏的数据
+                        try {
+                            localStorage.removeItem('characters');
+                        } catch (removeError) {
+                            console.error('清除损坏数据时出错:', removeError);
+                        }
                     }
                 }
                 
@@ -794,7 +865,7 @@
                     characterCard.className = 'character-card';
                     characterCard.innerHTML = `
                         <div class="character-avatar">
-                            ${character.avatar ? `<img src="${character.avatar}" alt="${character.name}">` : '👤'}
+                            ${character.avatar ? `<img src="${character.avatar}" alt="${character.name}" onerror="this.src='';this.parentElement.innerHTML='👤'">` : '👤'}
                         </div>
                         <div class="character-name">${character.name}</div>
                         <div class="character-desc">${character.desc || ''}</div>
@@ -951,6 +1022,8 @@
                 }
                 
                 // 处理各种删除情况
+                let deleted = false;
+                
                 if (currentCharacter && currentCharacterIndex !== null) {
                     // 情况1: 有角色对象和索引
                     console.log('情况1: 有角色对象和索引');
@@ -960,6 +1033,7 @@
                         // 通过索引删除
                         console.log('通过索引删除角色');
                         characters.splice(currentCharacterIndex, 1);
+                        deleted = true;
                     } else {
                         // 索引无效，通过查找角色ID删除
                         console.log('索引无效，通过查找角色删除');
@@ -967,17 +1041,14 @@
                             char && char.id === currentCharacter.id);
                         if (foundIndex !== -1) {
                             characters.splice(foundIndex, 1);
+                            deleted = true;
                         } else {
                             // 通过角色名称查找
                             const nameIndex = characters.findIndex(char => 
                                 char && char.name === currentCharacter.name);
                             if (nameIndex !== -1) {
                                 characters.splice(nameIndex, 1);
-                            } else {
-                                console.error('未找到要删除的角色');
-                                showPageAlert('未找到要删除的角色');
-                                closeConfirmDeleteModal();
-                                return;
+                                deleted = true;
                             }
                         }
                     }
@@ -988,43 +1059,59 @@
                         char && char.id === currentCharacter.id);
                     if (foundIndex !== -1) {
                         characters.splice(foundIndex, 1);
+                        deleted = true;
                     } else {
                         // 通过角色名称查找
                         const nameIndex = characters.findIndex(char => 
                             char && char.name === currentCharacter.name);
                         if (nameIndex !== -1) {
                             characters.splice(nameIndex, 1);
-                        } else {
-                            console.error('未找到要删除的角色');
-                            showPageAlert('未找到要删除的角色');
-                            closeConfirmDeleteModal();
-                            return;
+                            deleted = true;
                         }
                     }
                 } else if (currentCharacterIndex !== null && currentCharacterIndex >= 0 && currentCharacterIndex < characters.length) {
                     // 情况3: 只有有效索引，没有角色对象
                     console.log('情况3: 只有有效索引，没有角色对象');
                     characters.splice(currentCharacterIndex, 1);
-                } else {
-                    // 所有情况都无效
-                    console.error('无法确定要删除的角色');
+                    deleted = true;
+                }
+                
+                // 如果没有找到要删除的角色
+                if (!deleted) {
+                    console.error('未找到要删除的角色');
                     console.log('currentCharacter:', currentCharacter);
                     console.log('currentCharacterIndex:', currentCharacterIndex);
                     console.log('角色数组:', characters);
-                    showPageAlert('删除角色时出错，请重试');
+                    showPageAlert('未找到要删除的角色');
                     closeConfirmDeleteModal();
                     return;
                 }
                 
-                // 保存到本地存储
+                // 保存到本地存储，添加错误处理
                 try {
                     localStorage.setItem('characters', JSON.stringify(characters));
                     console.log('角色数据已保存到localStorage');
                 } catch (e) {
-                    console.error('保存角色数据时出错:', e);
-                    showPageAlert('保存数据时出错，请重试');
-                    closeConfirmDeleteModal();
-                    return;
+                    if (e.name === 'QuotaExceededError') {
+                        // 即使是删除操作也可能遇到存储问题，尝试清理数据
+                        console.log('删除后仍然遇到存储问题，尝试清理数据');
+                        try {
+                            // 清理空数据和无效数据
+                            const cleanedCharacters = characters.filter(char => char && char.name);
+                            localStorage.setItem('characters', JSON.stringify(cleanedCharacters));
+                            console.log('清理后数据已保存');
+                        } catch (cleanError) {
+                            console.error('清理后仍然无法保存:', cleanError);
+                            showPageAlert('存储空间异常，请尝试紧急修复');
+                            closeConfirmDeleteModal();
+                            return;
+                        }
+                    } else {
+                        console.error('保存角色数据时出错:', e);
+                        showPageAlert('保存数据时出错，请重试');
+                        closeConfirmDeleteModal();
+                        return;
+                    }
                 }
                 
                 // 重新加载角色列表
@@ -1058,20 +1145,71 @@
             function handleAvatarUpload(event) {
                 const file = event.target.files[0];
                 if (file) {
+                    // 检查文件大小
+                    if (file.size > 200 * 1024) { // 200KB限制
+                        showPageAlert('头像文件太大，请选择小于200KB的图片');
+                        return;
+                    }
+                    
                     const reader = new FileReader();
                     reader.onload = function(e) {
-                        // 保存头像数据到临时变量
-                        window.tempAvatar = e.target.result;
-                        // 更新上传区域显示
-                        document.querySelector('.upload-area').innerHTML = `
-                            <img src="${e.target.result}" style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover; margin: 0 auto 10px;">
-                            <div class="upload-text" id="uploadText">头像已选择</div>
-                        `;
+                        // 压缩图片
+                        compressImage(e.target.result, 100, 100, 0.7) // 100x100像素，70%质量
+                            .then(compressedData => {
+                                // 保存头像数据到临时变量
+                                window.tempAvatar = compressedData;
+                                // 更新上传区域显示
+                                document.querySelector('.upload-area').innerHTML = `
+                                    <img src="${compressedData}" style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover; margin: 0 auto 10px;">
+                                    <div class="upload-text" id="uploadText">头像已选择</div>
+                                `;
+                            })
+                            .catch(error => {
+                                console.error('图片压缩失败:', error);
+                                showPageAlert('图片处理失败，请重试');
+                            });
                     };
                     reader.readAsDataURL(file);
                 }
             }
-
+            
+            // 压缩图片
+            function compressImage(src, maxWidth, maxHeight, quality) {
+                return new Promise((resolve, reject) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        // 计算新尺寸
+                        let width = img.width;
+                        let height = img.height;
+                        
+                        if (width > height) {
+                            if (width > maxWidth) {
+                                height = (height * maxWidth) / width;
+                                width = maxWidth;
+                            }
+                        } else {
+                            if (height > maxHeight) {
+                                width = (width * maxHeight) / height;
+                                height = maxHeight;
+                            }
+                        }
+                        
+                        // 创建canvas进行压缩
+                        const canvas = document.createElement('canvas');
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        
+                        // 转换为base64
+                        const compressedData = canvas.toDataURL('image/jpeg', quality);
+                        resolve(compressedData);
+                    };
+                    img.onerror = reject;
+                    img.src = src;
+                });
+            }
+            
             // 添加角色
             function addCharacter() {
                 const name = document.getElementById('characterName').value.trim();
@@ -1094,6 +1232,12 @@
                     }
                 }
                 
+                // 检查存储空间是否足够（限制角色数量）
+                if (characters.length >= 50) {
+                    showPageAlert('角色数量已达上限（50个），请删除一些角色后再添加');
+                    return;
+                }
+                
                 // 创建新角色对象
                 const newCharacter = {
                     id: Date.now(),
@@ -1103,11 +1247,47 @@
                     createdAt: new Date().toISOString()
                 };
                 
+                // 优化头像数据大小
+                if (newCharacter.avatar && newCharacter.avatar.startsWith('data:image')) {
+                    // 压缩头像数据
+                    newCharacter.avatar = compressImageData(newCharacter.avatar);
+                }
+                
                 // 添加到角色数组
                 characters.push(newCharacter);
                 
-                // 保存到本地存储
-                localStorage.setItem('characters', JSON.stringify(characters));
+                // 保存到本地存储，添加错误处理
+                try {
+                    const charactersString = JSON.stringify(characters);
+                    // 检查数据大小
+                    if (charactersString.length > 5 * 1024 * 1024) { // 5MB限制
+                        showPageAlert('数据太大无法保存，请减少角色数量或简化头像');
+                        return;
+                    }
+                    localStorage.setItem('characters', charactersString);
+                } catch (e) {
+                    if (e.name === 'QuotaExceededError') {
+                        // 存储空间不足，尝试清理旧数据
+                        showPageAlert('存储空间不足，正在尝试清理...');
+                        cleanAndFixCharacters();
+                        
+                        // 再次尝试保存
+                        try {
+                            localStorage.setItem('characters', JSON.stringify(characters));
+                            showPageAlert('角色添加成功！');
+                        } catch (retryError) {
+                            if (retryError.name === 'QuotaExceededError') {
+                                showPageAlert('存储空间仍然不足，请删除一些角色后再添加');
+                            } else {
+                                showPageAlert('保存角色时出错，请重试');
+                            }
+                            return;
+                        }
+                    } else {
+                        showPageAlert('保存角色时出错，请重试');
+                        return;
+                    }
+                }
                 
                 // 重新加载角色列表
                 loadCharacters();
@@ -1124,6 +1304,21 @@
                 
                 // 显示成功提示
                 showPageAlert('角色添加成功！');
+            }
+            
+            // 压缩图片数据
+            function compressImageData(imageData) {
+                // 如果图片数据太大，尝试压缩
+                if (imageData.length > 100 * 1024) { // 100KB
+                    // 这里可以添加图片压缩逻辑
+                    // 简单处理：截取部分数据避免过大
+                    console.log('图片数据较大，进行压缩处理');
+                    // 为了简单起见，我们只保留前100KB数据
+                    if (imageData.length > 100 * 1024) {
+                        return imageData.substring(0, 100 * 1024);
+                    }
+                }
+                return imageData;
             }
 
             // 查看角色详情
@@ -1142,8 +1337,22 @@
                 // 设置头像
                 const avatarImg = document.getElementById('detailAvatar');
                 if (character.avatar) {
-                    avatarImg.src = character.avatar;
-                    avatarImg.alt = character.name;
+                    // 如果头像数据太大，进行压缩处理
+                    if (character.avatar.length > 100 * 1024) { // 100KB
+                        compressImage(character.avatar, 100, 100, 0.7)
+                            .then(compressedData => {
+                                avatarImg.src = compressedData;
+                                avatarImg.alt = character.name;
+                            })
+                            .catch(() => {
+                                // 如果压缩失败，使用原始数据
+                                avatarImg.src = character.avatar;
+                                avatarImg.alt = character.name;
+                            });
+                    } else {
+                        avatarImg.src = character.avatar;
+                        avatarImg.alt = character.name;
+                    }
                 } else {
                     avatarImg.src = '';
                     avatarImg.alt = '👤';
@@ -1207,6 +1416,20 @@
                         alertElement.parentNode.removeChild(alertElement);
                     }
                 }, 3000);
+            }
+            
+            // 重置所有角色数据
+            function resetAllCharacters() {
+                if (confirm('这将删除所有角色数据，确定要继续吗？')) {
+                    try {
+                        localStorage.removeItem('characters');
+                        loadCharacters();
+                        showPageAlert('所有角色数据已重置！');
+                    } catch (e) {
+                        console.error('重置角色数据时出错:', e);
+                        showPageAlert('重置数据时出错，请重试');
+                    }
+                }
             }
             
             // 紧急修复功能
