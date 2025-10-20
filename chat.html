@@ -752,13 +752,13 @@
                 </div>
                 <!-- 从角色书选择角色的按钮 -->
                 <div class="form-group">
-                    <button class="upload-btn" onclick="openCharacterSelector()" style="width:100%;margin-top:10px;">
+                    <button class="upload-btn" onclick="openCharacterSelector()" style="width:100%;margin-top:10px;" type="button">
                         从角色书选择角色
                     </button>
                 </div>
                 <div class="modal-actions">
-                    <button class="cancel-btn" onclick="closeModal()">取消</button>
-                    <button class="save-btn" onclick="saveContact()">保存</button>
+                    <button class="cancel-btn" onclick="closeModal()" type="button">取消</button>
+                    <button class="save-btn" onclick="saveContact()" type="button">保存</button>
                 </div>
             </div>
         </div>
@@ -975,82 +975,85 @@
 
             // 保存联系人
             function saveContact() {
-                const name = document.getElementById('contactName').value;
-                if (!name) {
-                    showAlert('请输入昵称');
-                    return;
-                }
+                try {
+                    const name = document.getElementById('contactName').value.trim();
+                    if (!name) {
+                        showAlert('请输入昵称');
+                        return;
+                    }
 
-                // 获取头像数据
-                const avatarPreview = document.getElementById('avatarPreview');
-                let avatarData = '';
-                const avatarImg = avatarPreview.querySelector('img');
-                if (avatarImg) {
-                    avatarData = avatarImg.src;
-                } else {
-                    // 如果没有上传头像，使用默认头像
-                    avatarData = '👤';
-                }
+                    // 获取头像数据
+                    const avatarPreview = document.getElementById('avatarPreview');
+                    let avatarData = '';
+                    const avatarImg = avatarPreview.querySelector('img');
+                    if (avatarImg && avatarImg.src) {
+                        avatarData = avatarImg.src;
+                    } else {
+                        // 如果没有上传头像，使用默认头像
+                        avatarData = '👤';
+                    }
 
-                // 生成唯一ID
-                const newId = Date.now();
-                
-                // 创建联系人对象
-                const contact = {
-                    id: newId,
-                    name: name,
-                    avatar: avatarData,
-                    lastMessage: '你好！',
-                    time: '刚刚',
-                    unread: 0,
-                    pinned: false
-                };
-                
-                // 同时添加到好友列表
-                let friends = JSON.parse(localStorage.getItem('friendsList') || '[]');
-                // 检查是否已存在相同ID的好友，避免重复添加
-                const existingFriendIndex = friends.findIndex(friend => friend.id === newId);
-                if (existingFriendIndex === -1) {
-                    friends.push({
+                    // 生成唯一ID
+                    const newId = Date.now();
+                    
+                    // 创建联系人对象
+                    const contact = {
                         id: newId,
                         name: name,
                         avatar: avatarData,
-                        lastMessage: '',
-                        time: '',
-                        unread: 0
-                    });
+                        lastMessage: '你好！',
+                        time: '刚刚',
+                        unread: 0,
+                        pinned: false
+                    };
+                    
+                    // 同时添加到好友列表
+                    let friends = JSON.parse(localStorage.getItem('friendsList') || '[]');
+                    // 检查是否已存在相同ID的好友，避免重复添加
+                    const existingFriendIndex = friends.findIndex(friend => friend.id === newId);
+                    if (existingFriendIndex === -1) {
+                        friends.push({
+                            id: newId,
+                            name: name,
+                            avatar: avatarData,
+                            lastMessage: '',
+                            time: '',
+                            unread: 0
+                        });
+                    } else {
+                        // 如果好友已存在，更新其信息
+                        friends[existingFriendIndex].name = name;
+                        friends[existingFriendIndex].avatar = avatarData;
+                    }
                     localStorage.setItem('friendsList', JSON.stringify(friends));
-                } else {
-                    // 如果好友已存在，更新其信息
-                    friends[existingFriendIndex].name = name;
-                    friends[existingFriendIndex].avatar = avatarData;
-                    localStorage.setItem('friendsList', JSON.stringify(friends));
-                }
 
-                // 从localStorage获取现有联系人
-                let contacts = JSON.parse(localStorage.getItem('chatContacts') || '[]');
-                // 检查是否已存在相同ID的联系人，避免重复添加
-                const existingContactIndex = contacts.findIndex(c => c.id === newId);
-                if (existingContactIndex === -1) {
-                    contacts.push(contact);
+                    // 从localStorage获取现有联系人
+                    let contacts = JSON.parse(localStorage.getItem('chatContacts') || '[]');
+                    // 检查是否已存在相同ID的联系人，避免重复添加
+                    const existingContactIndex = contacts.findIndex(c => c.id === newId);
+                    if (existingContactIndex === -1) {
+                        contacts.push(contact);
+                    } else {
+                        // 如果联系人已存在，更新其信息
+                        contacts[existingContactIndex].name = name;
+                        contacts[existingContactIndex].avatar = avatarData;
+                    }
                     localStorage.setItem('chatContacts', JSON.stringify(contacts));
-                } else {
-                    // 如果联系人已存在，更新其信息
-                    contacts[existingContactIndex].name = name;
-                    contacts[existingContactIndex].avatar = avatarData;
-                    localStorage.setItem('chatContacts', JSON.stringify(contacts));
-                }
 
-                // 更新聊天列表和好友列表
-                renderChatList();
-                // 如果好友列表可见，也更新好友列表
-                const friendsListElement = document.getElementById('friendsList');
-                if (friendsListElement && friendsListElement.style.display !== 'none') {
-                    renderFriendsList();
-                }
+                    // 更新聊天列表和好友列表
+                    renderChatList();
+                    // 如果好友列表可见，也更新好友列表
+                    const friendsListElement = document.getElementById('friendsList');
+                    if (friendsListElement && friendsListElement.style.display !== 'none') {
+                        renderFriendsList();
+                    }
 
-                showAlert(`联系人 "${name}" 已添加！`);
-                closeModal();
+                    showAlert(`联系人 "${name}" 已添加！`);
+                    closeModal();
+                } catch (error) {
+                    console.error('保存联系人时出错:', error);
+                    showAlert('保存联系人时出错，请重试');
+                }
             }
 
             // 显示自定义提示模态框
