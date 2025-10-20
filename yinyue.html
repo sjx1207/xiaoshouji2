@@ -811,9 +811,44 @@
             0% { transform: scale(1); }
             5% { transform: scale(1.1); }
             10% { transform: scale(1); }
-            15% { transform: scale(1.2); }
-            50% { transform: scale(1); }
-            100% { transform: scale(1); }
+        }
+
+        .menu-btn {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .menu-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.1);
+        }
+
+        .menu-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* 删除确认弹窗样式 */
+        #deleteConfirmModal .modal-content {
+            max-width: 300px;
+        }
+
+        #deleteConfirmModal .form-group p {
+            text-align: center;
+            margin: 20px 0;
+            color: #fff;
+        }
+
+        /* 编辑歌曲弹窗样式 */
+        #editSongModal .modal-content {
+            max-width: 400px;
         }
 
         /* 创建爱心形状的发光效果 */
@@ -1566,7 +1601,53 @@
             </div>
         </div>
 
+        <!-- 删除确认弹窗 -->
+        <div class="modal" id="deleteConfirmModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="modal-title">确认删除</div>
+                    <button class="modal-close" onclick="closeDeleteConfirmModal()">&times;</button>
+                </div>
+                <div class="form-group">
+                    <p>确定要删除这首歌曲吗？此操作不可撤销。</p>
+                </div>
+                <div class="form-group" style="display: flex; gap: 10px;">
+                    <button class="submit-btn" onclick="confirmDeleteSong()" style="flex: 1; background: #ff3b30;">确定删除</button>
+                    <button class="submit-btn" onclick="closeDeleteConfirmModal()" style="flex: 1; background: #007AFF;">取消</button>
+                </div>
+            </div>
+        </div>
 
+        <!-- 编辑歌曲弹窗 -->
+        <div class="modal" id="editSongModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="modal-title">编辑歌曲</div>
+                    <button class="modal-close" onclick="closeEditSongModal()">&times;</button>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">歌曲名称</label>
+                    <input type="text" class="form-input" id="editSongTitle" placeholder="请输入歌曲名称">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">歌手</label>
+                    <input type="text" class="form-input" id="editSongArtist" placeholder="请输入歌手名称">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">歌曲URL</label>
+                    <input type="text" class="form-input" id="editSongUrl" placeholder="请输入歌曲URL">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">专辑封面</label>
+                    <div class="upload-area" onclick="document.getElementById('editCoverUpload').click()">
+                        <div class="upload-icon">🎵</div>
+                        <div class="upload-text" id="editCoverUploadText">点击选择封面图片</div>
+                    </div>
+                    <input type="file" id="editCoverUpload" class="hidden-file-input" accept="image/*" onchange="handleEditCoverUpload(event)">
+                </div>
+                <button class="submit-btn" onclick="saveEditSong()">保存更改</button>
+            </div>
+        </div>
 
         <!-- 音乐页面背景设置弹窗 -->
         <div class="modal" id="musicBackgroundModal">
@@ -1685,6 +1766,11 @@
                             <input type="text" class="chat-input" id="chatInput" placeholder="输入消息...">
                             <button class="chat-send-btn" onclick="sendMessage()">发送</button>
                             <button class="chat-ai-btn" onclick="sendAiMessage()">AI回复</button>
+                            <button class="chat-settings-btn" onclick="openChatSettings()" style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 20px; padding: 8px 15px; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; margin-left: 10px;">
+                                <svg viewBox="0 0 24 24" width="20" height="20" fill="white">
+                                    <path d="M12 15.5A3.5 3.5 0 0 1 8.5 12A3.5 3.5 0 0 1 12 8.5a3.5 3.5 0 0 1 3.5 3.5 3.5 3.5 0 0 1-3.5 3.5m7.43-2.53c.04.32.07.64.07.97 0 .33-.03.66-.07.97l2.11 1.63c.19.15.24.42.12.64l-2 3.46c-.12.22-.39.31-.61.22l-2.49-1c-.52.36-1.05.68-1.68.93l-.38 2.65c-.03.24-.24.42-.49.42h-4c-.25 0-.46-.18-.49-.42l-.38-2.65c-.63-.25-1.16-.57-1.68-.93l-2.49 1c-.22.09-.49 0-.61-.22l-2-3.46c-.13-.22-.07-.49.12-.64L4.57 14.5c-.04-.32-.07-.65-.07-.97 0-.33.03-.65.07-.97L2.46 10.93c-.19-.15-.24-.42-.12-.64l2-3.46c.12-.22.39-.31.61-.22l2.49 1c.52-.36 1.05-.68 1.68-.93l.38-2.65C9.46 2.18 9.67 2 9.92 2h4c.25 0 .46.18.49.42l.38 2.65c.63.25 1.16.57 1.68.93l2.49-1c.22-.09.49 0 .61.22l2 3.46c.12.22.07.49-.12.64l-2.11 1.66z"/>
+                                </svg>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -1750,6 +1836,27 @@
             </div>
         </div>
 
+        <!-- 聊天设置弹窗 -->
+        <div class="modal" id="chatSettingsModal">
+            <div class="user-modal">
+                <div class="modal-header">
+                    <div class="modal-title">聊天设置</div>
+                    <button class="modal-close" onclick="closeChatSettingsModal()">&times;</button>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">消息显示设置</label>
+                    <div style="display: flex; align-items: center; margin: 10px 0;">
+                        <input type="checkbox" id="autoHideMessages" style="width: 20px; height: 20px; margin-right: 10px;" checked>
+                        <label for="autoHideMessages" class="form-label" style="margin: 0;">AI回复消息3秒后自动消失</label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">聊天记录</label>
+                    <button class="submit-btn" onclick="clearChatHistory()" style="background: #ff3b30; margin-top: 10px;">清空聊天记录</button>
+                </div>
+                <button class="submit-btn" onclick="saveChatSettings()">保存设置</button>
+            </div>
+        </div>
         <script>
             // 更新时间
             function updateTime() {
@@ -1816,6 +1923,18 @@
                 // 加载一起听歌时长
                 loadTogetherDuration();
                 
+                // 加载选中的角色
+                loadSelectedCharacter();
+                
+                // 加载用户设置
+                loadUserSettings();
+                
+                // 加载播放状态
+                loadPlaybackState();
+                
+                // 加载聊天记录
+                loadChatMessages();
+                
                 // 添加音频播放器事件监听器
                 audioPlayer.addEventListener('ended', function() {
                     console.log('歌曲播放完成');
@@ -1841,6 +1960,8 @@
                 // 添加播放进度更新事件
                 audioPlayer.addEventListener('timeupdate', function() {
                     updatePlayerProgress();
+                    // 实时保存播放进度
+                    savePlaybackState();
                 });
                 
                 audioPlayer.addEventListener('loadedmetadata', function() {
@@ -2145,6 +2266,8 @@
                     audioPlayer.play()
                         .then(() => {
                             console.log('开始播放:', song.title);
+                            // 保存播放状态
+                            savePlaybackState();
                             // 如果一起听歌弹窗打开，开始计时
                             if (document.getElementById('togetherModal').querySelector('.together-modal').classList.contains('open')) {
                                 startTogetherTimer();
@@ -2299,6 +2422,13 @@
                 playSong(currentSongIndex);
             }
 
+            // 选择角色
+            function selectCharacter(character) {
+                selectedCharacter = character;
+                document.getElementById('characterName').textContent = character.name;
+                document.getElementById('characterAvatar').innerHTML = `<div class="avatar-placeholder">${character.avatar || '👤'}</div>`;
+            }
+
             // 打开角色选择弹窗
             function openCharacterModal() {
                 document.getElementById('characterModal').style.display = 'flex';
@@ -2315,18 +2445,38 @@
                 const characterListElement = document.getElementById('characterList');
                 characterListElement.innerHTML = '';
                 
-                characterList.forEach(character => {
+                // 从角色书加载角色数据
+                const savedCharacters = localStorage.getItem('characters');
+                let characters = [];
+                
+                if (savedCharacters) {
+                    try {
+                        characters = JSON.parse(savedCharacters);
+                    } catch (e) {
+                        console.error('解析角色数据时出错:', e);
+                    }
+                }
+                
+                // 如果没有角色，显示提示信息
+                if (characters.length === 0) {
+                    characterListElement.innerHTML = '<div style="text-align: center; color: #aaa; padding: 20px;">暂无角色，请先在角色书页面创建角色</div>';
+                    return;
+                }
+                
+                characters.forEach(character => {
                     const characterItem = document.createElement('div');
                     characterItem.className = 'character-item';
                     characterItem.innerHTML = `
                         <div class="character-avatar">
-                            <div class="avatar-placeholder">${character.avatar}</div>
+                            ${character.avatar ? `<img src="${character.avatar}" alt="${character.name}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">` : '<div class="avatar-placeholder">👤</div>'}
                         </div>
                         <div class="character-name">${character.name}</div>
                     `;
                     
                     characterItem.onclick = () => {
+                        // 选择角色并保存到本地存储
                         selectCharacter(character);
+                        saveSelectedCharacter(character);
                         closeCharacterModal();
                     };
                     
@@ -2334,11 +2484,26 @@
                 });
             }
 
-            // 选择角色
-            function selectCharacter(character) {
-                selectedCharacter = character;
-                document.getElementById('characterName').textContent = character.name;
-                document.getElementById('characterAvatar').innerHTML = `<div class="avatar-placeholder">${character.avatar}</div>`;
+            // 保存选中的角色
+            function saveSelectedCharacter(character) {
+                try {
+                    localStorage.setItem('selectedMusicCharacter', JSON.stringify(character));
+                } catch (e) {
+                    console.error('保存选中角色时出错:', e);
+                }
+            }
+
+            // 加载选中的角色
+            function loadSelectedCharacter() {
+                try {
+                    const savedCharacter = localStorage.getItem('selectedMusicCharacter');
+                    if (savedCharacter) {
+                        const character = JSON.parse(savedCharacter);
+                        selectCharacter(character);
+                    }
+                } catch (e) {
+                    console.error('加载选中角色时出错:', e);
+                }
             }
 
             // 打开用户设置弹窗
@@ -2384,7 +2549,101 @@
                 document.getElementById('userName').textContent = userSettings.name || '用户设置';
                 document.getElementById('userAvatar').innerHTML = userSettings.avatar;
                 
+                // 保存到本地存储
+                try {
+                    localStorage.setItem('musicUserSettings', JSON.stringify(userSettings));
+                    // 添加保存成功的提示
+                    alert('用户设置保存成功！');
+                } catch (e) {
+                    console.error('保存用户设置时出错:', e);
+                    alert('保存用户设置时出错，请重试');
+                }
+                
                 closeUserModal();
+            }
+
+            // 加载用户设置
+            function loadUserSettings() {
+                try {
+                    const savedUserSettings = localStorage.getItem('musicUserSettings');
+                    if (savedUserSettings) {
+                        userSettings = JSON.parse(savedUserSettings);
+                        // 更新UI显示
+                        document.getElementById('userName').textContent = userSettings.name || '用户设置';
+                        if (userSettings.avatar) {
+                            document.getElementById('userAvatar').innerHTML = userSettings.avatar;
+                        }
+                    }
+                } catch (e) {
+                    console.error('加载用户设置时出错:', e);
+                }
+            }
+
+            // 保存播放状态
+            function savePlaybackState() {
+                if (currentSongIndex < 0) return;
+                
+                try {
+                    const playbackState = {
+                        currentSongIndex: currentSongIndex,
+                        isPlaying: isPlaying,
+                        currentTime: audioPlayer ? audioPlayer.currentTime : 0,
+                        volume: audioPlayer ? audioPlayer.volume : 1,
+                        timestamp: Date.now()
+                    };
+                    localStorage.setItem('musicPlaybackState', JSON.stringify(playbackState));
+                } catch (e) {
+                    console.error('保存播放状态时出错:', e);
+                }
+            }
+
+            // 加载播放状态
+            function loadPlaybackState() {
+                try {
+                    const savedPlaybackState = localStorage.getItem('musicPlaybackState');
+                    if (savedPlaybackState) {
+                        const playbackState = JSON.parse(savedPlaybackState);
+                        
+                        // 检查数据是否过期（超过24小时）
+                        const oneDay = 24 * 60 * 60 * 1000;
+                        if (Date.now() - playbackState.timestamp < oneDay) {
+                            currentSongIndex = playbackState.currentSongIndex;
+                            isPlaying = playbackState.isPlaying;
+                            
+                            // 更新UI
+                            updatePlayerUI();
+                            renderSongsList();
+                            
+                            // 如果有当前歌曲，设置播放器
+                            if (currentSongIndex >= 0 && currentSongIndex < songs.length) {
+                                const song = songs[currentSongIndex];
+                                audioPlayer.src = song.url;
+                                
+                                // 设置播放位置
+                                if (playbackState.currentTime > 0) {
+                                    audioPlayer.currentTime = playbackState.currentTime;
+                                }
+                                
+                                // 设置音量
+                                if (playbackState.volume !== undefined) {
+                                    audioPlayer.volume = playbackState.volume;
+                                }
+                                
+                                // 注意：由于浏览器安全策略，不能自动播放音频
+                                // 只有在用户交互后才能播放音频
+                                // 如果之前是播放状态，我们只设置播放位置但不自动播放
+                                if (isPlaying) {
+                                    console.log('页面加载时检测到之前处于播放状态，但由于浏览器安全策略限制，需要用户交互后才能继续播放');
+                                    // 更新播放按钮状态为暂停状态
+                                    isPlaying = false;
+                                    updatePlayerUI();
+                                }
+                            }
+                        }
+                    }
+                } catch (e) {
+                    console.error('加载播放状态时出错:', e);
+                }
             }
 
             // 发送消息
@@ -2400,7 +2659,471 @@
 
             // 发送AI消息
             function sendAiMessage() {
-                addMessageToChat('ai', '这是一条AI回复的消息');
+                // 获取聊天输入框的内容
+                const input = document.getElementById('chatInput');
+                const message = input.value.trim();
+                
+                // 如果有输入内容，先发送用户消息
+                if (message) {
+                    addMessageToChat('user', message);
+                    input.value = '';
+                }
+                
+                // 获取最后一条用户消息
+                const chatMessages = document.getElementById('chatMessages');
+                const userMessages = chatMessages.querySelectorAll('.message-container.sent');
+                if (userMessages.length > 0) {
+                    const lastUserMessage = userMessages[userMessages.length - 1];
+                    const lastMessageContent = lastUserMessage.querySelector('.message-content').textContent;
+                    
+                    // 使用设置页面的AI功能发送消息
+                    sendAiMessageFromSettings(lastMessageContent);
+                } else {
+                    // 如果没有用户消息，发送默认消息
+                    sendAiMessageFromSettings('你好！');
+                }
+            }
+
+            // 使用设置页面的AI功能发送消息
+            async function sendAiMessageFromSettings(message) {
+                // 显示正在输入的提示
+                addMessageToChat('ai', '正在输入...');
+                
+                try {
+                    // 获取AI设置
+                    const savedSettings = localStorage.getItem('aiSettings');
+                    let settings = {
+                        provider: 'openai',
+                        url: 'https://api.openai.com/v1',
+                        key: '',
+                        model: 'gpt-3.5-turbo',
+                        enabled: true
+                    };
+                    
+                    if (savedSettings) {
+                        try {
+                            settings = JSON.parse(savedSettings);
+                        } catch (e) {
+                            console.error('Failed to parse saved settings', e);
+                        }
+                    }
+                    
+                    // 检查必要配置
+                    if (!settings.key) {
+                        throw new Error('请在设置页面配置API密钥');
+                    }
+                    
+                    if (!settings.model) {
+                        throw new Error('请在设置页面配置模型名称');
+                    }
+                    
+                    // 根据提供商构建请求
+                    let apiUrl = settings.url;
+                    
+                    // 确保URL格式正确
+                    if (!apiUrl) {
+                        if (settings.provider === 'openai') {
+                            apiUrl = 'https://api.openai.com/v1';
+                        } else if (settings.provider === 'gemini') {
+                            apiUrl = 'https://generativelanguage.googleapis.com/v1beta';
+                        } else if (settings.provider === 'siliconflow') {
+                            apiUrl = 'https://api.siliconflow.cn/v1';
+                        } else if (settings.provider === 'deepseek') {
+                            apiUrl = 'https://api.deepseek.com/v1';
+                        } else {
+                            // 自定义提供商
+                            if (!apiUrl) {
+                                throw new Error('请在设置页面配置API地址');
+                            }
+                        }
+                    }
+                    
+                    // 确保URL以/结尾（用于chat/completions）
+                    if (settings.provider !== 'gemini' && !apiUrl.endsWith('/')) {
+                        apiUrl += '/';
+                    }
+                    
+                    let fetchUrl = '';
+                    let fetchOptions = {};
+                    let aiResponse = '';
+                    
+                    // 构建消息历史，包含角色信息和音乐信息
+                    let systemPrompt = "你是一个真实的人类，正在和朋友一起听歌聊天。你需要以真实、自然、有个性的方式进行对话，就像真实的朋友之间聊天一样。回复时不要使用括号，不要提及你是AI，要像真实的人类一样表达情感和观点。";
+                    
+                    // 获取当前播放的音乐信息
+                    let musicInfo = '';
+                    if (currentSongIndex >= 0 && currentSongIndex < songs.length) {
+                        const song = songs[currentSongIndex];
+                        musicInfo = `\n当前正在播放的音乐：《${song.title}》 - ${song.artist}`;
+                        if (song.album) {
+                            musicInfo += ` 专辑：${song.album}`;
+                        }
+                        // 添加完整歌词作为参考
+                        if (song.lyrics) {
+                            // 过滤掉时间轴和元信息行，只保留纯歌词内容
+                            const lyricsLines = song.lyrics.split('\n')
+                                .map(line => {
+                                    // 移除时间轴标签 [00:00.00]
+                                    return line.replace(/\[\d{1,2}:\d{2}[.:]?\d*\]/g, '').trim();
+                                })
+                                .filter(line => {
+                                    // 过滤掉空行和元信息行
+                                    return line.trim() !== '' && 
+                                           !line.startsWith('词：') && 
+                                           !line.startsWith('曲：') && 
+                                           !line.startsWith('编曲：') && 
+                                           !line.startsWith('制作人：') && 
+                                           !line.startsWith('混音：') && 
+                                           !line.startsWith('和声：') && 
+                                           !line.startsWith('封面：') && 
+                                           !line.startsWith('统筹：') && 
+                                           !line.startsWith('出品人：') && 
+                                           !line.startsWith('发行：') && 
+                                           !line.startsWith('制作公司：') && 
+                                           !line.startsWith('op：');
+                                });
+                            
+                            if (lyricsLines.length > 0) {
+                                musicInfo += `\n完整歌词：\n${lyricsLines.join('\n')}`;
+                            }
+                        }
+                    } else {
+                        musicInfo = '\n当前没有播放音乐';
+                    }
+                    
+                    // 如果选择了角色，使用角色信息
+                    if (selectedCharacter) {
+                        systemPrompt = `你正在扮演${selectedCharacter.name}这个角色，正在和朋友一起听歌聊天。请以${selectedCharacter.name}的身份、语气和性格特点进行对话，就像真实的人类一样表达情感和观点。回复时不要使用括号，不要提及你是AI，要像真实的人类一样自然地聊天。`;
+                        // 如果角色有描述信息，添加到提示中
+                        if (selectedCharacter.desc) {
+                            systemPrompt += `\n角色设定：${selectedCharacter.desc}`;
+                        }
+                    }
+                    
+                    // 添加音乐信息到系统提示
+                    systemPrompt += musicInfo;
+                    
+                    // 添加用户信息到系统提示
+                    if (userSettings.name) {
+                        systemPrompt += `\n朋友姓名：${userSettings.name}`;
+                    }
+                    if (userSettings.persona) {
+                        systemPrompt += `\n朋友人设：${userSettings.persona}`;
+                    }
+                    
+                    // 强调回复要求 - 升级后的版本
+                    systemPrompt += "\n\n请记住：\n1. 像真实的人类一样聊天，有情感、有个性\n2. 回复要具体、有针对性，不要泛泛而谈\n3. 可以表达个人观点和感受\n4. 不要使用括号\n5. 不要提及你是AI\n6. 回复要自然、口语化\n7. 特别注意要基于用户最新发送的消息进行回复，不要答非所问\n8. 除了聊音乐相关的话题，也可以聊家常、生活、兴趣爱好等其他话题\n9. 可以主动分享自己的想法、感受和经历，增加互动性\n10. 保持轻松愉快的聊天氛围，让对话更有趣";
+                    
+                    // 特别强调当前对话上下文
+                    if (currentSongIndex >= 0 && currentSongIndex < songs.length) {
+                        const song = songs[currentSongIndex];
+                        systemPrompt += `\n\n特别注意：用户正在和你聊天，当前正在播放《${song.title}》这首歌。你可以基于这首歌展开话题，也可以聊其他任何用户感兴趣的话题。`;
+                    } else {
+                        systemPrompt += `\n\n特别注意：用户正在和你聊天，当前没有播放音乐。你可以和用户聊任何话题，包括但不限于音乐、生活、兴趣爱好等。`;
+                    }
+                    
+                    // 根据用户消息内容判断话题类型并给出相应提示
+                    if (message.toLowerCase().includes('喜欢') || message.toLowerCase().includes('爱好') || message.toLowerCase().includes('兴趣')) {
+                        systemPrompt += "\n\n用户似乎在询问喜好或兴趣，请分享你自己的喜好和兴趣，让对话更加个性化。";
+                    } else if (message.toLowerCase().includes('天气') || message.toLowerCase().includes('今天') || message.toLowerCase().includes('现在')) {
+                        systemPrompt += "\n\n用户似乎在聊日常生活话题，请以朋友的身份分享你的日常生活感受。";
+                    } else if (message.toLowerCase().includes('帮助') || message.toLowerCase().includes('怎么做') || message.toLowerCase().includes('如何')) {
+                        systemPrompt += "\n\n用户似乎需要帮助或建议，请提供实用且友善的建议。";
+                    }
+                    
+                    const messages = [
+                        {
+                            role: "system",
+                            content: systemPrompt
+                        },
+                        {
+                            role: "user",
+                            content: message
+                        }
+                    ];
+                    
+                    if (settings.provider === 'gemini') {
+                        // Google Gemini API
+                        fetchUrl = `${apiUrl}/models/${settings.model}:generateContent?key=${settings.key}`;
+                        fetchOptions = {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                contents: [{
+                                    parts: [{
+                                        text: `用户消息: ${message}\n\n请基于以上消息进行回复，确保回复与当前播放的音乐相关。`
+                                    }]
+                                }]
+                            })
+                        };
+                    } else if (settings.provider === 'siliconflow') {
+                        // SiliconFlow API
+                        fetchUrl = apiUrl.endsWith('/') ? `${apiUrl}chat/completions` : `${apiUrl}/chat/completions`;
+                        fetchOptions = {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${settings.key}`
+                            },
+                            body: JSON.stringify({
+                                model: settings.model,
+                                messages: messages,
+                                temperature: 0.8,  // 增加温度参数以获得更有创意的回复
+                                max_tokens: 1000
+                            })
+                        };
+                    } else if (settings.provider === 'deepseek') {
+                        // DeepSeek API
+                        fetchUrl = apiUrl.endsWith('/') ? `${apiUrl}chat/completions` : `${apiUrl}/chat/completions`;
+                        fetchOptions = {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${settings.key}`
+                            },
+                            body: JSON.stringify({
+                                model: settings.model,
+                                messages: messages,
+                                temperature: 0.8,  // 增加温度参数以获得更有创意的回复
+                                max_tokens: 1000
+                            })
+                        };
+                    } else if (settings.provider === 'openai') {
+                        // OpenAI API
+                        fetchUrl = apiUrl.endsWith('/') ? `${apiUrl}chat/completions` : `${apiUrl}/chat/completions`;
+                        fetchOptions = {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${settings.key}`
+                            },
+                            body: JSON.stringify({
+                                model: settings.model,
+                                messages: messages,
+                                temperature: 0.8,  // 增加温度参数以获得更有创意的回复
+                                max_tokens: 1000
+                            })
+                        };
+                    } else {
+                        // 自定义提供商
+                        fetchUrl = apiUrl.endsWith('/') ? `${apiUrl}chat/completions` : `${apiUrl}/chat/completions`;
+                        fetchOptions = {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${settings.key}`
+                            },
+                            body: JSON.stringify({
+                                model: settings.model,
+                                messages: messages,
+                                temperature: 0.8,  // 增加温度参数以获得更有创意的回复
+                                max_tokens: 1000
+                            })
+                        };
+                    }
+                    
+                    // 添加超时控制
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 15000); // 15秒超时
+                    fetchOptions.signal = controller.signal;
+                    
+                    const response = await fetch(fetchUrl, fetchOptions);
+                    clearTimeout(timeoutId);
+                    
+                    // 检查响应状态
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        throw new Error(`API请求失败: ${response.status} ${response.statusText}\n请求URL: ${fetchUrl}\n${errorText}`);
+                    }
+                    
+                    // 解析响应
+                    const data = await response.json();
+                    
+                    if (settings.provider === 'gemini') {
+                        // Gemini响应格式
+                        aiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || '无法获取响应内容';
+                    } else {
+                        // OpenAI/SiliconFlow/DeepSeek/自定义响应格式
+                        aiResponse = data.choices?.[0]?.message?.content || '无法获取响应内容';
+                    }
+                    
+                    // 移除"正在输入..."的消息
+                    const chatMessages = document.getElementById('chatMessages');
+                    const lastMessage = chatMessages.lastChild;
+                    if (lastMessage && lastMessage.querySelector('.message-content').textContent === '正在输入...') {
+                        chatMessages.removeChild(lastMessage);
+                    }
+                    
+                    // 智能拆分AI回复为多条消息
+                    // 首先按句号、感叹号、问号分割
+                    const sentences = aiResponse.split(/[。！？.!?]\s*/).filter(s => s.trim().length > 0);
+                    
+                    // 如果句子太少，就按逗号分割
+                    let messageParts = [];
+                    if (sentences.length < 2) {
+                        messageParts = aiResponse.split(/[，,]\s*/).filter(s => s.trim().length > 0);
+                    } else {
+                        messageParts = sentences;
+                    }
+                    
+                    // 如果还是太少，就整体发送
+                    if (messageParts.length === 0) {
+                        messageParts = [aiResponse];
+                    }
+                    
+                    // 根据话题类型和内容长度确定发送的消息数量
+                    // 判断是否与音乐相关
+                    const isMusicRelated = message.toLowerCase().includes('歌') || message.toLowerCase().includes('音乐') || message.toLowerCase().includes('唱') || message.toLowerCase().includes('听') || currentSongIndex >= 0;
+                    
+                    // 根据内容长度调整消息数量
+                    const contentLength = aiResponse.length;
+                    let maxMessages, minMessages;
+                    
+                    if (isMusicRelated) {
+                        // 音乐相关话题
+                        maxMessages = Math.min(6, messageParts.length);
+                        minMessages = Math.min(2, maxMessages);
+                    } else {
+                        // 非音乐话题（家常等）
+                        maxMessages = Math.min(contentLength > 200 ? 8 : 6, messageParts.length);
+                        minMessages = Math.min(contentLength > 100 ? 3 : 2, maxMessages);
+                    }
+                    
+                    // 随机确定发送的消息数量
+                    const messageCount = Math.max(minMessages, Math.min(maxMessages, Math.floor(Math.random() * (maxMessages - minMessages + 1)) + minMessages));
+                    
+                    // 只取前messageCount条消息
+                    const messagesToSend = messageParts.slice(0, messageCount);
+                    
+                    // 逐条发送消息，每条消息间隔0.3-1.5秒
+                    // 对于非音乐话题，回复可以稍微快一些
+                    const baseDelay = isMusicRelated ? 400 : 300;
+                    const randomDelay = isMusicRelated ? 1200 : 1000;
+                    
+                    // 发送消息
+                    for (let i = 0; i < messagesToSend.length; i++) {
+                        setTimeout(() => {
+                            addMessageToChat('ai', messagesToSend[i]);
+                        }, (i + 1) * (baseDelay + Math.random() * randomDelay));
+                    }
+                } catch (error) {
+                    console.error('AI回复出错:', error);
+                    
+                    // 移除"正在输入..."的消息
+                    const chatMessages = document.getElementById('chatMessages');
+                    const lastMessage = chatMessages.lastChild;
+                    if (lastMessage && lastMessage.querySelector('.message-content').textContent === '正在输入...') {
+                        chatMessages.removeChild(lastMessage);
+                    }
+                    
+                    // 显示错误信息
+                    addMessageToChat('ai', '抱歉，我暂时无法回复，请稍后再试。');
+                }
+            }
+
+            // 保存聊天记录
+            function saveChatMessages() {
+                try {
+                    // 获取所有聊天消息
+                    const chatMessages = document.getElementById('chatMessages');
+                    const messages = [];
+                    
+                    // 遍历所有消息容器
+                    chatMessages.querySelectorAll('.message-container').forEach(container => {
+                        const sender = container.classList.contains('sent') ? 'user' : 'ai';
+                        const avatar = container.querySelector('.message-avatar').textContent;
+                        const senderName = container.querySelector('.message-sender').textContent.split(' ')[0];
+                        const time = container.querySelector('.message-time').textContent;
+                        const content = container.querySelector('.message-content').textContent;
+                        
+                        messages.push({
+                            sender: sender,
+                            avatar: avatar,
+                            senderName: senderName,
+                            time: time,
+                            content: content
+                        });
+                    });
+                    
+                    // 保存到localStorage
+                    localStorage.setItem('musicChatMessages', JSON.stringify(messages));
+                } catch (e) {
+                    console.error('保存聊天记录时出错:', e);
+                }
+            }
+
+            // 加载聊天记录
+            function loadChatMessages() {
+                try {
+                    const savedMessages = localStorage.getItem('musicChatMessages');
+                    if (savedMessages) {
+                        const messages = JSON.parse(savedMessages);
+                        const chatMessages = document.getElementById('chatMessages');
+                        
+                        // 清空现有消息
+                        chatMessages.innerHTML = '';
+                        
+                        // 重新创建消息
+                        messages.forEach(msg => {
+                            const messageContainer = document.createElement('div');
+                            messageContainer.className = `message-container ${msg.sender === 'user' ? 'sent' : 'received'}`;
+                            
+                            messageContainer.innerHTML = `
+                                <div class="message-avatar">${msg.avatar}</div>
+                                <div class="message-bubble">
+                                    <div class="message-sender">${msg.senderName} <span class="message-time">${msg.time}</span></div>
+                                    <div class="message-content">${msg.content}</div>
+                                </div>
+                            `;
+                            
+                            chatMessages.appendChild(messageContainer);
+                        });
+                        
+                        // 滚动到底部
+                        chatMessages.scrollTop = chatMessages.scrollHeight;
+                    }
+                } catch (e) {
+                    console.error('加载聊天记录时出错:', e);
+                }
+            }
+
+            // 打开聊天设置弹窗
+            function openChatSettings() {
+                // 加载当前设置
+                const autoHide = localStorage.getItem('autoHideMessages') === 'true'; // 默认为false（不自动隐藏）
+                document.getElementById('autoHideMessages').checked = autoHide;
+                
+                document.getElementById('chatSettingsModal').style.display = 'flex';
+            }
+
+            // 关闭聊天设置弹窗
+            function closeChatSettingsModal() {
+                document.getElementById('chatSettingsModal').style.display = 'none';
+            }
+
+            // 保存聊天设置
+            function saveChatSettings() {
+                const autoHide = document.getElementById('autoHideMessages').checked;
+                localStorage.setItem('autoHideMessages', autoHide.toString());
+                
+                closeChatSettingsModal();
+                alert('聊天设置已保存！');
+            }
+
+            // 清空聊天记录
+            function clearChatHistory() {
+                if (confirm('确定要清空所有聊天记录吗？此操作不可撤销。')) {
+                    const chatMessages = document.getElementById('chatMessages');
+                    chatMessages.innerHTML = '';
+                    
+                    // 清空本地存储的聊天记录
+                    localStorage.removeItem('musicChatMessages');
+                    
+                    closeChatSettingsModal();
+                    alert('聊天记录已清空！');
+                }
             }
 
             // 添加消息到聊天面板
@@ -2430,16 +3153,28 @@
                 chatMessages.appendChild(messageContainer);
                 chatMessages.scrollTop = chatMessages.scrollHeight;
                 
-                // AI回复消息不自动消失
-                if (sender !== 'user') {
-                    // 不再自动移除消息
-                    // setTimeout(() => {
-                    //     if (messageContainer.parentNode) {
-                    //         messageContainer.parentNode.removeChild(messageContainer);
-                    //     }
-                    // }, 3000);
+                // 保存聊天记录
+                saveChatMessages();
+                
+                // 根据设置决定是否自动隐藏AI回复消息
+                const autoHide = localStorage.getItem('autoHideMessages') === 'true';
+                if (sender !== 'user' && autoHide) {
+                    setTimeout(() => {
+                        if (messageContainer.parentNode) {
+                            messageContainer.parentNode.removeChild(messageContainer);
+                        }
+                    }, 3000);
                 }
             }
+
+            // 页面卸载时保存时长和播放状态
+            window.addEventListener('beforeunload', function() {
+                // 停止计时器并保存时长
+                stopTogetherTimer();
+                
+                // 保存播放状态
+                savePlaybackState();
+            });
 
             // 切换播放/暂停
             function togglePlay(event) {
@@ -2461,6 +3196,8 @@
                     audioPlayer.play()
                         .then(() => {
                             console.log('继续播放');
+                            // 保存播放状态
+                            savePlaybackState();
                             // 如果一起听歌弹窗打开，开始计时
                             if (document.getElementById('togetherModal').querySelector('.together-modal').classList.contains('open')) {
                                 startTogetherTimer();
@@ -2473,6 +3210,8 @@
                     // 暂停
                     audioPlayer.pause();
                     console.log('暂停播放');
+                    // 保存播放状态
+                    savePlaybackState();
                     // 如果一起听歌弹窗打开，停止计时
                     if (document.getElementById('togetherModal').querySelector('.together-modal').classList.contains('open')) {
                         stopTogetherTimer();
@@ -2623,6 +3362,7 @@
                     return;
                 }
                 
+                // 创建新的歌曲对象
                 const newSong = {
                     id: Date.now(),
                     title: title,
@@ -2633,13 +3373,92 @@
                 };
                 
                 console.log('准备添加新歌曲:', newSong);
-                songs.push(newSong);
-                console.log('添加后歌曲列表:', songs);
-                saveSongs();
-                renderSongsList();
-                closeAddSongModal();
                 
-                alert('歌曲添加成功！');
+                // 验证URL是否可访问（可选）
+                validateSongUrl(url)
+                    .then(isValid => {
+                        if (isValid) {
+                            songs.push(newSong);
+                            console.log('添加后歌曲列表:', songs);
+                            saveSongs();
+                            renderSongsList();
+                            closeAddSongModal();
+                            alert('歌曲添加成功！');
+                        } else {
+                            alert('歌曲URL无法访问，请检查链接是否有效');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('验证歌曲URL时出错:', error);
+                        // 即使验证失败也添加歌曲，因为有些链接可能需要特殊处理
+                        songs.push(newSong);
+                        console.log('添加后歌曲列表:', songs);
+                        saveSongs();
+                        renderSongsList();
+                        closeAddSongModal();
+                        alert('歌曲已添加，但验证时遇到问题，请确保URL有效');
+                    });
+            }
+
+            // 验证歌曲URL是否有效
+            function validateSongUrl(url) {
+                return new Promise((resolve, reject) => {
+                    // 对于某些音频服务，我们不能简单地通过HEAD请求验证
+                    // 因为它们可能需要特殊的认证或参数
+                    // 所以我们采用更宽松的验证方式
+                    
+                    // 检查URL格式
+                    if (!url || !url.startsWith('http')) {
+                        resolve(false);
+                        return;
+                    }
+                    
+                    // 对于已知的音频服务，我们假设它们是有效的
+                    const knownAudioServices = [
+                        'http://music.163.com',
+                        'https://music.163.com',
+                        'http://y.qq.com',
+                        'https://y.qq.com',
+                        'http://music.taihe.com',
+                        'https://music.taihe.com',
+                        'http://kg.qq.com',
+                        'https://kg.qq.com'
+                    ];
+                    
+                    // 检查是否是已知的音频服务
+                    const isKnownService = knownAudioServices.some(service => url.startsWith(service));
+                    if (isKnownService) {
+                        resolve(true);
+                        return;
+                    }
+                    
+                    // 对于其他URL，我们尝试创建一个短暂的音频对象来测试
+                    try {
+                        const audio = new Audio();
+                        audio.addEventListener('loadedmetadata', () => {
+                            resolve(true);
+                            // 清理
+                            audio.src = '';
+                        });
+                        audio.addEventListener('error', () => {
+                            resolve(false);
+                            // 清理
+                            audio.src = '';
+                        });
+                        
+                        // 设置超时
+                        setTimeout(() => {
+                            audio.src = '';
+                            resolve(true); // 超时后假设有效
+                        }, 3000);
+                        
+                        audio.src = url;
+                        // 不调用load()或play()，只是设置src来避免实际加载
+                    } catch (e) {
+                        console.warn('URL验证时出现异常:', e);
+                        resolve(true); // 出现异常时假设有效
+                    }
+                });
             }
 
             // 保存歌曲数据
@@ -2724,11 +3543,16 @@
                         const parsedSongs = JSON.parse(savedSongs);
                         console.log('解析后的歌曲数据:', parsedSongs);
                         if (Array.isArray(parsedSongs)) {
-                            // 确保每首歌曲都有lyrics字段
+                            // 确保每首歌曲都有必要的字段
                             songs = parsedSongs.map(song => ({
-                                ...song,
-                                lyrics: song.lyrics || ''
-                            }));
+                                id: song.id || Date.now() + Math.random(),
+                                title: song.title || '未知歌曲',
+                                artist: song.artist || '未知歌手',
+                                url: song.url || '',
+                                cover: song.cover || '',
+                                lyrics: song.lyrics || '',
+                                album: song.album || ''
+                            })).filter(song => song.url && song.url.trim() !== ''); // 过滤掉没有URL的歌曲
                             console.log('已加载歌曲数据:', songs.length, '首歌曲');
                         } else {
                             console.error('解析的数据不是数组格式');
@@ -2773,6 +3597,15 @@
                                 <div class="song-title">${song.title}</div>
                                 <div class="song-artist">${song.artist}</div>
                             </div>
+                            <div class="song-actions" style="margin-left: auto; display: flex; align-items: center;">
+                                <div class="menu-btn" onclick="event.stopPropagation(); openSongMenu(event, ${index})" style="padding: 5px; cursor: pointer;">
+                                    <svg viewBox="0 0 24 24" width="24" height="24" fill="white">
+                                        <circle cx="12" cy="6" r="2"/>
+                                        <circle cx="12" cy="12" r="2"/>
+                                        <circle cx="12" cy="18" r="2"/>
+                                    </svg>
+                                </div>
+                            </div>
                         </div>
                     `;
                     songItem.onclick = () => {
@@ -2785,6 +3618,183 @@
                 });
                 
                 console.log('歌曲列表渲染完成');
+            }
+
+            // 全局变量用于存储当前操作的歌曲索引
+            let currentSongIndexToDelete = -1;
+            let currentSongIndexToEdit = -1;
+            let tempEditCover = null;
+
+            // 打开歌曲菜单
+            function openSongMenu(event, index) {
+                event.stopPropagation();
+                
+                // 创建菜单弹窗
+                const menu = document.createElement('div');
+                menu.className = 'song-menu';
+                menu.style.cssText = `
+                    position: fixed;
+                    top: ${event.clientY}px;
+                    left: ${event.clientX}px;
+                    background: rgba(30, 30, 30, 0.95);
+                    backdrop-filter: blur(20px);
+                    -webkit-backdrop-filter: blur(20px);
+                    border-radius: 10px;
+                    padding: 10px 0;
+                    z-index: 3000;
+                    min-width: 120px;
+                    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+                    border: 1px solid rgba(255, 255, 255, 0.1);
+                `;
+                menu.innerHTML = `
+                    <div class="menu-item" onclick="editSong(${index})" style="padding: 10px 20px; cursor: pointer; color: white; font-size: 14px; white-space: nowrap;">编辑歌曲</div>
+                    <div class="menu-item" onclick="deleteSong(${index})" style="padding: 10px 20px; cursor: pointer; color: #ff3b30; font-size: 14px; white-space: nowrap; border-top: 1px solid rgba(255, 255, 255, 0.1);">删除歌曲</div>
+                `;
+                
+                // 添加到页面
+                document.body.appendChild(menu);
+                
+                // 点击其他地方关闭菜单
+                const closeMenu = (e) => {
+                    if (!menu.contains(e.target)) {
+                        document.body.removeChild(menu);
+                        document.removeEventListener('click', closeMenu);
+                    }
+                };
+                
+                // 确保菜单在视窗内
+                const rect = menu.getBoundingClientRect();
+                if (rect.right > window.innerWidth) {
+                    menu.style.left = (window.innerWidth - rect.width - 10) + 'px';
+                }
+                if (rect.bottom > window.innerHeight) {
+                    menu.style.top = (window.innerHeight - rect.height - 10) + 'px';
+                }
+                
+                setTimeout(() => {
+                    document.addEventListener('click', closeMenu);
+                }, 10);
+            }
+
+            // 删除歌曲
+            function deleteSong(index) {
+                currentSongIndexToDelete = index;
+                document.getElementById('deleteConfirmModal').style.display = 'flex';
+            }
+
+            // 确认删除歌曲
+            function confirmDeleteSong() {
+                if (currentSongIndexToDelete >= 0 && currentSongIndexToDelete < songs.length) {
+                    songs.splice(currentSongIndexToDelete, 1);
+                    saveSongs();
+                    renderSongsList();
+                    closeDeleteConfirmModal();
+                    alert('歌曲已删除！');
+                }
+            }
+
+            // 关闭删除确认弹窗
+            function closeDeleteConfirmModal() {
+                document.getElementById('deleteConfirmModal').style.display = 'none';
+                currentSongIndexToDelete = -1;
+            }
+
+            // 编辑歌曲
+            function editSong(index) {
+                currentSongIndexToEdit = index;
+                const song = songs[index];
+                
+                // 填充表单数据
+                document.getElementById('editSongTitle').value = song.title || '';
+                document.getElementById('editSongArtist').value = song.artist || '';
+                document.getElementById('editSongUrl').value = song.url || '';
+                document.getElementById('editCoverUploadText').textContent = song.cover ? '封面已选择' : '点击选择封面图片';
+                
+                // 保存临时封面
+                tempEditCover = song.cover || null;
+                
+                // 显示编辑弹窗
+                document.getElementById('editSongModal').style.display = 'flex';
+            }
+
+            // 关闭编辑歌曲弹窗
+            function closeEditSongModal() {
+                document.getElementById('editSongModal').style.display = 'none';
+                currentSongIndexToEdit = -1;
+                tempEditCover = null;
+                
+                // 重置表单
+                document.getElementById('editSongTitle').value = '';
+                document.getElementById('editSongArtist').value = '';
+                document.getElementById('editSongUrl').value = '';
+                document.getElementById('editCoverUploadText').textContent = '点击选择封面图片';
+            }
+
+            // 处理编辑封面上传
+            function handleEditCoverUpload(event) {
+                const file = event.target.files[0];
+                if (file) {
+                    // 检查文件大小 (限制为500KB)
+                    if (file.size > 500 * 1024) {
+                        alert('图片文件过大，请选择小于500KB的图片');
+                        return;
+                    }
+                    
+                    // 压缩图片
+                    compressImage(file, 0.6, 300, 300)
+                        .then(compressedData => {
+                            // 检查压缩后的数据大小
+                            if (compressedData.length > 100 * 1024) {
+                                alert('图片压缩后仍然过大，请选择较小的图片');
+                                return;
+                            }
+                            tempEditCover = compressedData;
+                            document.getElementById('editCoverUploadText').textContent = '封面已选择';
+                        })
+                        .catch(error => {
+                            console.error('图片压缩失败:', error);
+                            alert('图片处理失败，请重试');
+                        });
+                }
+            }
+
+            // 保存编辑的歌曲
+            function saveEditSong() {
+                const title = document.getElementById('editSongTitle').value.trim();
+                const artist = document.getElementById('editSongArtist').value.trim();
+                const url = document.getElementById('editSongUrl').value.trim();
+                
+                if (!title) {
+                    alert('请输入歌曲名称');
+                    return;
+                }
+                
+                if (!url) {
+                    alert('请输入歌曲URL');
+                    return;
+                }
+                
+                // 检查URL是否有效
+                if (!url.startsWith('http')) {
+                    alert('请输入有效的歌曲URL（以http或https开头）');
+                    return;
+                }
+                
+                if (currentSongIndexToEdit >= 0 && currentSongIndexToEdit < songs.length) {
+                    // 更新歌曲信息
+                    songs[currentSongIndexToEdit].title = title;
+                    songs[currentSongIndexToEdit].artist = artist || '未知歌手';
+                    songs[currentSongIndexToEdit].url = url;
+                    if (tempEditCover) {
+                        songs[currentSongIndexToEdit].cover = tempEditCover;
+                    }
+                    
+                    // 保存并重新渲染
+                    saveSongs();
+                    renderSongsList();
+                    closeEditSongModal();
+                    alert('歌曲信息已更新！');
+                }
             }
 
             // 打开添加歌曲弹窗
