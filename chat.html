@@ -918,6 +918,7 @@
                     // 处理头像显示
                     let avatarContent = '';
                     if (character.avatar) {
+                        // 使用object-fit:cover确保图片完全填满头像框
                         avatarContent = `<img src="${character.avatar}" style="width:50px;height:50px;border-radius:50%;object-fit:cover;">`;
                     } else {
                         avatarContent = '<div style="width:50px;height:50px;border-radius:50%;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;font-size:20px;">👤</div>';
@@ -950,7 +951,7 @@
                     // 填充昵称
                     document.getElementById('contactName').value = character.name;
                     
-                    // 填充头像
+                    // 填充头像，使用object-fit:cover确保图片完全填满头像框
                     const avatarPreview = document.getElementById('avatarPreview');
                     if (character.avatar) {
                         avatarPreview.innerHTML = `<img src="${character.avatar}" alt="头像预览" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
@@ -964,9 +965,11 @@
             function previewAvatar(event) {
                 const file = event.target.files[0];
                 if (file) {
+                    // 不限制文件大小，允许上传任意大小的照片作为头像
                     const reader = new FileReader();
                     reader.onload = function(e) {
                         const preview = document.getElementById('avatarPreview');
+                        // 使用object-fit:cover确保图片在保持比例的同时覆盖整个区域
                         preview.innerHTML = `<img src="${e.target.result}" alt="头像预览" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
                     }
                     reader.readAsDataURL(file);
@@ -1328,7 +1331,7 @@
                     // 处理头像显示
                     let avatarContent = '';
                     if (friend.avatar && friend.avatar.startsWith('data:image')) {
-                        // 如果是上传的图片数据
+                        // 如果是上传的图片数据，使用object-fit:cover确保图片完全填满头像框
                         avatarContent = `<img src="${friend.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
                     } else if (friend.avatar) {
                         // 如果是默认头像符号或其他字符
