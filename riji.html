@@ -195,6 +195,149 @@
             font-size: 14px;
             color: #ddd;
             line-height: 1.5;
+            margin-bottom: 15px;
+        }
+
+        /* 点赞按钮样式 */
+        .like-btn {
+            background: none;
+            border: none;
+            color: #888;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 5px;
+            margin-left: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .like-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ff6b6b;
+        }
+
+        .like-btn.liked {
+            color: #ff6b6b;
+            text-shadow: 0 0 8px #ff6b6b, 0 0 16px #ff6b6b;
+            animation: likePulse 0.6s ease;
+        }
+
+        @keyframes likePulse {
+            0% {
+                transform: scale(1);
+                text-shadow: 0 0 8px #ff6b6b, 0 0 16px #ff6b6b;
+            }
+            50% {
+                transform: scale(1.3);
+                text-shadow: 0 0 12px #ff6b6b, 0 0 24px #ff6b6b, 0 0 36px #ff6b6b;
+            }
+            100% {
+                transform: scale(1);
+                text-shadow: 0 0 8px #ff6b6b, 0 0 16px #ff6b6b;
+            }
+        }
+
+        /* AI评论样式 */
+        .ai-comments {
+            border-top: 1px solid #444;
+            padding-top: 15px;
+            margin-top: 15px;
+        }
+
+        .ai-comment {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 12px;
+            margin-bottom: 12px;
+            position: relative;
+        }
+
+        .ai-comment-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .ai-avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            margin-right: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .ai-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: #ddd;
+        }
+
+        .ai-comment-content {
+            font-size: 14px;
+            color: #eee;
+            line-height: 1.5;
+        }
+
+        .ai-comment-time {
+            font-size: 11px;
+            color: #888;
+            margin-left: auto;
+        }
+
+        /* 三个点按钮 */
+        .comment-menu-btn {
+            background: none;
+            border: none;
+            color: #888;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 5px;
+            margin-left: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+        }
+
+        .comment-menu-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ddd;
+        }
+
+        .add-ai-comment {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            cursor: pointer;
+            margin-top: 15px;
+            border: 1px dashed #666;
+            transition: all 0.3s ease;
+        }
+
+        .add-ai-comment:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: #888;
+        }
+
+        .add-ai-comment span {
+            font-size: 13px;
+            color: #aaa;
         }
 
         /* 添加日记按钮 */
@@ -666,6 +809,169 @@
         </div>
     </div>
 
+    <!-- 角色专属日记页面（隐藏状态） -->
+    <div id="characterDiaryPage" class="hidden-page">
+        <!-- 状态栏 -->
+        <div class="status-bar">
+            <div class="status-left">
+                <span class="time" id="characterDiaryTime">00:00</span>
+            </div>
+            <div class="status-center">
+                <!-- 中间留空 -->
+            </div>
+            <div class="status-right">
+                <!-- 信号图标 -->
+                <svg class="status-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M5 17L5 12" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M12 17L12 7" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M19 17L19 2" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                <!-- 电池图标 -->
+                <svg class="status-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="2" y="7" width="16" height="10" rx="3" stroke="white" stroke-width="2"/>
+                    <path d="M20 10V14" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                    <rect x="4" y="9" width="12" height="6" rx="2" fill="white"/>
+                </svg>
+            </div>
+        </div>
+
+        <!-- 头部导航栏 -->
+        <div class="header">
+            <div class="back-btn" onclick="backToAICharacterList()">
+                <svg viewBox="0 0 24 24">
+                    <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+                </svg>
+            </div>
+            <div class="header-title" id="characterDiaryTitle">角色日记</div>
+            <div class="add-btn" onclick="updateCharacterDiary()">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="white">
+                    <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+                </svg>
+            </div>
+        </div>
+
+        <!-- 内容区域 -->
+        <div class="content">
+            <div class="character-list" id="characterDiaryList">
+                <!-- 角色日记条目将在这里动态生成 -->
+                <div class="empty-state">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+                    </svg>
+                    <p>暂无日记内容</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 底部导航栏 -->
+        <div class="bottom-nav">
+            <div class="nav-item" onclick="switchToUserDiaryFromCharacter()">
+                <div class="nav-icon">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
+                    </svg>
+                </div>
+            </div>
+            <div class="nav-item active" onclick="switchToAIDiaryFromCharacter()">
+                <div class="nav-icon">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 日记详情页面（隐藏状态） -->
+    <div id="diaryDetailPage" class="hidden-page">
+        <!-- 状态栏 -->
+        <div class="status-bar">
+            <div class="status-left">
+                <span class="time" id="detailTime">00:00</span>
+            </div>
+            <div class="status-center">
+                <!-- 中间留空 -->
+            </div>
+            <div class="status-right">
+                <!-- 信号图标 -->
+                <svg class="status-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M5 17L5 12" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M12 17L12 7" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M19 17L19 2" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                <!-- 电池图标 -->
+                <svg class="status-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="2" y="7" width="16" height="10" rx="3" stroke="white" stroke-width="2"/>
+                    <path d="M20 10V14" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                    <rect x="4" y="9" width="12" height="6" rx="2" fill="white"/>
+                </svg>
+            </div>
+        </div>
+
+        <!-- 头部导航栏 -->
+        <div class="header">
+            <div class="back-btn" onclick="backToMainDiaryFromDetail()">
+                <svg viewBox="0 0 24 24">
+                    <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+                </svg>
+            </div>
+            <div class="header-title">日记详情</div>
+            <div style="width: 30px;"></div> <!-- 占位符 -->
+        </div>
+
+        <!-- 内容区域 -->
+        <div class="content" id="diaryDetailContent">
+            <!-- 日记详情将在这里动态生成 -->
+        </div>
+
+        <!-- 底部操作按钮 -->
+        <div style="position: fixed; bottom: 20px; left: 0; right: 0; display: flex; justify-content: center; gap: 20px; padding: 0 20px;">
+            <button class="btn btn-cancel" onclick="editDiaryFromDetail()" style="width: 120px;">编辑</button>
+            <button class="btn btn-confirm" onclick="deleteDiaryFromDetail()" style="width: 120px; background: #ff4444;">删除</button>
+        </div>
+    </div>
+
+    <!-- 添加角色专属日记模态框 -->
+    <div id="addCharacterDiaryModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">添加角色日记</div>
+                <div class="close-btn" onclick="closeAddCharacterDiaryModal()">&times;</div>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="characterDiaryTitle">标题</label>
+                    <input type="text" id="characterDiaryTitleInput" placeholder="请输入日记标题">
+                </div>
+                <div class="form-group">
+                    <label for="characterDiaryContent">内容</label>
+                    <textarea id="characterDiaryContent" placeholder="请输入日记内容"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-cancel" onclick="closeAddCharacterDiaryModal()">取消</button>
+                <button class="btn btn-confirm" onclick="saveCharacterDiary()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 删除评论确认模态框 -->
+    <div id="deleteCommentModal" class="modal">
+        <div class="modal-content" style="width: 300px;">
+            <div class="modal-header">
+                <div class="modal-title">确认删除</div>
+                <div class="close-btn" onclick="closeDeleteCommentModal()">&times;</div>
+            </div>
+            <div class="modal-body" style="padding: 20px; text-align: center;">
+                <p>确定要删除这条评论吗？</p>
+                <div style="display: flex; justify-content: space-between; margin-top: 20px;">
+                    <button class="btn btn-cancel" onclick="closeDeleteCommentModal()">取消</button>
+                    <button class="btn btn-confirm" onclick="confirmDeleteComment()" style="background: #ff4444;">删除</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         // 更新时间显示
         function updateTime() {
@@ -673,6 +979,10 @@
             const timeString = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
             document.getElementById('mainTime').textContent = timeString;
             document.getElementById('aiListTime').textContent = timeString;
+            document.getElementById('characterDiaryTime').textContent = timeString;
+            if (document.getElementById('detailTime')) {
+                document.getElementById('detailTime').textContent = timeString;
+            }
         }
 
         // 初始化时间显示
@@ -696,9 +1006,14 @@
             // 清空表单
             document.getElementById('diaryTitle').value = '';
             document.getElementById('diaryContent').value = '';
+            // 清除编辑状态
+            currentEditDiaryId = null;
         }
 
-        // 保存日记
+        // 当前编辑的日记ID
+        let currentEditDiaryId = null;
+
+        // 保存日记（新增或编辑）
         function saveDiary() {
             const title = document.getElementById('diaryTitle').value;
             const content = document.getElementById('diaryContent').value;
@@ -714,18 +1029,30 @@
                            (now.getMonth() + 1).toString().padStart(2, '0') + '-' + 
                            now.getDate().toString().padStart(2, '0');
             
-            // 创建日记对象
-            const diary = {
-                id: Date.now(),
-                title: title,
-                content: content,
-                date: dateStr,
-                type: 'user' // 用户日记
-            };
-            
             // 保存到localStorage
             let diaries = JSON.parse(localStorage.getItem('diaries') || '[]');
-            diaries.push(diary);
+            
+            if (currentEditDiaryId) {
+                // 编辑现有日记
+                const diaryIndex = diaries.findIndex(d => d.id == currentEditDiaryId);
+                if (diaryIndex !== -1) {
+                    diaries[diaryIndex].title = title;
+                    diaries[diaryIndex].content = content;
+                    diaries[diaryIndex].date = dateStr;
+                }
+                currentEditDiaryId = null;
+            } else {
+                // 创建新日记
+                const diary = {
+                    id: Date.now(),
+                    title: title,
+                    content: content,
+                    date: dateStr,
+                    type: 'user' // 用户日记
+                };
+                diaries.push(diary);
+            }
+            
             localStorage.setItem('diaries', JSON.stringify(diaries));
             
             // 更新UI
@@ -764,8 +1091,12 @@
 
         // 返回主日记页面
         function backToMainDiary() {
-            // 返回到主屏幕
-            window.location.href = 'index.html';
+            document.getElementById('aiCharacterListPage').style.display = 'none';
+            document.getElementById('mainDiaryPage').style.display = 'block';
+            
+            // 确保用户日记标签被选中
+            document.querySelector('.nav-item:nth-child(1)').classList.remove('active');
+            document.querySelector('.nav-item:nth-child(2)').classList.add('active');
         }
 
         // 从AI页面切换到用户日记
@@ -790,7 +1121,7 @@
             document.querySelector('#aiCharacterListPage .nav-item:nth-child(2)').classList.add('active');
         }
 
-        // 显示从角色书选择角色模态框
+        // 显示添加角色日记模态框
         function showAddAIDiary() {
             // 显示选择角色模态框
             document.getElementById('selectCharacterModal').style.display = 'flex';
@@ -912,43 +1243,283 @@
             showNotification('已将角色 "' + selectedCharacter.name + '" 添加到AI日记角色列表');
         }
 
+        // 显示日记详情
+        function showDiaryDetail(diaryId) {
+            currentViewDiaryId = diaryId;
+            
+            // 获取日记内容
+            let diaries = JSON.parse(localStorage.getItem('diaries') || '[]');
+            const diary = diaries.find(d => d.id == diaryId && d.type === 'user');
+            
+            if (!diary) {
+                showNotification('未找到日记内容');
+                return;
+            }
+            
+            // 填充日记详情内容
+            let detailHTML = `
+                <div class="diary-entry">
+                    <div class="diary-header">
+                        <div class="diary-title">${diary.title}</div>
+                        <div class="diary-date">${diary.date}</div>
+                    </div>
+                    <div class="diary-content" style="white-space: pre-wrap; line-height: 1.6;">
+                        ${diary.content}
+                    </div>
+            `;
+            
+            // 显示AI评论（在详情页面显示完整评论）
+            if (diary.comments && diary.comments.length > 0) {
+                detailHTML += '<div class="ai-comments">';
+                for (let i = 0; i < diary.comments.length; i++) {
+                    const comment = diary.comments[i];
+                    // 获取角色信息
+                    const savedCharacters = localStorage.getItem('aiDiaryCharacters');
+                    let characters = [];
+                    if (savedCharacters) {
+                        try {
+                            characters = JSON.parse(savedCharacters);
+                        } catch (e) {
+                            console.error('解析AI角色数据时出错:', e);
+                        }
+                    }
+                    
+                    const character = characters.find(char => char.id == comment.characterId);
+                    const avatar = character && character.avatar ? character.avatar : (character ? character.name.charAt(0) : 'AI');
+                    const name = character ? character.name : 'AI';
+                    
+                    // 格式化时间
+                    const commentTime = new Date(comment.timestamp);
+                    const timeStr = commentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    
+                    // 检查是否已点赞
+                    const isLiked = comment.liked || false;
+                    
+                    detailHTML += `
+                        <div class="ai-comment" data-comment-id="${comment.id}">
+                            <div class="ai-comment-header">
+                                <div class="ai-avatar">${avatar}</div>
+                                <div class="ai-name">${name}</div>
+                                <div class="ai-comment-time">${timeStr}</div>
+                                <button class="like-btn ${isLiked ? 'liked' : ''}" onclick="toggleLikeComment(${diary.id}, ${comment.id}); event.stopPropagation();">❤</button>
+                                <button class="comment-menu-btn" onclick="showDeleteCommentModal(${diary.id}, ${comment.id}); event.stopPropagation();">⋯</button>
+                            </div>
+                            <div class="ai-comment-content">${comment.content}</div>
+                        </div>
+                    `;
+                }
+                detailHTML += '</div>';
+            }
+            
+            detailHTML += '</div>';
+            
+            const detailContent = document.getElementById('diaryDetailContent');
+            detailContent.innerHTML = detailHTML;
+            
+            // 切换到日记详情页面
+            document.getElementById('mainDiaryPage').style.display = 'none';
+            document.getElementById('diaryDetailPage').style.display = 'block';
+        }
+
+        // 初始化
+        function init() {
+            renderUserDiaries();
+        }
+
         // 渲染用户日记
         function renderUserDiaries() {
             // 显示主日记页面
-            document.getElementById('mainDiaryPage').style.display = 'block';
-            document.getElementById('aiCharacterListPage').style.display = 'none';
+            const mainDiaryPage = document.getElementById('mainDiaryPage');
+            const aiCharacterListPage = document.getElementById('aiCharacterListPage');
+            
+            if (mainDiaryPage) mainDiaryPage.style.display = 'block';
+            if (aiCharacterListPage) aiCharacterListPage.style.display = 'none';
             
             // 获取用户日记
             let diaries = JSON.parse(localStorage.getItem('diaries') || '[]');
             const userDiaries = diaries.filter(diary => diary.type === 'user');
             
             const contentContainer = document.getElementById('mainContent');
+            if (!contentContainer) return;
+            
+            const emptyState = document.getElementById('emptyState');
             
             if (userDiaries.length === 0) {
                 // 显示空状态
-                document.getElementById('emptyState').style.display = 'block';
+                if (emptyState) emptyState.style.display = 'block';
                 contentContainer.innerHTML = '<div class="empty-state" id="emptyState"><svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg><p>暂无日记内容</p></div>';
                 return;
             }
             
             // 隐藏空状态
-            document.getElementById('emptyState').style.display = 'none';
+            if (emptyState) emptyState.style.display = 'none';
             
             // 渲染日记条目
             let html = '';
             userDiaries.forEach(diary => {
                 html += `
-                    <div class="diary-entry">
+                    <div class="diary-entry" onclick="showDiaryDetail(${diary.id})" style="cursor: pointer;">
                         <div class="diary-header">
                             <div class="diary-title">${diary.title}</div>
                             <div class="diary-date">${diary.date}</div>
                         </div>
-                        <div class="diary-content">${diary.content}</div>
+                        <div class="diary-content">${diary.content.substring(0, 100)}${diary.content.length > 100 ? '...' : ''}</div>
+                `;
+                
+                // 显示AI评论
+                if (diary.comments && diary.comments.length > 0) {
+                    html += '<div class="ai-comments">';
+                    for (let i = 0; i < diary.comments.length; i++) {
+                        const comment = diary.comments[i];
+                        // 获取角色信息
+                        const savedCharacters = localStorage.getItem('aiDiaryCharacters');
+                        let characters = [];
+                        if (savedCharacters) {
+                            try {
+                                characters = JSON.parse(savedCharacters);
+                            } catch (e) {
+                                console.error('解析AI角色数据时出错:', e);
+                            }
+                        }
+                        
+                        const character = characters.find(char => char.id == comment.characterId);
+                        const avatar = character && character.avatar ? character.avatar : (character ? character.name.charAt(0) : 'AI');
+                        const name = character ? character.name : 'AI';
+                        
+                        // 格式化时间
+                        const commentTime = new Date(comment.timestamp);
+                        const timeStr = commentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                        
+                        // 检查是否已点赞
+                        const isLiked = comment.liked || false;
+                        
+                        html += `
+                            <div class="ai-comment" data-comment-id="${comment.id}">
+                                <div class="ai-comment-header">
+                                    <div class="ai-avatar">${avatar}</div>
+                                    <div class="ai-name">${name}</div>
+                                    <div class="ai-comment-time">${timeStr}</div>
+                                    <button class="like-btn ${isLiked ? 'liked' : ''}" onclick="toggleLikeComment(${diary.id}, ${comment.id}); event.stopPropagation();">❤</button>
+                                    <button class="comment-menu-btn" onclick="showDeleteCommentModal(${diary.id}, ${comment.id}); event.stopPropagation();">⋯</button>
+                                </div>
+                                <div class="ai-comment-content">${comment.content}</div>
+                            </div>
+                        `;
+                    }
+                    html += '</div>';
+                }
+                
+                // 添加AI评论按钮
+                html += `
+                        <div class="add-ai-comment" onclick="showSelectCharacterForComment(${diary.id}); event.stopPropagation();">
+                            <span>@Ta来</span>
+                        </div>
                     </div>
                 `;
             });
             
             contentContainer.innerHTML = html;
+        }
+
+        // 渲染AI角色列表
+        function renderAICharacters() {
+            // 显示AI角色列表页面
+            const mainDiaryPage = document.getElementById('mainDiaryPage');
+            const aiCharacterListPage = document.getElementById('aiCharacterListPage');
+            
+            if (mainDiaryPage) mainDiaryPage.style.display = 'none';
+            if (aiCharacterListPage) aiCharacterListPage.style.display = 'block';
+            
+            // 获取AI角色列表
+            const savedAICharacters = localStorage.getItem('aiDiaryCharacters');
+            let aiCharacters = [];
+            
+            if (savedAICharacters) {
+                try {
+                    aiCharacters = JSON.parse(savedAICharacters);
+                } catch (e) {
+                    console.error('解析AI角色数据时出错:', e);
+                }
+            }
+            
+            // 渲染角色列表
+            let html = '';
+            aiCharacters.forEach(character => {
+                html += `
+                    <div class="ai-character" data-character-id="${character.id}">
+                        <div class="ai-avatar">${character.avatar ? character.avatar : character.name.charAt(0)}</div>
+                        <div class="ai-name">${character.name}</div>
+                        <button class="delete-btn" onclick="deleteAICharacter(${character.id}); event.stopPropagation();">删除</button>
+                    </div>
+                `;
+            });
+            
+            const aiCharacterList = document.getElementById('aiCharacterList');
+            if (aiCharacterList) aiCharacterList.innerHTML = html;
+        }
+
+        // 显示通知
+        function showNotification(message) {
+            const notification = document.getElementById('notification');
+            if (notification) {
+                notification.textContent = message;
+                notification.style.display = 'block';
+                setTimeout(() => {
+                    notification.style.display = 'none';
+                }, 3000);
+            }
+        }
+
+        // 显示删除评论模态框
+        function showDeleteCommentModal(diaryId, commentId) {
+            const modal = document.getElementById('deleteCommentModal');
+            if (modal) {
+                modal.style.display = 'block';
+                modal.querySelector('.confirm-btn').onclick = () => {
+                    deleteComment(diaryId, commentId);
+                    modal.style.display = 'none';
+                };
+            }
+        }
+
+        // 删除评论
+        function deleteComment(diaryId, commentId) {
+            let diaries = JSON.parse(localStorage.getItem('diaries') || '[]');
+            const diary = diaries.find(d => d.id == diaryId && d.type === 'user');
+            
+            if (diary && diary.comments) {
+                diary.comments = diary.comments.filter(comment => comment.id != commentId);
+                localStorage.setItem('diaries', JSON.stringify(diaries));
+                showDiaryDetail(diaryId);
+            }
+        }
+
+        // 删除AI角色
+        function deleteAICharacter(characterId) {
+            let aiCharacters = JSON.parse(localStorage.getItem('aiDiaryCharacters') || '[]');
+            aiCharacters = aiCharacters.filter(char => char.id != characterId);
+            localStorage.setItem('aiDiaryCharacters', JSON.stringify(aiCharacters));
+            renderAICharacters();
+        }
+
+        // 切换点赞评论
+        function toggleLikeComment(diaryId, commentId) {
+            let diaries = JSON.parse(localStorage.getItem('diaries') || '[]');
+            const diary = diaries.find(d => d.id == diaryId && d.type === 'user');
+            
+            if (diary && diary.comments) {
+                const comment = diary.comments.find(c => c.id == commentId);
+                if (comment) {
+                    comment.liked = !comment.liked;
+                    localStorage.setItem('diaries', JSON.stringify(diaries));
+                    showDiaryDetail(diaryId);
+                }
+            }
+        }
+
+        // 初始化
+        function init() {
+            renderUserDiaries();
         }
 
         // 渲染AI角色列表
@@ -990,9 +1561,481 @@
 
         // 选择AI角色
         function selectAICharacter(characterId) {
-            // 显示提示信息
-            showNotification('选择了AI角色ID: ' + characterId);
-            // 这里可以跳转到与AI角色的聊天页面
+            // 保存当前选中的角色ID
+            currentCharacterId = characterId;
+            
+            // 获取角色信息并设置页面标题
+            const savedCharacters = localStorage.getItem('aiDiaryCharacters');
+            let characters = [];
+            
+            if (savedCharacters) {
+                try {
+                    characters = JSON.parse(savedCharacters);
+                } catch (e) {
+                    console.error('解析AI角色数据时出错:', e);
+                    return;
+                }
+            }
+            
+            const selectedCharacter = characters.find(char => char.id == characterId);
+            if (selectedCharacter) {
+                document.getElementById('characterDiaryTitle').textContent = selectedCharacter.name + '的日记';
+            }
+            
+            // 切换到角色专属日记页面
+            document.getElementById('aiCharacterListPage').style.display = 'none';
+            document.getElementById('characterDiaryPage').style.display = 'block';
+            
+            // 渲染该角色的日记
+            renderCharacterDiaries(characterId);
+        }
+
+        // 返回AI角色列表页面
+        function backToAICharacterList() {
+            const characterDiaryPage = document.getElementById('characterDiaryPage');
+            const aiCharacterListPage = document.getElementById('aiCharacterListPage');
+            
+            if (characterDiaryPage) characterDiaryPage.style.display = 'none';
+            if (aiCharacterListPage) aiCharacterListPage.style.display = 'block';
+        }
+
+        // 从角色专属日记页面切换到用户日记
+        function switchToUserDiaryFromCharacter() {
+            // 隐藏所有页面，显示主日记页面
+            const characterDiaryPage = document.getElementById('characterDiaryPage');
+            const mainDiaryPage = document.getElementById('mainDiaryPage');
+            
+            if (characterDiaryPage) characterDiaryPage.style.display = 'none';
+            if (mainDiaryPage) mainDiaryPage.style.display = 'block';
+            
+            // 更新导航栏样式
+            const mainUserNav = document.querySelector('#mainDiaryPage .nav-item:nth-child(1)');
+            const mainAINav = document.querySelector('#mainDiaryPage .nav-item:nth-child(2)');
+            
+            if (mainUserNav) mainUserNav.classList.add('active');
+            if (mainAINav) mainAINav.classList.remove('active');
+            
+            // 显示用户日记内容
+            renderUserDiaries();
+        }
+
+        // 从角色专属日记页面切换到AI日记（返回AI角色列表）
+        function switchToAIDiaryFromCharacter() {
+            // 返回AI角色列表页面
+            backToAICharacterList();
+        }
+
+        // 显示添加角色日记模态框
+        function showAddCharacterDiaryModal() {
+            document.getElementById('addCharacterDiaryModal').style.display = 'flex';
+        }
+
+        // 关闭添加角色日记模态框
+        function closeAddCharacterDiaryModal() {
+            document.getElementById('addCharacterDiaryModal').style.display = 'none';
+            // 清空表单
+            document.getElementById('characterDiaryTitleInput').value = '';
+            document.getElementById('characterDiaryContent').value = '';
+        }
+
+        // 保存角色日记
+        function saveCharacterDiary() {
+            const title = document.getElementById('characterDiaryTitleInput').value;
+            const content = document.getElementById('characterDiaryContent').value;
+            
+            if (!title || !content) {
+                showNotification('请填写标题和内容');
+                return;
+            }
+            
+            if (!currentCharacterId) {
+                showNotification('未选择角色');
+                return;
+            }
+            
+            // 获取当前时间
+            const now = new Date();
+            const dateStr = now.getFullYear() + '-' + 
+                           (now.getMonth() + 1).toString().padStart(2, '0') + '-' + 
+                           now.getDate().toString().padStart(2, '0');
+            
+            // 创建日记对象
+            const diary = {
+                id: Date.now(),
+                characterId: currentCharacterId,
+                title: title,
+                content: content,
+                date: dateStr,
+                type: 'character' // 角色日记
+            };
+            
+            // 保存到localStorage
+            let diaries = JSON.parse(localStorage.getItem('diaries') || '[]');
+            diaries.push(diary);
+            localStorage.setItem('diaries', JSON.stringify(diaries));
+            
+            // 更新UI
+            renderCharacterDiaries(currentCharacterId);
+            
+            // 关闭模态框
+            closeAddCharacterDiaryModal();
+        }
+
+        // 渲染角色日记
+        function renderCharacterDiaries(characterId) {
+            // 获取该角色的日记
+            let diaries = JSON.parse(localStorage.getItem('diaries') || '[]');
+            const characterDiaries = diaries.filter(diary => diary.type === 'character' && diary.characterId == characterId);
+            
+            const listContainer = document.getElementById('characterDiaryList');
+            
+            if (characterDiaries.length === 0) {
+                listContainer.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg><p>暂无日记内容</p></div>';
+                return;
+            }
+            
+            // 渲染日记条目
+            let html = '';
+            characterDiaries.forEach(diary => {
+                html += `
+                    <div class="diary-entry">
+                        <div class="diary-header">
+                            <div class="diary-title">${diary.title}</div>
+                            <div class="diary-date">${diary.date}</div>
+                        </div>
+                        <div class="diary-content">${diary.content}</div>
+                    </div>
+                `;
+            });
+            
+            listContainer.innerHTML = html;
+        }
+
+        // 为日记添加AI评论
+        async function addAIComment(diaryId, characterId) {
+            // 获取AI设置
+            const savedSettings = localStorage.getItem('aiSettings');
+            let settings = {
+                provider: 'openai',
+                url: 'https://api.openai.com/v1',
+                key: '',
+                model: 'gpt-3.5-turbo',
+                enabled: true
+            };
+            
+            if (savedSettings) {
+                try {
+                    settings = JSON.parse(savedSettings);
+                } catch (e) {
+                    console.error('Failed to parse saved settings', e);
+                    showNotification('AI设置解析失败');
+                    return;
+                }
+            }
+            
+            // 检查必要配置
+            if (!settings.key) {
+                showNotification('请在设置页面配置API密钥');
+                return;
+            }
+            
+            if (!settings.model) {
+                showNotification('请在设置页面配置模型名称');
+                return;
+            }
+            
+            // 获取角色信息
+            const savedCharacters = localStorage.getItem('aiDiaryCharacters');
+            let characters = [];
+            if (savedCharacters) {
+                try {
+                    characters = JSON.parse(savedCharacters);
+                } catch (e) {
+                    console.error('解析AI角色数据时出错:', e);
+                    showNotification('角色数据解析失败');
+                    return;
+                }
+            }
+            
+            const character = characters.find(char => char.id == characterId);
+            if (!character) {
+                showNotification('未找到角色信息');
+                return;
+            }
+            
+            // 获取日记内容
+            let diaries = JSON.parse(localStorage.getItem('diaries') || '[]');
+            const diary = diaries.find(d => d.id == diaryId);
+            if (!diary) {
+                showNotification('未找到日记内容');
+                return;
+            }
+            
+            // 显示正在生成提示
+            showNotification('正在生成AI评论...');
+            
+            try {
+                // 根据提供商构建请求
+                let apiUrl = settings.url;
+                
+                // 确保URL格式正确
+                if (!apiUrl) {
+                    if (settings.provider === 'openai') {
+                        apiUrl = 'https://api.openai.com/v1';
+                    } else if (settings.provider === 'gemini') {
+                        apiUrl = 'https://generativelanguage.googleapis.com/v1beta';
+                    } else if (settings.provider === 'siliconflow') {
+                        apiUrl = 'https://api.siliconflow.cn/v1';
+                    } else if (settings.provider === 'deepseek') {
+                        apiUrl = 'https://api.deepseek.com/v1';
+                    } else {
+                        // 自定义提供商
+                        if (!apiUrl) {
+                            showNotification('请在设置页面配置API地址');
+                            return;
+                        }
+                    }
+                }
+                
+                // 确保URL以/结尾（用于chat/completions）
+                if (settings.provider !== 'gemini' && !apiUrl.endsWith('/')) {
+                    apiUrl += '/';
+                }
+                
+                // 构建系统提示
+                let systemPrompt = `你正在扮演${character.name}这个角色，请以${character.name}的身份、语气和性格特点对以下日记内容进行评论。请以真实、自然、有个性的方式进行评论，就像真实的朋友之间交流一样。回复时不要使用括号，不要提及你是AI，要像真实的人类一样表达情感和观点。`;
+                
+                // 如果角色有描述信息，添加到提示中
+                if (character.desc) {
+                    systemPrompt += `\n角色设定：${character.desc}`;
+                }
+                
+                // 添加用户信息
+                const userSettings = JSON.parse(localStorage.getItem('userSettings') || '{}');
+                if (userSettings.name) {
+                    systemPrompt += `\n日记作者：${userSettings.name}`;
+                }
+                
+                // 强调回复要求 - 增加长度和多样性要求
+                systemPrompt += "\n\n请记住：\n1. 像真实的人类一样评论，有情感、有个性\n2. 评论要具体、有针对性，不要泛泛而谈\n3. 可以表达个人观点和感受\n4. 不要使用括号\n5. 不要提及你是AI\n6. 评论要自然、口语化\n7. 评论长度至少500字，详细表达你的想法和感受\n8. 每次回复都应该有独特的内容，避免重复相似的表达\n9. 可以从多个角度分析日记内容，比如情感、观点、联想等\n10. 可以分享相关的个人经历或想法，增加互动性\n11. 生成一条完整的评论即可，不要拆分成多条消息";
+                
+                // 构建消息
+                const userMessage = `请对以下日记内容进行详细评论，生成一条至少500字的完整评论：\n\n标题：${diary.title}\n内容：${diary.content}`;
+                
+                const messages = [
+                    {
+                        role: "system",
+                        content: systemPrompt
+                    },
+                    {
+                        role: "user",
+                        content: userMessage
+                    }
+                ];
+                
+                let fetchUrl = '';
+                let fetchOptions = {};
+                
+                if (settings.provider === 'gemini') {
+                    // Google Gemini API
+                    fetchUrl = `${apiUrl}/models/${settings.model}:generateContent?key=${settings.key}`;
+                    fetchOptions = {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            contents: [{
+                                parts: [{
+                                    text: userMessage
+                                }]
+                            }]
+                        })
+                    };
+                } else if (settings.provider === 'siliconflow') {
+                    // SiliconFlow API
+                    fetchUrl = apiUrl.endsWith('/') ? `${apiUrl}chat/completions` : `${apiUrl}/chat/completions`;
+                    fetchOptions = {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${settings.key}`
+                        },
+                        body: JSON.stringify({
+                            model: settings.model,
+                            messages: messages,
+                            temperature: 0.9, // 增加随机性
+                            max_tokens: 2000 // 增加最大token数以确保足够长度
+                        })
+                    };
+                } else if (settings.provider === 'deepseek') {
+                    // DeepSeek API
+                    fetchUrl = apiUrl.endsWith('/') ? `${apiUrl}chat/completions` : `${apiUrl}/chat/completions`;
+                    fetchOptions = {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${settings.key}`
+                        },
+                        body: JSON.stringify({
+                            model: settings.model,
+                            messages: messages,
+                            temperature: 0.9, // 增加随机性
+                            max_tokens: 2000 // 增加最大token数以确保足够长度
+                        })
+                    };
+                } else if (settings.provider === 'openai') {
+                    // OpenAI API
+                    fetchUrl = apiUrl.endsWith('/') ? `${apiUrl}chat/completions` : `${apiUrl}/chat/completions`;
+                    fetchOptions = {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${settings.key}`
+                        },
+                        body: JSON.stringify({
+                            model: settings.model,
+                            messages: messages,
+                            temperature: 0.9, // 增加随机性
+                            max_tokens: 2000 // 增加最大token数以确保足够长度
+                        })
+                    };
+                } else {
+                    // 自定义提供商
+                    fetchUrl = apiUrl.endsWith('/') ? `${apiUrl}chat/completions` : `${apiUrl}/chat/completions`;
+                    fetchOptions = {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${settings.key}`
+                        },
+                        body: JSON.stringify({
+                            model: settings.model,
+                            messages: messages,
+                            temperature: 0.9, // 增加随机性
+                            max_tokens: 2000 // 增加最大token数以确保足够长度
+                        })
+                    };
+                }
+                
+                // 添加超时控制
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 30000); // 增加到30秒超时
+                fetchOptions.signal = controller.signal;
+                
+                const response = await fetch(fetchUrl, fetchOptions);
+                clearTimeout(timeoutId);
+                
+                // 检查响应状态
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`API请求失败: ${response.status} ${response.statusText}\n${errorText}`);
+                }
+                
+                // 解析响应
+                const data = await response.json();
+                let aiResponse = '';
+                
+                if (settings.provider === 'gemini') {
+                    // Gemini响应格式
+                    aiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || '无法获取响应内容';
+                } else {
+                    // OpenAI/SiliconFlow/DeepSeek/自定义响应格式
+                    aiResponse = data.choices?.[0]?.message?.content || '无法获取响应内容';
+                }
+                
+                // 保存评论到日记
+                if (!diary.comments) {
+                    diary.comments = [];
+                }
+                
+                const comment = {
+                    id: Date.now(),
+                    characterId: characterId,
+                    content: aiResponse,
+                    timestamp: new Date().toISOString()
+                };
+                
+                diary.comments.push(comment);
+                localStorage.setItem('diaries', JSON.stringify(diaries));
+                
+                // 更新UI
+                try {
+                    renderUserDiaries();
+                } catch (e) {
+                    console.error('渲染用户日记时出错:', e);
+                }
+                closeNotification();
+                showNotification('AI评论生成成功');
+            } catch (error) {
+                console.error('AI评论生成出错:', error);
+                closeNotification();
+                showNotification('AI评论生成失败: ' + error.message);
+            }
+        }
+
+        // 显示选择角色进行评论的模态框
+        function showSelectCharacterForComment(diaryId) {
+            // 保存当前日记ID
+            currentDiaryIdForComment = diaryId;
+            
+            // 显示选择角色模态框
+            document.getElementById('selectCharacterModal').style.display = 'flex';
+            // 加载角色书中的角色
+            loadCharactersFromRoleBookForComment();
+        }
+
+        // 从角色书中加载角色（用于评论）
+        function loadCharactersFromRoleBookForComment() {
+            const charactersList = document.getElementById('charactersList');
+            charactersList.innerHTML = '<div style="text-align: center; padding: 20px;">加载中...</div>';
+            
+            // 从localStorage获取角色数据
+            const savedCharacters = localStorage.getItem('aiDiaryCharacters');
+            let characters = [];
+            
+            if (savedCharacters) {
+                try {
+                    characters = JSON.parse(savedCharacters);
+                } catch (e) {
+                    console.error('解析角色数据时出错:', e);
+                    charactersList.innerHTML = '<div style="text-align: center; padding: 20px; color: #aaa;">加载角色数据时出错</div>';
+                    return;
+                }
+            }
+            
+            // 如果没有角色，显示提示信息
+            if (characters.length === 0) {
+                charactersList.innerHTML = '<div style="text-align: center; padding: 20px; color: #aaa;">暂无AI角色，请先在AI日记中添加角色</div>';
+                return;
+            }
+            
+            // 生成角色列表项
+            let html = '';
+            characters.forEach((character, index) => {
+                html += `
+                    <div class="character-item" onclick="selectCharacterForComment(${character.id})">
+                        <div class="character-avatar">${character.avatar ? `<img src="${character.avatar}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">` : character.name.charAt(0)}</div>
+                        <div class="character-info">
+                            <div class="character-name">${character.name}</div>
+                            <div class="character-desc">${character.desc || '暂无描述'}</div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            charactersList.innerHTML = html;
+        }
+
+        // 选择角色进行评论
+        function selectCharacterForComment(characterId) {
+            // 关闭模态框
+            closeSelectCharacterModal();
+            
+            // 生成AI评论
+            if (currentDiaryIdForComment) {
+                addAIComment(currentDiaryIdForComment, characterId);
+            }
         }
 
         // 页面加载完成后初始化
@@ -1010,6 +2053,211 @@
                 console.log('没有找到日记数据');
             }
         });
+
+        // 当前选中的角色ID
+        let currentCharacterId = null;
+
+        // 当前查看的日记ID
+        let currentViewDiaryId = null;
+
+        // 当前日记ID（用于评论）
+        let currentDiaryIdForComment = null;
+
+        // 当前要删除的评论信息
+        let currentDeleteInfo = {
+            diaryId: null,
+            commentId: null
+        };
+
+        // 显示日记详情
+        function showDiaryDetail(diaryId) {
+            currentViewDiaryId = diaryId;
+            
+            // 获取日记内容
+            let diaries = JSON.parse(localStorage.getItem('diaries') || '[]');
+            const diary = diaries.find(d => d.id == diaryId && d.type === 'user');
+            
+            if (!diary) {
+                showNotification('未找到日记内容');
+                return;
+            }
+            
+            // 填充日记详情内容
+            const detailContent = document.getElementById('diaryDetailContent');
+            detailContent.innerHTML = `
+                <div class="diary-entry">
+                    <div class="diary-header">
+                        <div class="diary-title">${diary.title}</div>
+                        <div class="diary-date">${diary.date}</div>
+                    </div>
+                    <div class="diary-content" style="white-space: pre-wrap; line-height: 1.6;">
+                        ${diary.content}
+                    </div>
+                </div>
+            `;
+            
+            // 切换到日记详情页面
+            document.getElementById('mainDiaryPage').style.display = 'none';
+            document.getElementById('diaryDetailPage').style.display = 'block';
+        }
+
+        // 从日记详情页面返回主日记页面
+        function backToMainDiaryFromDetail() {
+            document.getElementById('diaryDetailPage').style.display = 'none';
+            document.getElementById('mainDiaryPage').style.display = 'block';
+            currentViewDiaryId = null;
+        }
+
+        // 从日记详情页面编辑日记
+        function editDiaryFromDetail() {
+            if (!currentViewDiaryId) {
+                showNotification('未找到要编辑的日记');
+                return;
+            }
+            
+            // 获取日记内容
+            let diaries = JSON.parse(localStorage.getItem('diaries') || '[]');
+            const diary = diaries.find(d => d.id == currentViewDiaryId && d.type === 'user');
+            
+            if (!diary) {
+                showNotification('未找到要编辑的日记');
+                return;
+            }
+            
+            // 填充编辑表单
+            document.getElementById('diaryTitle').value = diary.title;
+            document.getElementById('diaryContent').value = diary.content;
+            
+            // 保存当前编辑的日记ID
+            currentEditDiaryId = currentViewDiaryId;
+            
+            // 显示编辑模态框
+            document.getElementById('addDiaryModal').style.display = 'flex';
+        }
+
+        // 从日记详情页面删除日记
+        function deleteDiaryFromDetail() {
+            if (!currentViewDiaryId) {
+                showNotification('未找到要删除的日记');
+                return;
+            }
+            
+            if (!confirm('确定要删除这篇日记吗？')) {
+                return;
+            }
+            
+            try {
+                // 获取所有日记
+                let diaries = JSON.parse(localStorage.getItem('diaries') || '[]');
+                
+                // 过滤掉要删除的日记
+                diaries = diaries.filter(diary => diary.id != currentViewDiaryId);
+                
+                // 保存回localStorage
+                localStorage.setItem('diaries', JSON.stringify(diaries));
+                
+                // 返回主日记页面并刷新
+                backToMainDiaryFromDetail();
+                renderUserDiaries();
+                
+                showNotification('日记删除成功');
+            } catch (error) {
+                console.error('删除日记时出错:', error);
+                showNotification('删除日记失败: ' + error.message);
+            }
+        }
+
+        // 显示删除评论确认模态框
+        function showDeleteCommentModal(diaryId, commentId) {
+            currentDeleteInfo.diaryId = diaryId;
+            currentDeleteInfo.commentId = commentId;
+            document.getElementById('deleteCommentModal').style.display = 'flex';
+        }
+
+        // 关闭删除评论确认模态框
+        function closeDeleteCommentModal() {
+            document.getElementById('deleteCommentModal').style.display = 'none';
+            currentDeleteInfo.diaryId = null;
+            currentDeleteInfo.commentId = null;
+        }
+
+        // 确认删除评论
+        function confirmDeleteComment() {
+            if (!currentDeleteInfo.diaryId || !currentDeleteInfo.commentId) {
+                showNotification('删除信息不完整');
+                return;
+            }
+            
+            try {
+                // 获取所有日记
+                let diaries = JSON.parse(localStorage.getItem('diaries') || '[]');
+                
+                // 找到对应的日记
+                const diaryIndex = diaries.findIndex(d => d.id == currentDeleteInfo.diaryId);
+                if (diaryIndex === -1) {
+                    showNotification('未找到对应的日记');
+                    closeDeleteCommentModal();
+                    return;
+                }
+                
+                const diary = diaries[diaryIndex];
+                
+                // 删除对应的评论
+                if (diary.comments && diary.comments.length > 0) {
+                    diary.comments = diary.comments.filter(comment => comment.id != currentDeleteInfo.commentId);
+                    diaries[diaryIndex] = diary;
+                    
+                    // 保存回localStorage
+                    localStorage.setItem('diaries', JSON.stringify(diaries));
+                    
+                    // 更新UI
+                    renderUserDiaries();
+                    
+                    showNotification('评论删除成功');
+                } else {
+                    showNotification('未找到对应的评论');
+                }
+            } catch (error) {
+                console.error('删除评论时出错:', error);
+                showNotification('删除评论失败: ' + error.message);
+            }
+            
+            closeDeleteCommentModal();
+        }
+        
+        // 切换评论点赞状态
+        function toggleLikeComment(diaryId, commentId) {
+            try {
+                // 获取所有日记
+                let diaries = JSON.parse(localStorage.getItem('diaries') || '[]');
+                
+                // 找到对应的日记
+                const diary = diaries.find(d => d.id == diaryId);
+                if (!diary) {
+                    showNotification('未找到对应的日记');
+                    return;
+                }
+                
+                // 找到对应的评论
+                const comment = diary.comments.find(c => c.id == commentId);
+                if (!comment) {
+                    showNotification('未找到对应的评论');
+                    return;
+                }
+                
+                // 切换点赞状态
+                comment.liked = !comment.liked;
+                
+                // 保存回localStorage
+                localStorage.setItem('diaries', JSON.stringify(diaries));
+                
+                // 更新UI
+                renderUserDiaries();
+            } catch (error) {
+                console.error('点赞评论时出错:', error);
+                showNotification('点赞失败: ' + error.message);
+            }
+        }
     </script>
 </body>
 </html>
