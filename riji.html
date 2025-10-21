@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>日记</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            background-color: black;
+            color: white;
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* 状态栏样式 */
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 15px;
+            height: 30px;
+            background: transparent;
+            color: white;
+            font-size: 12px;
+            position: relative;
+            z-index: 100;
+            border-radius: 0;
+        }
+
+        .status-left, .status-right {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .status-center {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            font-weight: 600;
+        }
+
+        .status-icon {
+            width: 16px;
+            height: 16px;
+            fill: white;
+        }
+
+        /* 头部导航栏样式 */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 15px;
+            background: transparent;
+            border-bottom: 1px solid #e0e0e0;
+            position: relative;
+            z-index: 100;
+        }
+
+        .back-btn {
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            background: transparent; /* 移除背景装饰 */
+            border-radius: 0; /* 移除圆角 */
+        }
+
+        .back-btn svg {
+            width: 20px;
+            height: 20px;
+            fill: white;
+        }
+
+        .add-btn {
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .add-btn svg {
+            width: 20px;
+            height: 20px;
+            fill: white;
+        }
+
+        .header-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: white;
+        }
+
+        /* 主内容区域 */
+        .content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            height: calc(100vh - 140px); /* 减去状态栏、头部和底部导航栏的高度 */
+            margin-bottom: 80px; /* 为底部导航栏留出空间 */
+            padding-bottom: 80px; /* 防止内容被底部导航栏遮挡 */
+        }
+
+        /* 底部导航栏 */
+        .bottom-nav {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            max-width: 300px;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 30px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 0 20px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 50%;
+            height: 100%;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .nav-item.active {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .nav-icon {
+            width: 24px;
+            height: 24px;
+        }
+
+        .nav-icon svg {
+            width: 24px;
+            height: 24px;
+            fill: white;
+        }
+
+        /* 日记条目样式 */
+        .diary-entry {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 1px solid #444;
+        }
+
+        .diary-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .diary-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: white;
+        }
+
+        .diary-date {
+            font-size: 12px;
+            color: #aaa;
+        }
+
+        .diary-content {
+            font-size: 14px;
+            color: #ddd;
+            line-height: 1.5;
+        }
+
+        /* 添加日记按钮 */
+        .add-diary-btn {
+            position: fixed;
+            bottom: 90px; /* 往上移动 */
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: black;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            z-index: 99;
+            border: 2px solid white;
+        }
+
+        /* AI页面的添加日记按钮 */
+        #aiCharacterListPage .add-diary-btn {
+            bottom: 90px; /* 确保在AI页面中位置正确 */
+        }
+
+        .add-diary-btn svg {
+            width: 24px;
+            height: 24px;
+            fill: white;
+        }
+
+        /* 隐藏的页面 */
+        .hidden-page {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: black;
+            z-index: 200;
+        }
+
+        /* AI角色列表样式 */
+        .character-list {
+            padding: 20px;
+            height: calc(100vh - 80px); /* 减去状态栏、头部和底部导航栏的高度 */
+            overflow-y: auto;
+            margin-bottom: 80px; /* 为底部导航栏留出空间 */
+            padding-bottom: 80px; /* 防止内容被底部导航栏遮挡 */
+        }
+
+        .character-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 15px;
+            margin-bottom: 15px;
+            border: 1px solid #444;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .character-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            transform: translateY(-2px);
+        }
+
+        .character-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            margin-right: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: white;
+        }
+
+        .character-info {
+            flex: 1;
+        }
+
+        .character-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: white;
+            margin-bottom: 5px;
+        }
+
+        .character-desc {
+            font-size: 12px;
+            color: #aaa;
+        }
+
+        /* 模态框样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: #1a1a1a;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 400px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            border: 1px solid #444;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: white;
+        }
+
+        .close-btn {
+            font-size: 24px;
+            cursor: pointer;
+            color: #aaa;
+        }
+
+        .modal-body {
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+            color: #ddd;
+        }
+
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #444;
+            border-radius: 8px;
+            font-size: 14px;
+            background: #333;
+            color: white;
+        }
+
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        /* 角色列表样式 */
+        .characters-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .character-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 15px;
+            margin-bottom: 15px;
+            border: 1px solid #444;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .character-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            transform: translateY(-2px);
+        }
+
+        .character-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            margin-right: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: white;
+        }
+
+        .character-info {
+            flex: 1;
+        }
+
+        .character-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: white;
+            margin-bottom: 5px;
+        }
+
+        .character-desc {
+            font-size: 12px;
+            color: #aaa;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: none;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .btn-cancel {
+            background: #333;
+            color: white;
+        }
+
+        .btn-confirm {
+            background: black;
+            color: white;
+        }
+
+        /* 空状态提示 */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #aaa;
+        }
+
+        .empty-state svg {
+            width: 60px;
+            height: 60px;
+            fill: #666;
+            margin-bottom: 20px;
+        }
+
+        .empty-state p {
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <!-- 主日记页面 -->
+    <div id="mainDiaryPage">
+        <!-- 状态栏 -->
+        <div class="status-bar">
+            <div class="status-left">
+                <span class="time" id="mainTime">00:00</span>
+            </div>
+            <div class="status-center">
+                <!-- 中间留空 -->
+            </div>
+            <div class="status-right">
+                <!-- 信号图标 -->
+                <svg class="status-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M5 17L5 12" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M12 17L12 7" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M19 17L19 2" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                <!-- 电池图标 -->
+                <svg class="status-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="2" y="7" width="16" height="10" rx="3" stroke="white" stroke-width="2"/>
+                    <path d="M20 10V14" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                    <rect x="4" y="9" width="12" height="6" rx="2" fill="white"/>
+                </svg>
+            </div>
+        </div>
+
+        <!-- 头部导航栏 -->
+        <div class="header">
+            <div class="back-btn" onclick="goBack()">
+                <svg viewBox="0 0 24 24">
+                    <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+                </svg>
+            </div>
+            <div class="header-title">日记</div>
+            <div style="width: 30px;"></div> <!-- 占位符 -->
+        </div>
+
+        <!-- 主内容区域 -->
+        <div class="content" id="mainContent">
+            <!-- 日记条目将在这里动态生成 -->
+            <div class="empty-state" id="emptyState">
+                <svg viewBox="0 0 24 24">
+                    <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+                </svg>
+                <p>暂无日记内容</p>
+            </div>
+        </div>
+
+        <!-- 添加日记按钮 -->
+        <div class="add-diary-btn" onclick="showAddDiaryModal()">
+            <svg viewBox="0 0 24 24">
+                <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+            </svg>
+        </div>
+
+        <!-- 底部导航栏 -->
+        <div class="bottom-nav">
+            <div class="nav-item active" onclick="switchToUserDiary()">
+                <div class="nav-icon">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
+                    </svg>
+                </div>
+            </div>
+            <div class="nav-item" onclick="switchToAIDiary()">
+                <div class="nav-icon">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI日记角色列表页面（隐藏状态） -->
+    <div id="aiCharacterListPage" class="hidden-page">
+        <!-- 状态栏 -->
+        <div class="status-bar">
+            <div class="status-left">
+                <span class="time" id="aiListTime">00:00</span>
+            </div>
+            <div class="status-center">
+                <!-- 中间留空 -->
+            </div>
+            <div class="status-right">
+                <!-- 信号图标 -->
+                <svg class="status-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M5 17L5 12" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M12 17L12 7" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M19 17L19 2" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                <!-- 电池图标 -->
+                <svg class="status-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="2" y="7" width="16" height="10" rx="3" stroke="white" stroke-width="2"/>
+                    <path d="M20 10V14" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                    <rect x="4" y="9" width="12" height="6" rx="2" fill="white"/>
+                </svg>
+            </div>
+        </div>
+
+        <!-- 头部导航栏 -->
+        <div class="header">
+            <div class="back-btn" onclick="backToMainDiary()">
+                <svg viewBox="0 0 24 24">
+                    <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+                </svg>
+            </div>
+            <div class="header-title">AI日记角色</div>
+            <div class="add-btn" onclick="showAddAIDiary()">
+                <svg viewBox="0 0 24 24">
+                    <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+                </svg>
+            </div>
+        </div>
+
+        <!-- 内容区域 -->
+        <div class="content">
+            <div class="character-list" id="aiCharacterList">
+                <!-- AI角色列表将在这里动态生成 -->
+                <div class="empty-state">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+                    </svg>
+                    <p>暂无AI角色</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 页面底部不再需要浮动按钮 -->
+
+        <!-- 底部导航栏 -->
+        <div class="bottom-nav">
+            <div class="nav-item" onclick="switchToUserDiaryFromAI()">
+                <div class="nav-icon">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
+                    </svg>
+                </div>
+            </div>
+            <div class="nav-item active" onclick="switchToAIDiaryFromAI()">
+                <div class="nav-icon">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 添加日记模态框 -->
+    <div id="addDiaryModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">添加日记</div>
+                <div class="close-btn" onclick="closeAddDiaryModal()">&times;</div>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="diaryTitle">标题</label>
+                    <input type="text" id="diaryTitle" placeholder="请输入日记标题">
+                </div>
+                <div class="form-group">
+                    <label for="diaryContent">内容</label>
+                    <textarea id="diaryContent" placeholder="请输入日记内容"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-cancel" onclick="closeAddDiaryModal()">取消</button>
+                <button class="btn btn-confirm" onclick="saveDiary()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 从角色书选择角色模态框 -->
+    <div id="selectCharacterModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">选择角色</div>
+                <div class="close-btn" onclick="closeSelectCharacterModal()">&times;</div>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>从角色书中选择角色</label>
+                    <div class="characters-list" id="charactersList" style="max-height: 300px; overflow-y: auto;">
+                        <!-- 角色列表将在这里动态生成 -->
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-cancel" onclick="closeSelectCharacterModal()">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 通知模态框 -->
+    <div id="notificationModal" class="modal">
+        <div class="modal-content" style="width: 300px;">
+            <div class="modal-body" style="padding: 20px; text-align: center;">
+                <div id="notificationMessage" style="margin-bottom: 15px;"></div>
+                <button class="btn btn-confirm" onclick="closeNotification()" style="width: 100%;">确定</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 更新时间显示
+        function updateTime() {
+            const now = new Date();
+            const timeString = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+            document.getElementById('mainTime').textContent = timeString;
+            document.getElementById('aiListTime').textContent = timeString;
+        }
+
+        // 初始化时间显示
+        updateTime();
+        setInterval(updateTime, 60000); // 每分钟更新一次
+
+        // 返回上一页
+        function goBack() {
+            // 返回到主屏幕
+            window.location.href = 'index.html';
+        }
+
+        // 显示添加日记模态框
+        function showAddDiaryModal() {
+            document.getElementById('addDiaryModal').style.display = 'flex';
+        }
+
+        // 关闭添加日记模态框
+        function closeAddDiaryModal() {
+            document.getElementById('addDiaryModal').style.display = 'none';
+            // 清空表单
+            document.getElementById('diaryTitle').value = '';
+            document.getElementById('diaryContent').value = '';
+        }
+
+        // 保存日记
+        function saveDiary() {
+            const title = document.getElementById('diaryTitle').value;
+            const content = document.getElementById('diaryContent').value;
+            
+            if (!title || !content) {
+                showNotification('请填写标题和内容');
+                return;
+            }
+            
+            // 获取当前时间
+            const now = new Date();
+            const dateStr = now.getFullYear() + '-' + 
+                           (now.getMonth() + 1).toString().padStart(2, '0') + '-' + 
+                           now.getDate().toString().padStart(2, '0');
+            
+            // 创建日记对象
+            const diary = {
+                id: Date.now(),
+                title: title,
+                content: content,
+                date: dateStr,
+                type: 'user' // 用户日记
+            };
+            
+            // 保存到localStorage
+            let diaries = JSON.parse(localStorage.getItem('diaries') || '[]');
+            diaries.push(diary);
+            localStorage.setItem('diaries', JSON.stringify(diaries));
+            
+            // 更新UI
+            renderUserDiaries();
+            
+            // 关闭模态框
+            closeAddDiaryModal();
+            
+            // 隐藏空状态提示
+            document.getElementById('emptyState').style.display = 'none';
+        }
+
+        // 切换到用户日记
+        function switchToUserDiary() {
+            // 更新导航栏样式
+            document.querySelector('#mainDiaryPage .nav-item:nth-child(1)').classList.add('active');
+            document.querySelector('#mainDiaryPage .nav-item:nth-child(2)').classList.remove('active');
+            
+            // 显示用户日记内容
+            renderUserDiaries();
+        }
+
+        // 切换到AI日记
+        function switchToAIDiary() {
+            // 更新导航栏样式
+            document.querySelector('#mainDiaryPage .nav-item:nth-child(1)').classList.remove('active');
+            document.querySelector('#mainDiaryPage .nav-item:nth-child(2)').classList.add('active');
+            
+            // 显示AI日记角色列表页面
+            document.getElementById('mainDiaryPage').style.display = 'none';
+            document.getElementById('aiCharacterListPage').style.display = 'block';
+            
+            // 渲染AI角色列表
+            renderAICharacters();
+        }
+
+        // 返回主日记页面
+        function backToMainDiary() {
+            // 返回到主屏幕
+            window.location.href = 'index.html';
+        }
+
+        // 从AI页面切换到用户日记
+        function switchToUserDiaryFromAI() {
+            // 更新导航栏样式
+            document.querySelector('#aiCharacterListPage .nav-item:nth-child(1)').classList.add('active');
+            document.querySelector('#aiCharacterListPage .nav-item:nth-child(2)').classList.remove('active');
+            
+            // 显示主日记页面
+            document.getElementById('aiCharacterListPage').style.display = 'none';
+            document.getElementById('mainDiaryPage').style.display = 'block';
+            
+            // 确保主页面的用户日记标签被选中
+            document.querySelector('#mainDiaryPage .nav-item:nth-child(1)').classList.add('active');
+            document.querySelector('#mainDiaryPage .nav-item:nth-child(2)').classList.remove('active');
+        }
+
+        // 从AI页面切换到AI日记（保持在当前页面）
+        function switchToAIDiaryFromAI() {
+            // 保持当前页面，只更新导航栏样式
+            document.querySelector('#aiCharacterListPage .nav-item:nth-child(1)').classList.remove('active');
+            document.querySelector('#aiCharacterListPage .nav-item:nth-child(2)').classList.add('active');
+        }
+
+        // 显示从角色书选择角色模态框
+        function showAddAIDiary() {
+            // 显示选择角色模态框
+            document.getElementById('selectCharacterModal').style.display = 'flex';
+            // 加载角色书中的角色
+            loadCharactersFromRoleBook();
+        }
+
+        // 关闭选择角色模态框
+        function closeSelectCharacterModal() {
+            document.getElementById('selectCharacterModal').style.display = 'none';
+        }
+
+        // 显示通知
+        function showNotification(message) {
+            document.getElementById('notificationMessage').textContent = message;
+            document.getElementById('notificationModal').style.display = 'flex';
+        }
+
+        // 关闭通知
+        function closeNotification() {
+            document.getElementById('notificationModal').style.display = 'none';
+        }
+
+        // 从角色书中加载角色
+        function loadCharactersFromRoleBook() {
+            const charactersList = document.getElementById('charactersList');
+            charactersList.innerHTML = '<div style="text-align: center; padding: 20px;">加载中...</div>';
+            
+            // 从localStorage获取角色数据
+            const savedCharacters = localStorage.getItem('characters');
+            let characters = [];
+            
+            if (savedCharacters) {
+                try {
+                    characters = JSON.parse(savedCharacters);
+                } catch (e) {
+                    console.error('解析角色数据时出错:', e);
+                    charactersList.innerHTML = '<div style="text-align: center; padding: 20px; color: #aaa;">加载角色数据时出错</div>';
+                    return;
+                }
+            }
+            
+            // 如果没有角色，显示提示信息
+            if (characters.length === 0) {
+                charactersList.innerHTML = '<div style="text-align: center; padding: 20px; color: #aaa;">暂无角色，请先在角色书中添加角色</div>';
+                return;
+            }
+            
+            // 生成角色列表项
+            let html = '';
+            characters.forEach((character, index) => {
+                html += `
+                    <div class="character-item" onclick="selectCharacter(${character.id})">
+                        <div class="character-avatar">${character.avatar ? `<img src="${character.avatar}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">` : character.name.charAt(0)}</div>
+                        <div class="character-info">
+                            <div class="character-name">${character.name}</div>
+                            <div class="character-desc">${character.desc || '暂无描述'}</div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            charactersList.innerHTML = html;
+        }
+
+        // 选择角色
+        function selectCharacter(characterId) {
+            // 关闭模态框
+            closeSelectCharacterModal();
+            
+            // 从localStorage获取角色书中的所有角色
+            const savedCharacters = localStorage.getItem('characters');
+            let allCharacters = [];
+            
+            if (savedCharacters) {
+                try {
+                    allCharacters = JSON.parse(savedCharacters);
+                } catch (e) {
+                    console.error('解析角色数据时出错:', e);
+                    return;
+                }
+            }
+            
+            // 查找选中的角色
+            const selectedCharacter = allCharacters.find(char => char.id == characterId);
+            if (!selectedCharacter) {
+                showNotification('未找到选中的角色');
+                return;
+            }
+            
+            // 获取当前AI日记角色列表
+            const savedAICharacters = localStorage.getItem('aiDiaryCharacters');
+            let aiCharacters = [];
+            
+            if (savedAICharacters) {
+                try {
+                    aiCharacters = JSON.parse(savedAICharacters);
+                } catch (e) {
+                    console.error('解析AI角色数据时出错:', e);
+                }
+            }
+            
+            // 检查角色是否已存在
+            const existingCharacter = aiCharacters.find(char => char.id == characterId);
+            if (existingCharacter) {
+                showNotification('该角色已存在于AI日记角色列表中');
+                return;
+            }
+            
+            // 添加角色到AI日记角色列表
+            aiCharacters.push(selectedCharacter);
+            
+            // 保存到localStorage
+            localStorage.setItem('aiDiaryCharacters', JSON.stringify(aiCharacters));
+            
+            // 重新渲染AI角色列表
+            renderAICharacters();
+            
+            showNotification('已将角色 "' + selectedCharacter.name + '" 添加到AI日记角色列表');
+        }
+
+        // 渲染用户日记
+        function renderUserDiaries() {
+            // 显示主日记页面
+            document.getElementById('mainDiaryPage').style.display = 'block';
+            document.getElementById('aiCharacterListPage').style.display = 'none';
+            
+            // 获取用户日记
+            let diaries = JSON.parse(localStorage.getItem('diaries') || '[]');
+            const userDiaries = diaries.filter(diary => diary.type === 'user');
+            
+            const contentContainer = document.getElementById('mainContent');
+            
+            if (userDiaries.length === 0) {
+                // 显示空状态
+                document.getElementById('emptyState').style.display = 'block';
+                contentContainer.innerHTML = '<div class="empty-state" id="emptyState"><svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg><p>暂无日记内容</p></div>';
+                return;
+            }
+            
+            // 隐藏空状态
+            document.getElementById('emptyState').style.display = 'none';
+            
+            // 渲染日记条目
+            let html = '';
+            userDiaries.forEach(diary => {
+                html += `
+                    <div class="diary-entry">
+                        <div class="diary-header">
+                            <div class="diary-title">${diary.title}</div>
+                            <div class="diary-date">${diary.date}</div>
+                        </div>
+                        <div class="diary-content">${diary.content}</div>
+                    </div>
+                `;
+            });
+            
+            contentContainer.innerHTML = html;
+        }
+
+        // 渲染AI角色列表
+        function renderAICharacters() {
+            // 从localStorage获取AI角色列表
+            const savedCharacters = localStorage.getItem('aiDiaryCharacters');
+            let characters = [];
+            
+            if (savedCharacters) {
+                try {
+                    characters = JSON.parse(savedCharacters);
+                } catch (e) {
+                    console.error('解析AI角色数据时出错:', e);
+                }
+            };
+            
+            const listContainer = document.getElementById('aiCharacterList');
+            
+            if (characters.length === 0) {
+                listContainer.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg><p>暂无AI角色</p></div>';
+                return;
+            }
+            
+            let html = '';
+            characters.forEach(character => {
+                html += `
+                    <div class="character-item" onclick="selectAICharacter(${character.id})">
+                        <div class="character-avatar">${character.avatar ? `<img src="${character.avatar}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">` : character.name.charAt(0)}</div>
+                        <div class="character-info">
+                            <div class="character-name">${character.name}</div>
+                            <div class="character-desc">${character.desc || '暂无描述'}</div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            listContainer.innerHTML = html;
+        }
+
+        // 选择AI角色
+        function selectAICharacter(characterId) {
+            // 显示提示信息
+            showNotification('选择了AI角色ID: ' + characterId);
+            // 这里可以跳转到与AI角色的聊天页面
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化用户日记显示
+            renderUserDiaries();
+            
+            // 初始化AI日记角色列表
+            renderAICharacters();
+            
+            // 添加一些示例数据（仅在没有数据时）
+            const diaries = JSON.parse(localStorage.getItem('diaries') || '[]');
+            if (diaries.length === 0) {
+                // 可以在这里添加一些示例数据
+                console.log('没有找到日记数据');
+            }
+        });
+    </script>
+</body>
+</html>
