@@ -663,7 +663,7 @@
 
         <!-- 头部导航栏 -->
         <div class="header">
-            <div class="back-btn" onclick="backToAICharacterList()">
+            <div class="back-btn" onclick="backToMainScreen()">
                 <svg viewBox="0 0 24 24">
                     <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
                 </svg>
@@ -1068,6 +1068,12 @@
         // 返回上一页
         function goBack() {
             // 返回到主屏幕
+            window.location.href = 'index.html';
+        }
+
+        // 返回主屏幕
+        function backToMainScreen() {
+            // 通过主屏幕的消息机制返回主屏幕
             window.location.href = 'index.html';
         }
 
@@ -2308,10 +2314,10 @@
             // 检查必要配置
             if (!settings.key) {
                 // 询问用户是否要先设置用户人设
-                if (confirm('建议先设置用户人设以获得更好的日记生成效果，是否现在设置？')) {
+                showConfirmModal('建议先设置用户人设以获得更好的日记生成效果，是否现在设置？', function() {
                     openUserSettingsModal();
-                    return;
-                }
+                });
+                return;
             }
             
             if (!settings.model) {
@@ -2695,6 +2701,139 @@
             }
         }
 
+        // 显示确认模态框
+        function showConfirmModal(message, onConfirm) {
+            // 创建确认模态框（如果不存在）
+            let confirmModal = document.getElementById('confirmModal');
+            if (!confirmModal) {
+                const modalHTML = `
+                    <div class="modal" id="confirmModal">
+                        <div class="modal-content" style="width: 300px;">
+                            <div class="modal-body" style="padding: 20px; text-align: center;">
+                                <div id="confirmMessage" style="margin-bottom: 20px;"></div>
+                                <div style="display: flex; justify-content: space-between;">
+                                    <button class="btn btn-cancel" onclick="closeConfirmModal()">取消</button>
+                                    <button class="btn btn-confirm" id="confirmBtn">确定</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                document.body.insertAdjacentHTML('beforeend', modalHTML);
+                confirmModal = document.getElementById('confirmModal');
+            }
+            
+            // 设置消息和确认回调
+            document.getElementById('confirmMessage').textContent = message;
+            document.getElementById('confirmBtn').onclick = function() {
+                closeConfirmModal();
+                if (onConfirm) onConfirm();
+            };
+            
+            // 显示模态框
+            confirmModal.style.display = 'flex';
+        }
+
+        // 关闭确认模态框
+        function closeConfirmModal() {
+            const confirmModal = document.getElementById('confirmModal');
+            if (confirmModal) {
+                confirmModal.style.display = 'none';
+            }
+        }
+
+        // 替换原来的confirm调用
+        function confirmUserSettings() {
+            showConfirmModal('建议先设置用户人设以获得更好的日记生成效果，是否现在设置？', function() {
+                openUserSettingsModal();
+            });
+        }
+
+        // 从日记详情页面删除日记
+        function deleteDiaryFromDetail() {
+            if (!currentViewDiaryId) {
+                showNotification('未找到要删除的日记');
+                return;
+            }
+            
+            // 使用自定义确认模态框
+            showConfirmModal('确定要删除这篇日记吗？', function() {
+                try {
+                    // 获取所有日记
+                    let diaries = JSON.parse(localStorage.getItem('diaries') || '[]');
+                    
+                    // 过滤掉要删除的日记
+                    diaries = diaries.filter(diary => diary.id != currentViewDiaryId);
+                    
+                    // 保存回localStorage
+                    localStorage.setItem('diaries', JSON.stringify(diaries));
+                    
+                    // 返回主日记页面并刷新
+                    backToMainDiaryFromDetail();
+                    renderUserDiaries();
+                    
+                    showNotification('日记删除成功');
+                } catch (error) {
+                    console.error('删除日记时出错:', error);
+                    showNotification('删除日记失败: ' + error.message);
+                }
+            });
+        }
+
+        // 删除角色日记
+        function deleteCharacterDiary(diaryId) {
+            // 使用自定义确认模态框
+            showConfirmModal('确定要删除这篇日记吗？', function() {
+                try {
+                    // 获取所有日记
+                    let diaries = JSON.parse(localStorage.getItem('diaries') || '[]');
+                    
+                    // 过滤掉要删除的日记
+                    diaries = diaries.filter(diary => diary.id != diaryId);
+                    
+                    // 保存回localStorage
+                    localStorage.setItem('diaries', JSON.stringify(diaries));
+                    
+                    // 更新UI
+                    if (currentCharacterId) {
+                        renderCharacterDiaries(currentCharacterId);
+                    }
+                    
+                    showNotification('日记删除成功');
+                } catch (error) {
+                    console.error('删除日记时出错:', error);
+                    showNotification('删除日记失败: ' + error.message);
+                }
+            });
+        }
+
+        // 一键删除所有生成的日记
+        function deleteAllGeneratedDiaries() {
+            // 使用自定义确认模态框
+            showConfirmModal('确定要删除所有AI生成的日记吗？此操作不可恢复。', function() {
+                try {
+                    // 获取所有日记
+                    let diaries = JSON.parse(localStorage.getItem('diaries') || '[]');
+                    
+                    // 只保留用户日记，删除所有角色日记
+                    diaries = diaries.filter(diary => diary.type === 'user');
+                    
+                    // 保存回localStorage
+                    localStorage.setItem('diaries', JSON.stringify(diaries));
+                    
+                    // 更新UI
+                    if (currentCharacterId) {
+                        renderCharacterDiaries(currentCharacterId);
+                    }
+                    
+                    showNotification('所有AI生成的日记已删除');
+                } catch (error) {
+                    console.error('删除日记时出错:', error);
+                    showNotification('删除日记失败: ' + error.message);
+                }
+            });
+        }
+
         // 自动为AI角色生成与用户日记相关的日记
         async function autoGenerateAICharacterDiaries(userDiary) {
             try {
@@ -2860,21 +2999,15 @@
                         }
                         
                         // 解析AI返回的JSON
-                        let diaryData;
+                        let diaryData = {};
                         try {
-                            // 尝试从AI响应中提取JSON
-                            const jsonMatch = aiResponse.match(/\{[\s\S]*\}/);
-                            if (jsonMatch) {
-                                diaryData = JSON.parse(jsonMatch[0]);
-                            } else {
-                                throw new Error('无法解析AI返回的JSON格式');
-                            }
+                            diaryData = JSON.parse(aiResponse);
                         } catch (parseError) {
                             console.error('解析AI返回的JSON时出错:', parseError);
                             // 如果解析失败，使用默认内容
                             diaryData = {
-                                title: `${character.name}的回应日记`,
-                                content: `这是${character.name}对用户日记"${userDiary.title}"的回应。`
+                                title: `${character.name}的日记${i+1}`,
+                                content: `这是${character.name}写的一篇日记，内容与用户相关。`
                             };
                         }
                         
@@ -2884,28 +3017,295 @@
                                        (now.getMonth() + 1).toString().padStart(2, '0') + '-' + 
                                        now.getDate().toString().padStart(2, '0');
                         
-                        const aiDiary = {
-                            id: Date.now() + Math.floor(Math.random() * 1000), // 确保ID唯一
-                            characterId: character.id,
-                            title: diaryData.title || `${character.name}的回应日记`,
-                            content: diaryData.content || `这是${character.name}对用户日记"${userDiary.title}"的回应。`,
+                        const diary = {
+                            id: Date.now() + i, // 确保ID唯一
+                            characterId: currentCharacterId,
+                            title: diaryData.title || `${character.name}的日记${i+1}`,
+                            content: diaryData.content || `这是${character.name}写的一篇日记，内容与用户相关。`,
                             date: dateStr,
                             type: 'character' // 角色日记
                         };
                         
-                        // 保存到localStorage
-                        let allDiaries = JSON.parse(localStorage.getItem('diaries') || '[]');
-                        allDiaries.push(aiDiary);
-                        localStorage.setItem('diaries', JSON.stringify(allDiaries));
-                        
-                        console.log(`成功为角色${character.name}生成相关日记`);
+                        newDiaries.push(diary);
                     } catch (error) {
-                        console.error(`为角色${character.name}生成日记时出错:`, error);
+                        console.error('生成角色日记时出错:', error);
                     }
                 }
+                
+                // 关闭进度模态框
+                closeGenerationProgress();
+                
+                // 保存到localStorage
+                let allDiaries = JSON.parse(localStorage.getItem('diaries') || '[]');
+                allDiaries = allDiaries.concat(newDiaries);
+                localStorage.setItem('diaries', JSON.stringify(allDiaries));
+                
+                // 更新UI
+                renderCharacterDiaries(currentCharacterId);
+                
+                showNotification(`成功生成${newDiaries.length}篇新日记`);
             } catch (error) {
-                console.error('自动生成AI角色日记时出错:', error);
+                console.error('生成角色日记时出错:', error);
+                // 关闭进度模态框
+                closeGenerationProgress();
+                showNotification('生成日记失败: ' + error.message);
             }
+        }
+
+        // 显示选择角色进行评论的模态框
+        function showSelectCharacterForComment(diaryId) {
+            // 保存当前日记ID
+            currentDiaryIdForComment = diaryId;
+            
+            // 显示选择角色模态框
+            document.getElementById('selectCharacterModal').style.display = 'flex';
+            // 加载角色书中的角色
+            loadCharactersFromRoleBookForComment();
+        }
+
+        // 从角色书中加载角色（用于评论）
+        function loadCharactersFromRoleBookForComment() {
+            const charactersList = document.getElementById('charactersList');
+            charactersList.innerHTML = '<div style="text-align: center; padding: 20px;">加载中...</div>';
+            
+            // 从localStorage获取角色数据
+            const savedCharacters = localStorage.getItem('aiDiaryCharacters');
+            let characters = [];
+            
+            if (savedCharacters) {
+                try {
+                    characters = JSON.parse(savedCharacters);
+                } catch (e) {
+                    console.error('解析角色数据时出错:', e);
+                    charactersList.innerHTML = '<div style="text-align: center; padding: 20px; color: #aaa;">加载角色数据时出错</div>';
+                    return;
+                }
+            }
+            
+            // 如果没有角色，显示提示信息
+            if (characters.length === 0) {
+                charactersList.innerHTML = '<div style="text-align: center; padding: 20px; color: #aaa;">暂无AI角色，请先在AI日记中添加角色</div>';
+                return;
+            }
+            
+            // 生成角色列表项
+            let html = '';
+            characters.forEach((character, index) => {
+                html += `
+                    <div class="character-item" onclick="selectCharacterForComment(${character.id})">
+                        <div class="character-avatar">${character.avatar ? `<img src="${character.avatar}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">` : character.name.charAt(0)}</div>
+                        <div class="character-info">
+                            <div class="character-name">${character.name}</div>
+                            <div class="character-desc">${character.desc || '暂无描述'}</div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            charactersList.innerHTML = html;
+        }
+
+        // 选择角色进行评论
+        function selectCharacterForComment(characterId) {
+            // 关闭模态框
+            closeSelectCharacterModal();
+            
+            // 生成AI评论
+            if (currentDiaryIdForComment) {
+                addAIComment(currentDiaryIdForComment, characterId);
+            }
+        }
+
+        // 保存日记（新增或编辑）
+        function saveDiary() {
+            const title = document.getElementById('diaryTitle').value;
+            const content = document.getElementById('diaryContent').value;
+            
+            if (!title || !content) {
+                showNotification('请填写标题和内容');
+                return;
+            }
+            
+            // 获取当前时间
+            const now = new Date();
+            const dateStr = now.getFullYear() + '-' + 
+                           (now.getMonth() + 1).toString().padStart(2, '0') + '-' + 
+                           now.getDate().toString().padStart(2, '0');
+            
+            // 保存到localStorage
+            let diaries = JSON.parse(localStorage.getItem('diaries') || '[]');
+            let newDiary = null;
+            
+            if (currentEditDiaryId) {
+                // 编辑现有日记
+                const diaryIndex = diaries.findIndex(d => d.id == currentEditDiaryId);
+                if (diaryIndex !== -1) {
+                    diaries[diaryIndex].title = title;
+                    diaries[diaryIndex].content = content;
+                    diaries[diaryIndex].date = dateStr;
+                    newDiary = diaries[diaryIndex];
+                }
+                currentEditDiaryId = null;
+            } else {
+                // 创建新日记
+                newDiary = {
+                    id: Date.now(),
+                    title: title,
+                    content: content,
+                    date: dateStr,
+                    type: 'user' // 用户日记
+                };
+                diaries.push(newDiary);
+            }
+            
+            localStorage.setItem('diaries', JSON.stringify(diaries));
+            
+            // 更新UI
+            renderUserDiaries();
+            
+            // 关闭模态框
+            closeAddDiaryModal();
+            
+            // 隐藏空状态提示（如果存在）
+            const emptyState = document.getElementById('emptyState');
+            if (emptyState) {
+                emptyState.style.display = 'none';
+            }
+            
+            // 如果是新增日记，自动为AI角色生成相关日记
+            if (newDiary && !currentEditDiaryId) {
+                autoGenerateAICharacterDiaries(newDiary);
+            }
+        }
+
+        // 显示确认模态框
+        function showConfirmModal(message, onConfirm) {
+            // 创建确认模态框（如果不存在）
+            let confirmModal = document.getElementById('confirmModal');
+            if (!confirmModal) {
+                const modalHTML = `
+                    <div class="modal" id="confirmModal">
+                        <div class="modal-content" style="width: 300px;">
+                            <div class="modal-body" style="padding: 20px; text-align: center;">
+                                <div id="confirmMessage" style="margin-bottom: 20px;"></div>
+                                <div style="display: flex; justify-content: space-between;">
+                                    <button class="btn btn-cancel" onclick="closeConfirmModal()">取消</button>
+                                    <button class="btn btn-confirm" id="confirmBtn">确定</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                document.body.insertAdjacentHTML('beforeend', modalHTML);
+                confirmModal = document.getElementById('confirmModal');
+            }
+            
+            // 设置消息和确认回调
+            document.getElementById('confirmMessage').textContent = message;
+            document.getElementById('confirmBtn').onclick = function() {
+                closeConfirmModal();
+                if (onConfirm) onConfirm();
+            };
+            
+            // 显示模态框
+            confirmModal.style.display = 'flex';
+        }
+
+        // 关闭确认模态框
+        function closeConfirmModal() {
+            const confirmModal = document.getElementById('confirmModal');
+            if (confirmModal) {
+                confirmModal.style.display = 'none';
+            }
+        }
+
+        // 替换原来的confirm调用
+        function confirmUserSettings() {
+            showConfirmModal('建议先设置用户人设以获得更好的日记生成效果，是否现在设置？', function() {
+                openUserSettingsModal();
+            });
+        }
+
+        // 删除角色日记
+        function deleteCharacterDiary(diaryId) {
+            showConfirmModal('确定要删除这篇日记吗？', function() {
+                try {
+                    // 获取所有日记
+                    let diaries = JSON.parse(localStorage.getItem('diaries') || '[]');
+                    
+                    // 过滤掉要删除的日记
+                    diaries = diaries.filter(diary => diary.id != diaryId);
+                    
+                    // 保存回localStorage
+                    localStorage.setItem('diaries', JSON.stringify(diaries));
+                    
+                    // 更新UI
+                    if (currentCharacterId) {
+                        renderCharacterDiaries(currentCharacterId);
+                    }
+                    
+                    showNotification('日记删除成功');
+                } catch (error) {
+                    console.error('删除日记时出错:', error);
+                    showNotification('删除日记失败: ' + error.message);
+                }
+            });
+        }
+
+        // 从日记详情页面删除日记
+        function deleteDiaryFromDetail() {
+            if (!currentViewDiaryId) {
+                showNotification('未找到要删除的日记');
+                return;
+            }
+            
+            showConfirmModal('确定要删除这篇日记吗？', function() {
+                try {
+                    // 获取所有日记
+                    let diaries = JSON.parse(localStorage.getItem('diaries') || '[]');
+                    
+                    // 过滤掉要删除的日记
+                    diaries = diaries.filter(diary => diary.id != currentViewDiaryId);
+                    
+                    // 保存回localStorage
+                    localStorage.setItem('diaries', JSON.stringify(diaries));
+                    
+                    // 返回主日记页面并刷新
+                    backToMainDiaryFromDetail();
+                    renderUserDiaries();
+                    
+                    showNotification('日记删除成功');
+                } catch (error) {
+                    console.error('删除日记时出错:', error);
+                    showNotification('删除日记失败: ' + error.message);
+                }
+            });
+        }
+
+        // 一键删除所有AI生成的日记
+        function deleteAllAIDiaries() {
+            showConfirmModal('确定要删除所有AI生成的日记吗？此操作不可恢复。', function() {
+                try {
+                    // 获取所有日记
+                    let diaries = JSON.parse(localStorage.getItem('diaries') || '[]');
+                    
+                    // 过滤掉AI生成的日记
+                    diaries = diaries.filter(diary => diary.type !== 'character');
+                    
+                    // 保存回localStorage
+                    localStorage.setItem('diaries', JSON.stringify(diaries));
+                    
+                    // 更新UI
+                    if (currentCharacterId) {
+                        renderCharacterDiaries(currentCharacterId);
+                    }
+                    
+                    showNotification('所有AI日记删除成功');
+                } catch (error) {
+                    console.error('删除AI日记时出错:', error);
+                    showNotification('删除AI日记失败: ' + error.message);
+                }
+            });
         }
 
         // 页面加载完成后初始化
