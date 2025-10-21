@@ -494,7 +494,7 @@
             color: #ddd;
         }
 
-        .form-group input, .form-group textarea {
+        .form-input, .form-textarea {
             width: 100%;
             padding: 10px;
             border: 1px solid #444;
@@ -504,7 +504,7 @@
             color: white;
         }
 
-        .form-group textarea {
+        .form-textarea {
             min-height: 100px;
             resize: vertical;
         }
@@ -513,6 +513,11 @@
             display: flex;
             justify-content: flex-end;
             gap: 10px;
+        }
+
+        /* 用户设置模态框样式 */
+        #userSettingsModal .modal-content {
+            max-width: 500px;
         }
 
         /* 角色列表样式 */
@@ -601,6 +606,31 @@
 
         .empty-state p {
             font-size: 16px;
+        }
+
+        /* 进度条样式 */
+        .progress-container {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            height: 10px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: #007AFF;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        /* 生成状态显示 */
+        .generation-status {
+            text-align: center;
+            padding: 10px;
+            font-size: 14px;
+            color: #ddd;
         }
     </style>
 </head>
@@ -798,6 +828,34 @@
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- 用户设置模态框 -->
+    <div class="modal" id="userSettingsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">用户人设设置</div>
+                <div class="close-btn" onclick="closeUserSettingsModal()">&times;</div>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="userName">姓名</label>
+                    <input type="text" id="userName" class="form-input" placeholder="请输入姓名">
+                </div>
+                <div class="form-group">
+                    <label for="userPersona">人设描述</label>
+                    <textarea id="userPersona" class="form-textarea" placeholder="请输入人设描述" rows="4"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-cancel" onclick="closeUserSettingsModal()">取消</button>
+                <button class="btn btn-confirm" onclick="saveUserSettings()">保存</button>
+            </div>
+        </div>
+    </div>
+
+            </div>
             <div class="modal-footer">
                 <button class="btn btn-cancel" onclick="closeSelectCharacterModal()">取消</button>
             </div>
@@ -848,10 +906,23 @@
                 </svg>
             </div>
             <div class="header-title" id="characterDiaryTitle">角色日记</div>
-            <div class="add-btn" onclick="updateCharacterDiary()">
-                <svg viewBox="0 0 24 24" width="20" height="20" fill="white">
-                    <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
-                </svg>
+            <div style="display: flex; gap: 10px;">
+                <div class="add-btn" onclick="openUserSettingsModal()" style="width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="white">
+                        <path d="M16 4c0-1.11.89-2 2-2s2 .89 2 2-.89 2-2 2-2-.89-2-2zm4 18v-6h2.5l-2.54-7.63A1.5 1.5 0 0 0 18.54 8H16c-.8 0-1.54.37-2 1l-3 4v-2H9v6h2v-3.5l2.5-3.5 2.5 7.5H20z"/>
+                        <circle cx="12" cy="6" r="4"/>
+                    </svg>
+                </div>
+                <div class="add-btn" onclick="deleteAllGeneratedDiaries()" style="width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="white">
+                        <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                    </svg>
+                </div>
+                <div class="add-btn" onclick="updateCharacterDiary()">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="white">
+                        <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+                    </svg>
+                </div>
             </div>
         </div>
 
@@ -997,6 +1068,12 @@
         // 返回上一页
         function goBack() {
             // 返回到主屏幕
+            window.location.href = 'index.html';
+        }
+
+        // 返回主日记页面
+        function backToMainDiary() {
+            // 直接返回主屏幕
             window.location.href = 'index.html';
         }
 
@@ -1246,6 +1323,37 @@
             renderAICharacters();
             
             showNotification('已将角色 "' + selectedCharacter.name + '" 添加到AI日记角色列表');
+        }
+
+        // 渲染角色日记
+        function renderCharacterDiaries(characterId) {
+            // 获取该角色的日记
+            let diaries = JSON.parse(localStorage.getItem('diaries') || '[]');
+            const characterDiaries = diaries.filter(diary => diary.type === 'character' && diary.characterId == characterId);
+            
+            const listContainer = document.getElementById('characterDiaryList');
+            
+            if (characterDiaries.length === 0) {
+                listContainer.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg><p>暂无日记内容</p></div>';
+                return;
+            }
+            
+            // 渲染日记条目
+            let html = '';
+            characterDiaries.forEach(diary => {
+                html += `
+                    <div class="diary-entry">
+                        <div class="diary-header">
+                            <div class="diary-title">${diary.title}</div>
+                            <div class="diary-date">${diary.date}</div>
+                            <button class="comment-menu-btn" onclick="deleteCharacterDiary(${diary.id}); event.stopPropagation();" style="margin-left: 10px;">⋯</button>
+                        </div>
+                        <div class="diary-content">${diary.content}</div>
+                    </div>
+                `;
+            });
+            
+            listContainer.innerHTML = html;
         }
 
         // 显示日记详情
@@ -1564,37 +1672,6 @@
             listContainer.innerHTML = html;
         }
 
-        // 选择AI角色
-        function selectAICharacter(characterId) {
-            // 保存当前选中的角色ID
-            currentCharacterId = characterId;
-            
-            // 获取角色信息并设置页面标题
-            const savedCharacters = localStorage.getItem('aiDiaryCharacters');
-            let characters = [];
-            
-            if (savedCharacters) {
-                try {
-                    characters = JSON.parse(savedCharacters);
-                } catch (e) {
-                    console.error('解析AI角色数据时出错:', e);
-                    return;
-                }
-            }
-            
-            const selectedCharacter = characters.find(char => char.id == characterId);
-            if (selectedCharacter) {
-                document.getElementById('characterDiaryTitle').textContent = selectedCharacter.name + '的日记';
-            }
-            
-            // 切换到角色专属日记页面
-            document.getElementById('aiCharacterListPage').style.display = 'none';
-            document.getElementById('characterDiaryPage').style.display = 'block';
-            
-            // 渲染该角色的日记
-            renderCharacterDiaries(characterId);
-        }
-
         // 返回AI角色列表页面
         function backToAICharacterList() {
             const characterDiaryPage = document.getElementById('characterDiaryPage');
@@ -1683,58 +1760,45 @@
             renderCharacterDiaries(currentCharacterId);
         }
 
-        // 切换到用户日记
+        // 切换到用户日记（修复导航栏同步问题）
         function switchToUserDiary() {
-            // 更新导航栏样式
+            // 立即更新导航栏样式
             const mainUserNav = document.querySelector('#mainDiaryPage .nav-item:nth-child(1)');
             const mainAINav = document.querySelector('#mainDiaryPage .nav-item:nth-child(2)');
             
             if (mainUserNav) mainUserNav.classList.add('active');
             if (mainAINav) mainAINav.classList.remove('active');
             
-            // 延迟切换页面以确保样式更新完成
-            setTimeout(() => {
-                // 显示用户日记内容
-                renderUserDiaries();
-            }, 50); // 延迟50毫秒确保样式更新完成
+            // 显示用户日记内容
+            renderUserDiaries();
+            
+            // 确保背景正确应用
+            applyDiaryBackground();
         }
 
-        // 切换到AI日记
+        // 切换到AI日记（修复导航栏同步问题）
         function switchToAIDiary() {
-            // 更新导航栏样式
+            // 立即更新导航栏样式
             const mainUserNav = document.querySelector('#mainDiaryPage .nav-item:nth-child(1)');
             const mainAINav = document.querySelector('#mainDiaryPage .nav-item:nth-child(2)');
             
             if (mainUserNav) mainUserNav.classList.remove('active');
             if (mainAINav) mainAINav.classList.add('active');
             
-            // 延迟切换页面以确保样式更新完成
-            setTimeout(() => {
-                // 显示AI日记角色列表页面
-                document.getElementById('mainDiaryPage').style.display = 'none';
-                document.getElementById('aiCharacterListPage').style.display = 'block';
-                
-                // 渲染AI角色列表
-                renderAICharacters();
-            }, 50); // 延迟50毫秒确保样式更新完成
+            // 显示AI日记角色列表页面
+            document.getElementById('mainDiaryPage').style.display = 'none';
+            document.getElementById('aiCharacterListPage').style.display = 'block';
+            
+            // 渲染AI角色列表
+            renderAICharacters();
+            
+            // 确保背景正确应用
+            applyDiaryBackground();
         }
 
-        // 返回主日记页面
-        function backToMainDiary() {
-            document.getElementById('aiCharacterListPage').style.display = 'none';
-            document.getElementById('mainDiaryPage').style.display = 'block';
-            
-            // 确保用户日记标签被选中
-            const aiUserNav = document.querySelector('#aiCharacterListPage .nav-item:nth-child(1)');
-            const aiAINav = document.querySelector('#aiCharacterListPage .nav-item:nth-child(2)');
-            
-            if (aiUserNav) aiUserNav.classList.remove('active');
-            if (aiAINav) aiAINav.classList.add('active');
-        }
-
-        // 从AI页面切换到用户日记
+        // 从AI页面切换到用户日记（修复导航栏同步问题）
         function switchToUserDiaryFromAI() {
-            // 更新导航栏样式
+            // 立即更新导航栏样式
             const aiUserNav = document.querySelector('#aiCharacterListPage .nav-item:nth-child(1)');
             const aiAINav = document.querySelector('#aiCharacterListPage .nav-item:nth-child(2)');
             
@@ -1751,46 +1815,148 @@
             
             if (mainUserNav) mainUserNav.classList.add('active');
             if (mainAINav) mainAINav.classList.remove('active');
+            
+            // 显示用户日记内容
+            renderUserDiaries();
+            
+            // 确保背景正确应用
+            applyDiaryBackground();
         }
 
-        // 从AI页面切换到AI日记（保持在当前页面）
+        // 从AI页面切换到AI日记（保持在当前页面，修复导航栏同步问题）
         function switchToAIDiaryFromAI() {
-            // 保持当前页面，只更新导航栏样式
+            // 立即更新导航栏样式
             const aiUserNav = document.querySelector('#aiCharacterListPage .nav-item:nth-child(1)');
             const aiAINav = document.querySelector('#aiCharacterListPage .nav-item:nth-child(2)');
             
             if (aiUserNav) aiUserNav.classList.remove('active');
             if (aiAINav) aiAINav.classList.add('active');
+            
+            // 确保背景正确应用
+            applyDiaryBackground();
         }
 
-        // 渲染角色日记
-        function renderCharacterDiaries(characterId) {
-            // 获取该角色的日记
+        // 选择AI角色
+        function selectAICharacter(characterId) {
+            // 保存当前选中的角色ID
+            currentCharacterId = characterId;
+            
+            // 获取角色信息并设置页面标题
+            const savedCharacters = localStorage.getItem('aiDiaryCharacters');
+            let characters = [];
+            
+            if (savedCharacters) {
+                try {
+                    characters = JSON.parse(savedCharacters);
+                } catch (e) {
+                    console.error('解析AI角色数据时出错:', e);
+                    return;
+                }
+            }
+            
+            const selectedCharacter = characters.find(char => char.id == characterId);
+            if (selectedCharacter) {
+                document.getElementById('characterDiaryTitle').textContent = selectedCharacter.name + '的日记';
+            }
+            
+            // 切换到角色专属日记页面
+            document.getElementById('aiCharacterListPage').style.display = 'none';
+            document.getElementById('characterDiaryPage').style.display = 'block';
+            
+            // 渲染该角色的日记
+            renderCharacterDiaries(characterId);
+            
+            // 确保背景正确应用
+            applyDiaryBackground();
+        }
+
+        // 返回AI角色列表页面
+        function backToAICharacterList() {
+            const characterDiaryPage = document.getElementById('characterDiaryPage');
+            const aiCharacterListPage = document.getElementById('aiCharacterListPage');
+            
+            if (characterDiaryPage) characterDiaryPage.style.display = 'none';
+            if (aiCharacterListPage) aiCharacterListPage.style.display = 'block';
+            
+            // 确保背景正确应用
+            applyDiaryBackground();
+        }
+
+        // 从角色专属日记页面切换到用户日记
+        function switchToUserDiaryFromCharacter() {
+            // 隐藏所有页面，显示主日记页面
+            const characterDiaryPage = document.getElementById('characterDiaryPage');
+            const mainDiaryPage = document.getElementById('mainDiaryPage');
+            
+            if (characterDiaryPage) characterDiaryPage.style.display = 'none';
+            if (mainDiaryPage) mainDiaryPage.style.display = 'block';
+            
+            // 更新导航栏样式
+            const mainUserNav = document.querySelector('#mainDiaryPage .nav-item:nth-child(1)');
+            const mainAINav = document.querySelector('#mainDiaryPage .nav-item:nth-child(2)');
+            
+            if (mainUserNav) mainUserNav.classList.add('active');
+            if (mainAINav) mainAINav.classList.remove('active');
+            
+            // 显示用户日记内容
+            renderUserDiaries();
+            
+            // 确保背景正确应用
+            applyDiaryBackground();
+        }
+
+        // 从角色专属日记页面切换到AI日记（返回AI角色列表）
+        function switchToAIDiaryFromCharacter() {
+            // 返回AI角色列表页面
+            backToAICharacterList();
+            
+            // 确保背景正确应用
+            applyDiaryBackground();
+        }
+
+        // 显示日记详情
+        function showDiaryDetail(diaryId) {
+            currentViewDiaryId = diaryId;
+            
+            // 获取日记内容
             let diaries = JSON.parse(localStorage.getItem('diaries') || '[]');
-            const characterDiaries = diaries.filter(diary => diary.type === 'character' && diary.characterId == characterId);
+            const diary = diaries.find(d => d.id == diaryId && d.type === 'user');
             
-            const listContainer = document.getElementById('characterDiaryList');
-            
-            if (characterDiaries.length === 0) {
-                listContainer.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg><p>暂无日记内容</p></div>';
+            if (!diary) {
+                showNotification('未找到日记内容');
                 return;
             }
             
-            // 渲染日记条目
-            let html = '';
-            characterDiaries.forEach(diary => {
-                html += `
-                    <div class="diary-entry">
-                        <div class="diary-header">
-                            <div class="diary-title">${diary.title}</div>
-                            <div class="diary-date">${diary.date}</div>
-                        </div>
-                        <div class="diary-content">${diary.content}</div>
+            // 填充日记详情内容
+            const detailContent = document.getElementById('diaryDetailContent');
+            detailContent.innerHTML = `
+                <div class="diary-entry">
+                    <div class="diary-header">
+                        <div class="diary-title">${diary.title}</div>
+                        <div class="diary-date">${diary.date}</div>
                     </div>
-                `;
-            });
+                    <div class="diary-content" style="white-space: pre-wrap; line-height: 1.6;">
+                        ${diary.content}
+                    </div>
+                </div>
+            `;
             
-            listContainer.innerHTML = html;
+            // 切换到日记详情页面
+            document.getElementById('mainDiaryPage').style.display = 'none';
+            document.getElementById('diaryDetailPage').style.display = 'block';
+            
+            // 确保背景正确应用
+            applyDiaryBackground();
+        }
+
+        // 从日记详情页面返回主日记页面
+        function backToMainDiaryFromDetail() {
+            document.getElementById('diaryDetailPage').style.display = 'none';
+            document.getElementById('mainDiaryPage').style.display = 'block';
+            currentViewDiaryId = null;
+            
+            // 确保背景正确应用
+            applyDiaryBackground();
         }
 
         // 为日记添加AI评论
@@ -2052,7 +2218,354 @@
             } catch (error) {
                 console.error('AI评论生成出错:', error);
                 closeNotification();
-                showNotification('AI评论生成失败: ' + error.message);
+            }
+        }
+
+        // 打开用户设置模态框
+        function openUserSettingsModal() {
+            // 从localStorage加载现有设置
+            const userSettings = JSON.parse(localStorage.getItem('userSettings') || '{}');
+            
+            // 填充表单
+            document.getElementById('userName').value = userSettings.name || '';
+            document.getElementById('userPersona').value = userSettings.persona || '';
+            
+            // 显示模态框
+            document.getElementById('userSettingsModal').style.display = 'flex';
+        }
+
+        // 关闭用户设置模态框
+        function closeUserSettingsModal() {
+            document.getElementById('userSettingsModal').style.display = 'none';
+        }
+
+        // 保存用户设置
+        function saveUserSettings() {
+            const userSettings = {
+                name: document.getElementById('userName').value,
+                persona: document.getElementById('userPersona').value
+            };
+            
+            // 保存到localStorage
+            localStorage.setItem('userSettings', JSON.stringify(userSettings));
+            
+            // 关闭模态框
+            closeUserSettingsModal();
+            
+            // 显示通知
+            showNotification('用户人设保存成功');
+        }
+
+        // 更新角色日记（生成新的AI日记）
+        async function updateCharacterDiary() {
+            if (!currentCharacterId) {
+                showNotification('未选择角色');
+                return;
+            }
+            
+            // 获取角色信息
+            const savedCharacters = localStorage.getItem('aiDiaryCharacters');
+            let characters = [];
+            if (savedCharacters) {
+                try {
+                    characters = JSON.parse(savedCharacters);
+                } catch (e) {
+                    console.error('解析AI角色数据时出错:', e);
+                    showNotification('角色数据解析失败');
+                    return;
+                }
+            }
+            
+            const character = characters.find(char => char.id == currentCharacterId);
+            if (!character) {
+                showNotification('未找到角色信息');
+                return;
+            }
+            
+            // 获取用户设置
+            const userSettings = JSON.parse(localStorage.getItem('userSettings') || '{}');
+            
+            // 获取AI设置
+            const savedSettings = localStorage.getItem('aiSettings');
+            let settings = {
+                provider: 'openai',
+                url: 'https://api.openai.com/v1',
+                key: '',
+                model: 'gpt-3.5-turbo',
+                enabled: true
+            };
+            
+            if (savedSettings) {
+                try {
+                    settings = JSON.parse(savedSettings);
+                } catch (e) {
+                    console.error('Failed to parse saved settings', e);
+                    showNotification('AI设置解析失败');
+                    return;
+                }
+            }
+            
+            // 检查必要配置
+            if (!settings.key) {
+                // 询问用户是否要先设置用户人设
+                if (confirm('建议先设置用户人设以获得更好的日记生成效果，是否现在设置？')) {
+                    openUserSettingsModal();
+                    return;
+                }
+            }
+            
+            if (!settings.model) {
+                showNotification('请在设置页面配置模型名称');
+                return;
+            }
+            
+            try {
+                // 获取所有日记用于参考
+                const diaries = JSON.parse(localStorage.getItem('diaries') || '[]');
+                
+                // 生成3-5篇日记
+                const diaryCount = Math.floor(Math.random() * 3) + 3; // 3-5之间的随机数
+                const newDiaries = [];
+                
+                // 显示生成进度模态框
+                showGenerationProgress(diaryCount);
+                
+                for (let i = 0; i < diaryCount; i++) {
+                    // 更新进度
+                    updateGenerationProgress(i + 1, diaryCount);
+                    
+                    // 构造AI提示词，要求以角色身份写与用户相关的日记
+                    let prompt = `你是一个名为"${character.name}"的角色，你的描述是："${character.desc || '暂无描述'}"。
+                    
+请以你的身份写一篇日记，内容要与用户相关，体现你与用户的关系和互动。请使用当前时间（${new Date().getFullYear()}年）作为日记的时间背景。
+                    
+请确保日记具有以下特点：
+1. 使用生动、自然的语言，像真实的人在写日记
+2. 包含具体的情感表达和细节描述
+3. 体现你独特的角色个性
+4. 与用户有真实的互动和情感连接
+5. 避免重复和模板化的内容
+6. 内容不少于1000字`;
+                    
+                    // 添加用户信息
+                    if (userSettings.name || userSettings.persona) {
+                        prompt += '\n\n用户信息：';
+                        if (userSettings.name) {
+                            prompt += `\n姓名：${userSettings.name}`;
+                        }
+                        if (userSettings.persona) {
+                            prompt += `\n人设：${userSettings.persona}`;
+                        }
+                    }
+                    
+                    // 添加用户日记内容作为参考
+                    const userDiaries = diaries.filter(d => d.type === 'user');
+                    if (userDiaries.length > 0) {
+                        prompt += '\n\n以下是用户最近写的一些日记内容，供你参考以保持一致性：';
+                        userDiaries.slice(-3).forEach((diary, index) => {  // 只取最近3篇
+                            prompt += `\n\n日记${index + 1}（${diary.date}）：${diary.content.substring(0, 200)}${diary.content.length > 200 ? '...' : ''}`;
+                        });
+                    }
+                    
+                    prompt += `
+                    
+日记应该包含日期、标题和内容，内容要生动有趣，体现真实的人类情感。
+                    
+请严格按照以下JSON格式返回结果，不要包含其他内容：
+{
+  "title": "日记标题",
+  "content": "日记内容，不少于1000字，要求生动有趣，体现真实的人类情感"
+}`;
+                    
+                    // 根据提供商构建请求
+                    let apiUrl = settings.url;
+                    
+                    let fetchUrl = '';
+                    let fetchOptions = {};
+                    
+                    if (settings.provider === 'gemini') {
+                        // Gemini API
+                        const apiKey = settings.key;
+                        fetchUrl = `${apiUrl}/models/${settings.model}:generateContent?key=${apiKey}`;
+                        fetchOptions = {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                contents: [{
+                                    parts: [{
+                                        text: prompt
+                                    }]
+                                }],
+                                generationConfig: {
+                                    temperature: 0.7,
+                                    maxOutputTokens: 2000
+                                }
+                            })
+                        };
+                    } else {
+                        // OpenAI/SiliconFlow/DeepSeek/自定义 API
+                        if (!apiUrl.endsWith('/chat/completions')) {
+                            if (apiUrl.endsWith('/')) {
+                                fetchUrl = apiUrl + 'chat/completions';
+                            } else {
+                                fetchUrl = apiUrl + '/chat/completions';
+                            }
+                        } else {
+                            fetchUrl = apiUrl;
+                        }
+                        
+                        fetchOptions = {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${settings.key}`
+                            },
+                            body: JSON.stringify({
+                                model: settings.model,
+                                messages: [
+                                    {
+                                        role: "system",
+                                        content: "你是一个AI助手，专门帮助生成角色日记。"
+                                    },
+                                    {
+                                        role: "user",
+                                        content: prompt
+                                    }
+                                ],
+                                temperature: 0.7,
+                                max_tokens: 2000
+                            })
+                        };
+                    }
+                    
+                    // 添加超时控制
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30秒超时
+                    fetchOptions.signal = controller.signal;
+                    
+                    const response = await fetch(fetchUrl, fetchOptions);
+                    clearTimeout(timeoutId);
+                    
+                    // 检查响应状态
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        throw new Error(`API请求失败: ${response.status} ${response.statusText}\n${errorText}`);
+                    }
+                    
+                    // 解析响应
+                    const data = await response.json();
+                    let aiResponse = '';
+                    
+                    if (settings.provider === 'gemini') {
+                        // Gemini响应格式
+                        aiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+                    } else {
+                        // OpenAI/SiliconFlow/DeepSeek/自定义响应格式
+                        aiResponse = data.choices?.[0]?.message?.content || '';
+                    }
+                    
+                    // 解析AI返回的JSON
+                    let diaryData;
+                    try {
+                        // 尝试从AI响应中提取JSON
+                        const jsonMatch = aiResponse.match(/\{[\s\S]*\}/);
+                        if (jsonMatch) {
+                            diaryData = JSON.parse(jsonMatch[0]);
+                        } else {
+                            throw new Error('无法解析AI返回的JSON格式');
+                        }
+                    } catch (parseError) {
+                        console.error('解析AI返回的JSON时出错:', parseError);
+                        // 如果解析失败，使用默认内容
+                        diaryData = {
+                            title: `${character.name}的日记${i+1}`,
+                            content: `这是${character.name}写的一篇日记，内容与用户相关。`
+                        };
+                    }
+                    
+                    // 创建日记对象
+                    const now = new Date();
+                    const dateStr = now.getFullYear() + '-' + 
+                                   (now.getMonth() + 1).toString().padStart(2, '0') + '-' + 
+                                   now.getDate().toString().padStart(2, '0');
+                    
+                    const diary = {
+                        id: Date.now() + i, // 确保ID唯一
+                        characterId: currentCharacterId,
+                        title: diaryData.title || `${character.name}的日记${i+1}`,
+                        content: diaryData.content || `这是${character.name}写的一篇日记，内容与用户相关。`,
+                        date: dateStr,
+                        type: 'character' // 角色日记
+                    };
+                    
+                    newDiaries.push(diary);
+                }
+                
+                // 关闭进度模态框
+                closeGenerationProgress();
+                
+                // 保存到localStorage
+                let allDiaries = JSON.parse(localStorage.getItem('diaries') || '[]');
+                allDiaries = allDiaries.concat(newDiaries);
+                localStorage.setItem('diaries', JSON.stringify(allDiaries));
+                
+                // 更新UI
+                renderCharacterDiaries(currentCharacterId);
+                
+                showNotification(`成功生成${newDiaries.length}篇新日记`);
+            } catch (error) {
+                console.error('生成角色日记时出错:', error);
+                // 关闭进度模态框
+                closeGenerationProgress();
+                showNotification('生成日记失败: ' + error.message);
+            }
+        }
+
+        // 显示生成进度模态框
+        function showGenerationProgress(total) {
+            // 创建进度模态框（如果不存在）
+            let progressModal = document.getElementById('generationProgressModal');
+            if (!progressModal) {
+                const modalHTML = `
+                    <div class="modal" id="generationProgressModal">
+                        <div class="modal-content" style="width: 300px;">
+                            <div class="modal-body" style="padding: 20px; text-align: center;">
+                                <div class="generation-status" id="generationStatus">正在生成日记...</div>
+                                <div class="progress-container">
+                                    <div class="progress-bar" id="progressBar"></div>
+                                </div>
+                                <div id="progressText">0 / ${total}</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                document.body.insertAdjacentHTML('beforeend', modalHTML);
+                progressModal = document.getElementById('generationProgressModal');
+            }
+            
+            // 更新进度信息
+            document.getElementById('progressText').textContent = `0 / ${total}`;
+            document.getElementById('progressBar').style.width = '0%';
+            
+            // 显示模态框
+            progressModal.style.display = 'flex';
+        }
+
+        // 更新生成进度
+        function updateGenerationProgress(current, total) {
+            const progress = Math.round((current / total) * 100);
+            document.getElementById('progressBar').style.width = `${progress}%`;
+            document.getElementById('progressText').textContent = `${current} / ${total}`;
+            document.getElementById('generationStatus').textContent = `正在生成第 ${current} 篇日记...`;
+        }
+
+        // 关闭生成进度模态框
+        function closeGenerationProgress() {
+            const progressModal = document.getElementById('generationProgressModal');
+            if (progressModal) {
+                progressModal.style.display = 'none';
             }
         }
 
@@ -2120,8 +2633,288 @@
             }
         }
 
+        // 保存日记（新增或编辑）
+        function saveDiary() {
+            const title = document.getElementById('diaryTitle').value;
+            const content = document.getElementById('diaryContent').value;
+            
+            if (!title || !content) {
+                showNotification('请填写标题和内容');
+                return;
+            }
+            
+            // 获取当前时间
+            const now = new Date();
+            const dateStr = now.getFullYear() + '-' + 
+                           (now.getMonth() + 1).toString().padStart(2, '0') + '-' + 
+                           now.getDate().toString().padStart(2, '0');
+            
+            // 保存到localStorage
+            let diaries = JSON.parse(localStorage.getItem('diaries') || '[]');
+            let newDiary = null;
+            
+            if (currentEditDiaryId) {
+                // 编辑现有日记
+                const diaryIndex = diaries.findIndex(d => d.id == currentEditDiaryId);
+                if (diaryIndex !== -1) {
+                    diaries[diaryIndex].title = title;
+                    diaries[diaryIndex].content = content;
+                    diaries[diaryIndex].date = dateStr;
+                    newDiary = diaries[diaryIndex];
+                }
+                currentEditDiaryId = null;
+            } else {
+                // 创建新日记
+                newDiary = {
+                    id: Date.now(),
+                    title: title,
+                    content: content,
+                    date: dateStr,
+                    type: 'user' // 用户日记
+                };
+                diaries.push(newDiary);
+            }
+            
+            localStorage.setItem('diaries', JSON.stringify(diaries));
+            
+            // 更新UI
+            renderUserDiaries();
+            
+            // 关闭模态框
+            closeAddDiaryModal();
+            
+            // 隐藏空状态提示（如果存在）
+            const emptyState = document.getElementById('emptyState');
+            if (emptyState) {
+                emptyState.style.display = 'none';
+            }
+            
+            // 如果是新增日记，自动为AI角色生成相关日记
+            if (newDiary && !currentEditDiaryId) {
+                autoGenerateAICharacterDiaries(newDiary);
+            }
+        }
+
+        // 自动为AI角色生成与用户日记相关的日记
+        async function autoGenerateAICharacterDiaries(userDiary) {
+            try {
+                // 获取所有AI角色
+                const savedAICharacters = localStorage.getItem('aiDiaryCharacters');
+                let aiCharacters = [];
+                
+                if (savedAICharacters) {
+                    try {
+                        aiCharacters = JSON.parse(savedAICharacters);
+                    } catch (e) {
+                        console.error('解析AI角色数据时出错:', e);
+                        return;
+                    }
+                }
+                
+                // 如果没有AI角色，直接返回
+                if (aiCharacters.length === 0) {
+                    return;
+                }
+                
+                // 获取AI设置
+                const savedSettings = localStorage.getItem('aiSettings');
+                let settings = {
+                    provider: 'openai',
+                    url: 'https://api.openai.com/v1',
+                    key: '',
+                    model: 'gpt-3.5-turbo',
+                    enabled: true
+                };
+                
+                if (savedSettings) {
+                    try {
+                        settings = JSON.parse(savedSettings);
+                    } catch (e) {
+                        console.error('Failed to parse saved settings', e);
+                        return;
+                    }
+                }
+                
+                // 检查必要配置
+                if (!settings.key) {
+                    console.log('未配置API密钥，跳过自动生成AI日记');
+                    return;
+                }
+                
+                if (!settings.model) {
+                    console.log('未配置模型名称，跳过自动生成AI日记');
+                    return;
+                }
+                
+                // 为每个AI角色生成一篇相关日记
+                for (const character of aiCharacters) {
+                    try {
+                        // 构造AI提示词，要求以角色身份写与用户日记相关的日记
+                        let prompt = `你是一个名为"${character.name}"的角色，你的描述是："${character.desc || '暂无描述'}"。
+                        
+请以你的身份写一篇日记，内容要与用户最新发布的日记内容相关。用户刚刚发布的日记标题是"${userDiary.title}"，内容是"${userDiary.content.substring(0, 500)}${userDiary.content.length > 500 ? '...' : ''}"。
+                        
+请确保日记具有以下特点：
+1. 使用生动、自然的语言，像真实的人在写日记
+2. 包含具体的情感表达和细节描述
+3. 体现你独特的角色个性
+4. 与用户的日记内容有真实的互动和情感连接
+5. 避免重复和模板化的内容
+6. 内容不少于500字
+                        
+日记应该包含日期、标题和内容，内容要生动有趣，体现真实的人类情感。
+                        
+请严格按照以下JSON格式返回结果，不要包含其他内容：
+{
+  "title": "日记标题",
+  "content": "日记内容，不少于500字，要求生动有趣，体现真实的人类情感"
+}`;
+                        
+                        // 根据提供商构建请求
+                        let apiUrl = settings.url;
+                        let fetchUrl = '';
+                        let fetchOptions = {};
+                        
+                        if (settings.provider === 'gemini') {
+                            // Gemini API
+                            const apiKey = settings.key;
+                            fetchUrl = `${apiUrl}/models/${settings.model}:generateContent?key=${apiKey}`;
+                            fetchOptions = {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({
+                                    contents: [{
+                                        parts: [{
+                                            text: prompt
+                                        }]
+                                    }],
+                                    generationConfig: {
+                                        temperature: 0.7,
+                                        maxOutputTokens: 1500
+                                    }
+                                })
+                            };
+                        } else {
+                            // OpenAI/SiliconFlow/DeepSeek/自定义 API
+                            if (!apiUrl.endsWith('/chat/completions')) {
+                                if (apiUrl.endsWith('/')) {
+                                    fetchUrl = apiUrl + 'chat/completions';
+                                } else {
+                                    fetchUrl = apiUrl + '/chat/completions';
+                                }
+                            } else {
+                                fetchUrl = apiUrl;
+                            }
+                            
+                            fetchOptions = {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Authorization': `Bearer ${settings.key}`
+                                },
+                                body: JSON.stringify({
+                                    model: settings.model,
+                                    messages: [
+                                        {
+                                            role: "system",
+                                            content: "你是一个AI助手，专门帮助生成角色日记。"
+                                        },
+                                        {
+                                            role: "user",
+                                            content: prompt
+                                        }
+                                    ],
+                                    temperature: 0.7,
+                                    max_tokens: 1500
+                                })
+                            };
+                        }
+                        
+                        // 添加超时控制
+                        const controller = new AbortController();
+                        const timeoutId = setTimeout(() => controller.abort(), 30000); // 30秒超时
+                        fetchOptions.signal = controller.signal;
+                        
+                        const response = await fetch(fetchUrl, fetchOptions);
+                        clearTimeout(timeoutId);
+                        
+                        // 检查响应状态
+                        if (!response.ok) {
+                            const errorText = await response.text();
+                            console.error(`为角色${character.name}生成日记时API请求失败:`, errorText);
+                            continue;
+                        }
+                        
+                        // 解析响应
+                        const data = await response.json();
+                        let aiResponse = '';
+                        
+                        if (settings.provider === 'gemini') {
+                            // Gemini响应格式
+                            aiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+                        } else {
+                            // OpenAI/SiliconFlow/DeepSeek/自定义响应格式
+                            aiResponse = data.choices?.[0]?.message?.content || '';
+                        }
+                        
+                        // 解析AI返回的JSON
+                        let diaryData;
+                        try {
+                            // 尝试从AI响应中提取JSON
+                            const jsonMatch = aiResponse.match(/\{[\s\S]*\}/);
+                            if (jsonMatch) {
+                                diaryData = JSON.parse(jsonMatch[0]);
+                            } else {
+                                throw new Error('无法解析AI返回的JSON格式');
+                            }
+                        } catch (parseError) {
+                            console.error('解析AI返回的JSON时出错:', parseError);
+                            // 如果解析失败，使用默认内容
+                            diaryData = {
+                                title: `${character.name}的回应日记`,
+                                content: `这是${character.name}对用户日记"${userDiary.title}"的回应。`
+                            };
+                        }
+                        
+                        // 创建日记对象
+                        const now = new Date();
+                        const dateStr = now.getFullYear() + '-' + 
+                                       (now.getMonth() + 1).toString().padStart(2, '0') + '-' + 
+                                       now.getDate().toString().padStart(2, '0');
+                        
+                        const aiDiary = {
+                            id: Date.now() + Math.floor(Math.random() * 1000), // 确保ID唯一
+                            characterId: character.id,
+                            title: diaryData.title || `${character.name}的回应日记`,
+                            content: diaryData.content || `这是${character.name}对用户日记"${userDiary.title}"的回应。`,
+                            date: dateStr,
+                            type: 'character' // 角色日记
+                        };
+                        
+                        // 保存到localStorage
+                        let allDiaries = JSON.parse(localStorage.getItem('diaries') || '[]');
+                        allDiaries.push(aiDiary);
+                        localStorage.setItem('diaries', JSON.stringify(allDiaries));
+                        
+                        console.log(`成功为角色${character.name}生成相关日记`);
+                    } catch (error) {
+                        console.error(`为角色${character.name}生成日记时出错:`, error);
+                    }
+                }
+            } catch (error) {
+                console.error('自动生成AI角色日记时出错:', error);
+            }
+        }
+
         // 页面加载完成后初始化
         document.addEventListener('DOMContentLoaded', function() {
+            // 初始化 IndexedDB
+            initIndexedDB().catch(error => {
+                console.error('初始化 IndexedDB 失败:', error);
+            });
+            
             // 初始化用户日记显示
             renderUserDiaries();
             
@@ -2139,6 +2932,86 @@
             }
         });
 
+        // 初始化 IndexedDB
+        function initIndexedDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open('DiaryApp', 1);
+                
+                request.onerror = function(event) {
+                    reject('数据库打开失败: ' + event.target.error);
+                };
+                
+                request.onsuccess = function(event) {
+                    resolve(event.target.result);
+                };
+                
+                request.onupgradeneeded = function(event) {
+                    const db = event.target.result;
+                    if (!db.objectStoreNames.contains('backgrounds')) {
+                        const objectStore = db.createObjectStore('backgrounds', { keyPath: 'id' });
+                        objectStore.createIndex('name', 'name', { unique: false });
+                    }
+                };
+            });
+        }
+
+        // 保存背景图片到 IndexedDB
+        function saveBackgroundToIndexedDB(imageData) {
+            return new Promise(async (resolve, reject) => {
+                try {
+                    const db = await initIndexedDB();
+                    const transaction = db.transaction(['backgrounds'], 'readwrite');
+                    const objectStore = transaction.objectStore('backgrounds');
+                    
+                    const background = {
+                        id: 'mainBackground',
+                        name: 'Main Background',
+                        data: imageData,
+                        timestamp: new Date().toISOString()
+                    };
+                    
+                    const request = objectStore.put(background);
+                    
+                    request.onsuccess = function() {
+                        resolve();
+                    };
+                    
+                    request.onerror = function(event) {
+                        reject('保存背景图片失败: ' + event.target.error);
+                    };
+                } catch (error) {
+                    reject(error);
+                }
+            });
+        }
+
+        // 从 IndexedDB 读取背景图片
+        function getBackgroundFromIndexedDB() {
+            return new Promise(async (resolve, reject) => {
+                try {
+                    const db = await initIndexedDB();
+                    const transaction = db.transaction(['backgrounds'], 'readonly');
+                    const objectStore = transaction.objectStore('backgrounds');
+                    
+                    const request = objectStore.get('mainBackground');
+                    
+                    request.onsuccess = function(event) {
+                        if (event.target.result) {
+                            resolve(event.target.result.data);
+                        } else {
+                            resolve(null);
+                        }
+                    };
+                    
+                    request.onerror = function(event) {
+                        reject('读取背景图片失败: ' + event.target.error);
+                    };
+                } catch (error) {
+                    reject(error);
+                }
+            });
+        }
+
         // 上传背景图片
         function uploadBackground(event) {
             const file = event.target.files[0];
@@ -2150,19 +3023,67 @@
                 return;
             }
             
+            // 检查文件大小（限制为10MB）
+            if (file.size > 10 * 1024 * 1024) {
+                showNotification('图片文件太大，请选择小于10MB的图片');
+                return;
+            }
+            
             // 读取文件
             const reader = new FileReader();
             reader.onload = function(e) {
                 try {
-                    // 保存背景图片到localStorage
-                    localStorage.setItem('diaryBackground', e.target.result);
-                    
-                    // 应用背景
-                    applyDiaryBackground();
-                    
-                    showNotification('背景图片设置成功');
+                    // 压缩图片
+                    const img = new Image();
+                    img.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d');
+                        
+                        // 计算压缩后的尺寸（最大宽度1280px）
+                        let maxWidth = 1280;
+                        let width = img.width;
+                        let height = img.height;
+                        
+                        if (width > maxWidth) {
+                            height = (maxWidth / width) * height;
+                            width = maxWidth;
+                        }
+                        
+                        canvas.width = width;
+                        canvas.height = height;
+                        
+                        // 绘制压缩后的图片
+                        ctx.drawImage(img, 0, 0, width, height);
+                        
+                        // 转换为JPEG格式并压缩质量
+                        const compressedData = canvas.toDataURL('image/jpeg', 0.7);
+                        
+                        // 保存背景图片到 IndexedDB
+                        saveBackgroundToIndexedDB(compressedData)
+                            .then(() => {
+                                // 应用背景
+                                applyDiaryBackground();
+                                showNotification('背景图片设置成功');
+                            })
+                            .catch(error => {
+                                console.error('保存背景图片时出错:', error);
+                                // 如果 IndexedDB 失败，尝试使用 localStorage 作为备选方案
+                                try {
+                                    localStorage.setItem('diaryBackground', compressedData);
+                                    applyDiaryBackground();
+                                    showNotification('背景图片设置成功');
+                                } catch (storageError) {
+                                    if (storageError.name === 'QuotaExceededError') {
+                                        showNotification('存储空间不足，无法保存背景图片');
+                                    } else {
+                                        showNotification('背景图片设置失败: ' + storageError.message);
+                                    }
+                                }
+                            });
+                    };
+                    img.src = e.target.result;
                 } catch (error) {
-                    console.error('保存背景图片时出错:', error);
+                    console.error('处理背景图片时出错:', error);
                     showNotification('背景图片设置失败: ' + error.message);
                 }
             };
@@ -2172,15 +3093,74 @@
             event.target.value = '';
         }
 
-        // 应用日记背景
+        // 应用日记背景（改进版本，确保所有页面都能应用背景）
         function applyDiaryBackground() {
-            const background = localStorage.getItem('diaryBackground');
-            if (background) {
-                document.body.style.backgroundImage = `url(${background})`;
-                document.body.style.backgroundSize = 'cover';
-                document.body.style.backgroundPosition = 'center';
-                document.body.style.backgroundRepeat = 'no-repeat';
-            }
+            // 首先尝试从 IndexedDB 获取背景
+            getBackgroundFromIndexedDB()
+                .then(background => {
+                    if (background) {
+                        // 为所有相关页面应用背景
+                        document.body.style.backgroundImage = `url(${background})`;
+                        document.body.style.backgroundSize = 'cover';
+                        document.body.style.backgroundPosition = 'center';
+                        document.body.style.backgroundRepeat = 'no-repeat';
+                        
+                        // 同时为所有页面容器应用背景
+                        const pages = document.querySelectorAll('#mainDiaryPage, #aiCharacterListPage, #characterDiaryPage, #diaryDetailPage');
+                        pages.forEach(page => {
+                            if (page) {
+                                page.style.backgroundImage = `url(${background})`;
+                                page.style.backgroundSize = 'cover';
+                                page.style.backgroundPosition = 'center';
+                                page.style.backgroundRepeat = 'no-repeat';
+                            }
+                        });
+                    } else {
+                        // 如果 IndexedDB 中没有背景，尝试从 localStorage 获取
+                        const background = localStorage.getItem('diaryBackground');
+                        if (background) {
+                            // 为所有相关页面应用背景
+                            document.body.style.backgroundImage = `url(${background})`;
+                            document.body.style.backgroundSize = 'cover';
+                            document.body.style.backgroundPosition = 'center';
+                            document.body.style.backgroundRepeat = 'no-repeat';
+                            
+                            // 同时为所有页面容器应用背景
+                            const pages = document.querySelectorAll('#mainDiaryPage, #aiCharacterListPage, #characterDiaryPage, #diaryDetailPage');
+                            pages.forEach(page => {
+                                if (page) {
+                                    page.style.backgroundImage = `url(${background})`;
+                                    page.style.backgroundSize = 'cover';
+                                    page.style.backgroundPosition = 'center';
+                                    page.style.backgroundRepeat = 'no-repeat';
+                                }
+                            });
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('获取背景图片时出错:', error);
+                    // 如果 IndexedDB 失败，尝试从 localStorage 获取
+                    const background = localStorage.getItem('diaryBackground');
+                    if (background) {
+                        // 为所有相关页面应用背景
+                        document.body.style.backgroundImage = `url(${background})`;
+                        document.body.style.backgroundSize = 'cover';
+                        document.body.style.backgroundPosition = 'center';
+                        document.body.style.backgroundRepeat = 'no-repeat';
+                        
+                        // 同时为所有页面容器应用背景
+                        const pages = document.querySelectorAll('#mainDiaryPage, #aiCharacterListPage, #characterDiaryPage, #diaryDetailPage');
+                        pages.forEach(page => {
+                            if (page) {
+                                page.style.backgroundImage = `url(${background})`;
+                                page.style.backgroundSize = 'cover';
+                                page.style.backgroundPosition = 'center';
+                                page.style.backgroundRepeat = 'no-repeat';
+                            }
+                        });
+                    }
+                });
         }
 
         // 当前选中的角色ID
@@ -2290,6 +3270,62 @@
                 renderUserDiaries();
                 
                 showNotification('日记删除成功');
+            } catch (error) {
+                console.error('删除日记时出错:', error);
+                showNotification('删除日记失败: ' + error.message);
+            }
+        }
+
+        // 删除角色日记
+        function deleteCharacterDiary(diaryId) {
+            if (!confirm('确定要删除这篇日记吗？')) {
+                return;
+            }
+            
+            try {
+                // 获取所有日记
+                let diaries = JSON.parse(localStorage.getItem('diaries') || '[]');
+                
+                // 过滤掉要删除的日记
+                diaries = diaries.filter(diary => diary.id != diaryId);
+                
+                // 保存回localStorage
+                localStorage.setItem('diaries', JSON.stringify(diaries));
+                
+                // 更新UI
+                if (currentCharacterId) {
+                    renderCharacterDiaries(currentCharacterId);
+                }
+                
+                showNotification('日记删除成功');
+            } catch (error) {
+                console.error('删除日记时出错:', error);
+                showNotification('删除日记失败: ' + error.message);
+            }
+        }
+
+        // 一键删除所有生成的日记
+        function deleteAllGeneratedDiaries() {
+            if (!confirm('确定要删除所有AI生成的日记吗？此操作不可恢复。')) {
+                return;
+            }
+            
+            try {
+                // 获取所有日记
+                let diaries = JSON.parse(localStorage.getItem('diaries') || '[]');
+                
+                // 只保留用户日记，删除所有角色日记
+                diaries = diaries.filter(diary => diary.type === 'user');
+                
+                // 保存回localStorage
+                localStorage.setItem('diaries', JSON.stringify(diaries));
+                
+                // 更新UI
+                if (currentCharacterId) {
+                    renderCharacterDiaries(currentCharacterId);
+                }
+                
+                showNotification('所有AI生成的日记已删除');
             } catch (error) {
                 console.error('删除日记时出错:', error);
                 showNotification('删除日记失败: ' + error.message);
