@@ -633,13 +633,18 @@
 
         <!-- 头部导航栏 -->
         <div class="header">
-            <div class="back-btn" onclick="goBack()">
+            <div class="back-btn" onclick="backToMainDiaryFromDetail()">
                 <svg viewBox="0 0 24 24">
                     <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
                 </svg>
             </div>
-            <div class="header-title">日记</div>
-            <div style="width: 30px;"></div> <!-- 占位符 -->
+            <div class="header-title">日记详情</div>
+            <div class="add-btn" onclick="document.getElementById('detailBackgroundUpload').click()">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="white">
+                    <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-8 14c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm3-4c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-6 0c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm3-4c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1z"/>
+                </svg>
+            </div>
+            <input type="file" id="detailBackgroundUpload" accept="image/*" style="display: none;" onchange="uploadBackground(event)">
         </div>
 
         <!-- 主内容区域 -->
@@ -1676,9 +1681,80 @@
             
             // 更新UI
             renderCharacterDiaries(currentCharacterId);
+        }
+
+        // 切换到用户日记
+        function switchToUserDiary() {
+            // 更新导航栏样式
+            const mainUserNav = document.querySelector('#mainDiaryPage .nav-item:nth-child(1)');
+            const mainAINav = document.querySelector('#mainDiaryPage .nav-item:nth-child(2)');
             
-            // 关闭模态框
-            closeAddCharacterDiaryModal();
+            if (mainUserNav) mainUserNav.classList.add('active');
+            if (mainAINav) mainAINav.classList.remove('active');
+            
+            // 显示用户日记内容
+            renderUserDiaries();
+        }
+
+        // 切换到AI日记
+        function switchToAIDiary() {
+            // 更新导航栏样式
+            const mainUserNav = document.querySelector('#mainDiaryPage .nav-item:nth-child(1)');
+            const mainAINav = document.querySelector('#mainDiaryPage .nav-item:nth-child(2)');
+            
+            if (mainUserNav) mainUserNav.classList.remove('active');
+            if (mainAINav) mainAINav.classList.add('active');
+            
+            // 显示AI日记角色列表页面
+            document.getElementById('mainDiaryPage').style.display = 'none';
+            document.getElementById('aiCharacterListPage').style.display = 'block';
+            
+            // 渲染AI角色列表
+            renderAICharacters();
+        }
+
+        // 返回主日记页面
+        function backToMainDiary() {
+            document.getElementById('aiCharacterListPage').style.display = 'none';
+            document.getElementById('mainDiaryPage').style.display = 'block';
+            
+            // 确保用户日记标签被选中
+            const aiUserNav = document.querySelector('#aiCharacterListPage .nav-item:nth-child(1)');
+            const aiAINav = document.querySelector('#aiCharacterListPage .nav-item:nth-child(2)');
+            
+            if (aiUserNav) aiUserNav.classList.remove('active');
+            if (aiAINav) aiAINav.classList.add('active');
+        }
+
+        // 从AI页面切换到用户日记
+        function switchToUserDiaryFromAI() {
+            // 更新导航栏样式
+            const aiUserNav = document.querySelector('#aiCharacterListPage .nav-item:nth-child(1)');
+            const aiAINav = document.querySelector('#aiCharacterListPage .nav-item:nth-child(2)');
+            
+            if (aiUserNav) aiUserNav.classList.add('active');
+            if (aiAINav) aiAINav.classList.remove('active');
+            
+            // 显示主日记页面
+            document.getElementById('aiCharacterListPage').style.display = 'none';
+            document.getElementById('mainDiaryPage').style.display = 'block';
+            
+            // 确保主页面的用户日记标签被选中
+            const mainUserNav = document.querySelector('#mainDiaryPage .nav-item:nth-child(1)');
+            const mainAINav = document.querySelector('#mainDiaryPage .nav-item:nth-child(2)');
+            
+            if (mainUserNav) mainUserNav.classList.add('active');
+            if (mainAINav) mainAINav.classList.remove('active');
+        }
+
+        // 从AI页面切换到AI日记（保持在当前页面）
+        function switchToAIDiaryFromAI() {
+            // 保持当前页面，只更新导航栏样式
+            const aiUserNav = document.querySelector('#aiCharacterListPage .nav-item:nth-child(1)');
+            const aiAINav = document.querySelector('#aiCharacterListPage .nav-item:nth-child(2)');
+            
+            if (aiUserNav) aiUserNav.classList.remove('active');
+            if (aiAINav) aiAINav.classList.add('active');
         }
 
         // 渲染角色日记
@@ -2046,6 +2122,9 @@
             // 初始化AI日记角色列表
             renderAICharacters();
             
+            // 应用日记背景
+            applyDiaryBackground();
+            
             // 添加一些示例数据（仅在没有数据时）
             const diaries = JSON.parse(localStorage.getItem('diaries') || '[]');
             if (diaries.length === 0) {
@@ -2053,6 +2132,50 @@
                 console.log('没有找到日记数据');
             }
         });
+
+        // 上传背景图片
+        function uploadBackground(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            // 检查文件类型
+            if (!file.type.startsWith('image/')) {
+                showNotification('请选择图片文件');
+                return;
+            }
+            
+            // 读取文件
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    // 保存背景图片到localStorage
+                    localStorage.setItem('diaryBackground', e.target.result);
+                    
+                    // 应用背景
+                    applyDiaryBackground();
+                    
+                    showNotification('背景图片设置成功');
+                } catch (error) {
+                    console.error('保存背景图片时出错:', error);
+                    showNotification('背景图片设置失败: ' + error.message);
+                }
+            };
+            reader.readAsDataURL(file);
+            
+            // 清空文件输入框
+            event.target.value = '';
+        }
+
+        // 应用日记背景
+        function applyDiaryBackground() {
+            const background = localStorage.getItem('diaryBackground');
+            if (background) {
+                document.body.style.backgroundImage = `url(${background})`;
+                document.body.style.backgroundSize = 'cover';
+                document.body.style.backgroundPosition = 'center';
+                document.body.style.backgroundRepeat = 'no-repeat';
+            }
+        }
 
         // 当前选中的角色ID
         let currentCharacterId = null;
