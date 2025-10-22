@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>钱包</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            background: linear-gradient(135deg, #1a1a1a, #000);
+            color: white;
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* 状态栏样式 */
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 15px;
+            height: 30px;
+            background: transparent;
+            color: white;
+            font-size: 12px;
+            position: relative;
+            z-index: 100;
+        }
+
+        .status-left, .status-right {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .status-center {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            font-weight: 600;
+        }
+
+        .status-icon {
+            width: 16px;
+            height: 16px;
+            fill: white;
+        }
+
+        /* 头部导航栏样式 */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 15px;
+            background: transparent;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            z-index: 100;
+        }
+
+        .back-btn {
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .back-btn svg {
+            width: 20px;
+            height: 20px;
+            fill: white;
+        }
+
+        .header-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: white;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .clear-btn {
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .clear-btn svg {
+            width: 20px;
+            height: 20px;
+            fill: white;
+        }
+
+        .add-btn {
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .add-btn svg {
+            width: 20px;
+            height: 20px;
+            fill: white;
+        }
+
+        /* 主内容区域 */
+        .content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            height: calc(100vh - 140px); /* 减去状态栏和头部的高度 */
+        }
+
+        /* 钱包概览卡片 */
+        .wallet-overview {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .balance-title {
+            font-size: 14px;
+            color: #aaa;
+            margin-bottom: 5px;
+        }
+
+        .balance-amount {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+
+        .balance-currency {
+            font-size: 16px;
+            color: #aaa;
+        }
+
+        .wallet-actions {
+            display: flex;
+            gap: 15px;
+        }
+
+        .action-btn {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.15);
+            border: none;
+            border-radius: 15px;
+            padding: 12px;
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .action-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-2px);
+        }
+
+        .action-icon {
+            width: 24px;
+            height: 24px;
+            fill: white;
+        }
+
+        /* 交易记录 */
+        .transactions {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .see-all {
+            font-size: 14px;
+            color: #007AFF;
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+
+        .transaction-month {
+            margin-bottom: 20px;
+        }
+
+        .month-header {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .transaction-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .transaction-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .transaction-item:last-child {
+            border-bottom: none;
+        }
+
+        .transaction-date {
+            width: 50px;
+            font-size: 12px;
+            color: #888;
+            margin-right: 15px;
+        }
+
+        .transaction-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+        }
+
+        .transaction-icon svg {
+            width: 20px;
+            height: 20px;
+            fill: white;
+        }
+
+        .transaction-info {
+            flex: 1;
+        }
+
+        .transaction-name {
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 3px;
+        }
+
+        .transaction-time {
+            font-size: 12px;
+            color: #888;
+        }
+
+        .transaction-amount {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .transaction-amount.income {
+            color: #4CD964;
+        }
+
+        .transaction-amount.expense {
+            color: #FF3B30;
+        }
+
+        /* 模态框样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: #1a1a1a;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 400px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            border: 1px solid #444;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: white;
+        }
+
+        .close-btn {
+            font-size: 24px;
+            cursor: pointer;
+            color: #aaa;
+        }
+
+        .modal-body {
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+            color: #ddd;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #444;
+            border-radius: 8px;
+            font-size: 14px;
+            background: #333;
+            color: white;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: none;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .btn-cancel {
+            background: #333;
+            color: white;
+        }
+
+        .btn-confirm {
+            background: #007AFF;
+            color: white;
+        }
+
+        /* 上传背景模态框 */
+        #uploadBackgroundModal .modal-content {
+            max-width: 350px;
+        }
+
+        #backgroundUpload {
+            width: 100%;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px dashed #666;
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            margin: 10px 0;
+            color: #aaa;
+        }
+
+        #backgroundUpload:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* 空状态 */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #888;
+        }
+
+        .empty-state svg {
+            width: 60px;
+            height: 60px;
+            fill: #666;
+            margin-bottom: 20px;
+        }
+
+        .empty-state p {
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <!-- 状态栏 -->
+    <div class="status-bar">
+        <div class="status-left">
+            <span class="time" id="time">00:00</span>
+        </div>
+        <div class="status-center">
+            <!-- 中间留空 -->
+        </div>
+        <div class="status-right">
+            <!-- 信号图标 -->
+            <svg class="status-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M5 17L5 12" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                <path d="M12 17L12 7" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                <path d="M19 17L19 2" stroke="white" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <!-- 电池图标 -->
+            <svg class="status-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="2" y="7" width="16" height="10" rx="3" stroke="white" stroke-width="2"/>
+                <path d="M20 10V14" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                <rect x="4" y="9" width="12" height="6" rx="2" fill="white"/>
+            </svg>
+        </div>
+    </div>
+
+    <!-- 头部导航栏 -->
+    <div class="header">
+        <div class="back-btn" onclick="goBack()">
+            <svg viewBox="0 0 24 24">
+                <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+            </svg>
+        </div>
+        <div class="header-title">钱包</div>
+        <div class="header-actions">
+            <div class="clear-btn" onclick="clearBalance()">
+                <svg viewBox="0 0 24 24">
+                    <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                </svg>
+            </div>
+            <div class="add-btn" onclick="showUploadBackgroundModal()">
+                <svg viewBox="0 0 24 24">
+                    <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <!-- 主内容区域 -->
+    <div class="content">
+        <!-- 钱包概览 -->
+        <div class="wallet-overview">
+            <div class="balance-title">账户余额</div>
+            <div class="balance-amount">¥0.00</div>
+            <div class="wallet-actions">
+                <button class="action-btn" onclick="showTransferModal()">
+                    <svg class="action-icon" viewBox="0 0 24 24">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm3.5 6L12 10.5 8.5 8 12 5.5 15.5 8zM12 19.5L8.5 17 12 14.5l3.5 2.5-3.5 2.5z"/>
+                    </svg>
+                    <span>转账</span>
+                </button>
+                <button class="action-btn" onclick="showRechargeModal()">
+                    <svg class="action-icon" viewBox="0 0 24 24">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.94-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+                    </svg>
+                    <span>充值</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- 交易记录 -->
+        <div class="transactions">
+            <div class="section-title">
+                <span>最近交易</span>
+                <button class="see-all">查看全部</button>
+            </div>
+            <!-- 交易记录将通过JavaScript动态添加 -->
+            <div id="transactionsContainer"></div>
+        </div>
+    </div>
+
+    <!-- 充值模态框 -->
+    <div id="rechargeModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">充值</div>
+                <div class="close-btn" onclick="closeRechargeModal()">&times;</div>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="rechargeAmount">充值金额</label>
+                    <input type="number" id="rechargeAmount" placeholder="请输入充值金额" step="0.01" min="0">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-cancel" onclick="closeRechargeModal()">取消</button>
+                <button class="btn btn-confirm" onclick="confirmRecharge()">确认充值</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 转账模态框 -->
+    <div id="transferModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">转账</div>
+                <div class="close-btn" onclick="closeTransferModal()">&times;</div>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="transferAmount">转账金额</label>
+                    <input type="number" id="transferAmount" placeholder="请输入转账金额" step="0.01" min="0">
+                </div>
+                <div class="form-group">
+                    <label for="transferTo">转账对象</label>
+                    <input type="text" id="transferTo" placeholder="请输入对方账户或手机号">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-cancel" onclick="closeTransferModal()">取消</button>
+                <button class="btn btn-confirm" onclick="confirmTransfer()">确认转账</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 上传背景模态框 -->
+    <div id="uploadBackgroundModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">上传背景</div>
+                <div class="close-btn" onclick="closeUploadBackgroundModal()">&times;</div>
+            </div>
+            <div class="modal-body">
+                <div id="backgroundUpload" onclick="document.getElementById('backgroundFile').click()">
+                    点击选择图片文件
+                </div>
+                <input type="file" id="backgroundFile" accept="image/*" style="display: none;" onchange="handleBackgroundUpload(event)">
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-cancel" onclick="closeUploadBackgroundModal()">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 确认弹窗 -->
+    <div id="confirmModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">确认操作</div>
+                <div class="close-btn" onclick="closeConfirmModal()">&times;</div>
+            </div>
+            <div class="modal-body">
+                <p id="confirmMessage">确定要执行此操作吗？</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-cancel" onclick="closeConfirmModal()">取消</button>
+                <button class="btn btn-confirm" id="confirmYesBtn">确定</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 提示弹窗 -->
+    <div id="alertModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">提示</div>
+                <div class="close-btn" onclick="closeAlertModal()">&times;</div>
+            </div>
+            <div class="modal-body">
+                <p id="alertMessage">操作完成</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-confirm" onclick="closeAlertModal()">确定</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 更新时间显示
+        function updateTime() {
+            const now = new Date();
+            const timeString = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+            document.getElementById('time').textContent = timeString;
+        }
+
+        // 初始化时间显示
+        updateTime();
+        setInterval(updateTime, 60000); // 每分钟更新一次
+
+        // 返回上一页
+        function goBack() {
+            // 返回到主屏幕
+            window.location.href = 'index.html';
+        }
+
+        // 清空余额
+        function clearBalance() {
+            showConfirmModal('确定要清空余额吗？此操作不可撤销。', function() {
+                document.querySelector('.balance-amount').textContent = '¥0.00';
+                // 添加清空记录到交易历史
+                addTransactionToHistory('余额清空', '系统操作', new Date(), 0, 'expense');
+            });
+        }
+
+        // 显示充值模态框
+        function showRechargeModal() {
+            document.getElementById('rechargeModal').style.display = 'flex';
+        }
+
+        // 关闭充值模态框
+        function closeRechargeModal() {
+            document.getElementById('rechargeModal').style.display = 'none';
+            document.getElementById('rechargeAmount').value = '';
+        }
+
+        // 确认充值
+        function confirmRecharge() {
+            const amount = parseFloat(document.getElementById('rechargeAmount').value);
+            if (isNaN(amount) || amount <= 0) {
+                showAlertModal('请输入有效的充值金额');
+                return;
+            }
+
+            // 获取当前余额
+            let currentBalance = parseFloat(document.querySelector('.balance-amount').textContent.replace('¥', ''));
+            if (isNaN(currentBalance)) currentBalance = 0;
+
+            // 更新余额
+            const newBalance = currentBalance + amount;
+            document.querySelector('.balance-amount').textContent = '¥' + newBalance.toFixed(2);
+
+            // 添加充值记录到交易历史
+            addTransactionToHistory('账户充值', '充值', new Date(), amount, 'income');
+
+            // 关闭模态框
+            closeRechargeModal();
+
+            // 显示通知
+            showAlertModal('充值成功！当前余额：¥' + newBalance.toFixed(2));
+        }
+
+        // 显示转账模态框
+        function showTransferModal() {
+            document.getElementById('transferModal').style.display = 'flex';
+        }
+
+        // 关闭转账模态框
+        function closeTransferModal() {
+            document.getElementById('transferModal').style.display = 'none';
+            document.getElementById('transferAmount').value = '';
+            document.getElementById('transferTo').value = '';
+        }
+
+        // 确认转账
+        function confirmTransfer() {
+            const amount = parseFloat(document.getElementById('transferAmount').value);
+            const to = document.getElementById('transferTo').value;
+
+            if (isNaN(amount) || amount <= 0) {
+                showAlertModal('请输入有效的转账金额');
+                return;
+            }
+
+            if (!to) {
+                showAlertModal('请输入转账对象');
+                return;
+            }
+
+            // 获取当前余额
+            let currentBalance = parseFloat(document.querySelector('.balance-amount').textContent.replace('¥', ''));
+            if (isNaN(currentBalance)) currentBalance = 0;
+
+            // 检查余额是否足够
+            if (amount > currentBalance) {
+                showAlertModal('余额不足，无法完成转账');
+                return;
+            }
+
+            // 更新余额
+            const newBalance = currentBalance - amount;
+            document.querySelector('.balance-amount').textContent = '¥' + newBalance.toFixed(2);
+
+            // 添加转账记录到交易历史
+            addTransactionToHistory('转账支出', '转账给 ' + to, new Date(), amount, 'expense');
+
+            // 关闭模态框
+            closeTransferModal();
+
+            // 显示通知
+            showAlertModal('转账成功！当前余额：¥' + newBalance.toFixed(2));
+        }
+
+        // 显示确认弹窗
+        function showConfirmModal(message, callback) {
+            document.getElementById('confirmMessage').textContent = message;
+            document.getElementById('confirmYesBtn').onclick = function() {
+                closeConfirmModal();
+                if (callback) callback();
+            };
+            document.getElementById('confirmModal').style.display = 'flex';
+        }
+
+        // 关闭确认弹窗
+        function closeConfirmModal() {
+            document.getElementById('confirmModal').style.display = 'none';
+        }
+
+        // 显示提示弹窗
+        function showAlertModal(message) {
+            document.getElementById('alertMessage').textContent = message;
+            document.getElementById('alertModal').style.display = 'flex';
+        }
+
+        // 关闭提示弹窗
+        function closeAlertModal() {
+            document.getElementById('alertModal').style.display = 'none';
+        }
+
+        // 添加交易记录到历史
+        function addTransactionToHistory(name, description, date, amount, type) {
+            // 获取交易记录容器
+            const transactionsContainer = document.getElementById('transactionsContainer');
+            
+            // 创建交易记录元素
+            const transactionItem = document.createElement('div');
+            transactionItem.className = 'transaction-item';
+            
+            // 格式化日期
+            const month = (date.getMonth() + 1).toString().padStart(2, '0');
+            const day = date.getDate().toString().padStart(2, '0');
+            const hours = date.getHours().toString().padStart(2, '0');
+            const minutes = date.getMinutes().toString().padStart(2, '0');
+            
+            transactionItem.innerHTML = `
+                <div class="transaction-date">${month}/${day}</div>
+                <div class="transaction-icon">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                    </svg>
+                </div>
+                <div class="transaction-info">
+                    <div class="transaction-name">${name}</div>
+                    <div class="transaction-time">${hours}:${minutes} ${description}</div>
+                </div>
+                <div class="transaction-amount ${type}">${type === 'income' ? '+' : '-'}¥${amount.toFixed(2)}</div>
+            `;
+            
+            // 查找或创建当月的交易组
+            const yearMonth = `${date.getFullYear()}年${month}月`;
+            let monthGroup = Array.from(document.querySelectorAll('.transaction-month')).find(group => 
+                group.querySelector('.month-header').textContent === yearMonth);
+            
+            if (!monthGroup) {
+                // 创建新的月份组
+                monthGroup = document.createElement('div');
+                monthGroup.className = 'transaction-month';
+                monthGroup.innerHTML = `
+                    <div class="month-header">${yearMonth}</div>
+                    <div class="transaction-list"></div>
+                `;
+                // 将新的月份组添加到交易记录容器的顶部
+                if (transactionsContainer.firstChild) {
+                    transactionsContainer.insertBefore(monthGroup, transactionsContainer.firstChild);
+                } else {
+                    transactionsContainer.appendChild(monthGroup);
+                }
+            }
+            
+            // 将交易记录添加到月份组的开头
+            const transactionList = monthGroup.querySelector('.transaction-list');
+            if (transactionList.firstChild) {
+                transactionList.insertBefore(transactionItem, transactionList.firstChild);
+            } else {
+                transactionList.appendChild(transactionItem);
+            }
+        }
+
+        // 显示上传背景模态框
+        function showUploadBackgroundModal() {
+            document.getElementById('uploadBackgroundModal').style.display = 'flex';
+        }
+
+        // 关闭上传背景模态框
+        function closeUploadBackgroundModal() {
+            document.getElementById('uploadBackgroundModal').style.display = 'none';
+        }
+
+        // 处理背景上传
+        function handleBackgroundUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            // 检查文件类型
+            if (!file.type.startsWith('image/')) {
+                showAlertModal('请选择图片文件');
+                return;
+            }
+
+            // 读取文件
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    // 应用背景到整个页面
+                    document.body.style.backgroundImage = `url(${e.target.result})`;
+                    document.body.style.backgroundSize = 'cover';
+                    document.body.style.backgroundPosition = 'center';
+                    document.body.style.backgroundRepeat = 'no-repeat';
+                    
+                    // 关闭模态框
+                    closeUploadBackgroundModal();
+                    
+                    showAlertModal('背景设置成功！');
+                } catch (error) {
+                    console.error('设置背景时出错:', error);
+                    showAlertModal('背景设置失败: ' + error.message);
+                }
+            };
+            reader.readAsDataURL(file);
+
+            // 清空文件输入框
+            event.target.value = '';
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('钱包页面加载完成');
+        });
+    </script>
+</body>
+</html>
