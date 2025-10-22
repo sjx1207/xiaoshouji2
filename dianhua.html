@@ -1,0 +1,1412 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>电话</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+                'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+                sans-serif;
+            background: linear-gradient(135deg, #1a1a1a, #000);
+            color: #fff;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .phone {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* 状态栏样式 */
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 15px;
+            height: 44px;
+            background-color: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            color: white;
+            font-size: 16px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+
+        .status-left, .status-center, .status-right {
+            display: flex;
+            align-items: center;
+        }
+
+        .status-left {
+            flex: 1;
+        }
+
+        .status-center {
+            flex: 2;
+            justify-content: center;
+        }
+
+        .status-right {
+            flex: 1;
+            justify-content: flex-end;
+        }
+
+        .status-icon {
+            width: 18px;
+            height: 18px;
+            margin: 0 5px;
+        }
+
+        /* 头部导航栏 */
+        .header {
+            display: flex;
+            align-items: center;
+            padding: 0 15px;
+            height: 50px;
+            background-color: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            position: fixed;
+            top: 44px;
+            left: 0;
+            right: 0;
+            z-index: 999;
+        }
+
+        /* 信息页面头部 */
+        .message-header {
+            display: flex;
+            align-items: center;
+            padding: 0 15px;
+            height: 50px;
+            background-color: transparent;
+            position: fixed;
+            top: 44px;
+            left: 0;
+            right: 0;
+            z-index: 999;
+        }
+
+        /* 圆角液态玻璃效果按钮 */
+        .glass-button {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .glass-button:hover {
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        .back-btn {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .back-btn svg {
+            width: 18px;
+            height: 18px;
+            fill: white;
+        }
+
+        .header-content {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 16px;
+            font-weight: bold;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 80%;
+        }
+
+        /* 联系人页面的上导航栏（圆角液态玻璃效果） */
+        .contacts-nav {
+            display: flex;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 5px;
+            margin: 15px auto;
+            width: 200px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .contacts-nav-item {
+            flex: 1;
+            text-align: center;
+            padding: 8px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s ease;
+        }
+
+        .contacts-nav-item.active {
+            background: rgba(255, 255, 255, 0.3);
+            font-weight: bold;
+        }
+
+        /* 内容区域 */
+        .content {
+            flex: 1;
+            padding: 110px 15px 80px 15px;
+            overflow-y: auto;
+        }
+
+        /* 拨号键盘 */
+        .dialpad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            max-width: 300px;
+            margin: 20px auto;
+        }
+
+        .dial-btn {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin: 0 auto;
+        }
+
+        .dial-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: scale(1.05);
+        }
+
+        .dial-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* 特殊按钮 */
+        .special-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .delete-btn, .call-btn {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin: 0 auto;
+        }
+
+        .delete-btn {
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .call-btn {
+            background: rgba(50, 200, 50, 0.3);
+            border: 1px solid rgba(50, 200, 50, 0.5);
+        }
+
+        .delete-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: scale(1.05);
+        }
+
+        .call-btn:hover {
+            background: rgba(50, 200, 50, 0.5);
+            transform: scale(1.05);
+        }
+
+        .delete-btn svg, .call-btn svg {
+            width: 30px;
+            height: 30px;
+        }
+
+        .delete-btn svg {
+            fill: white;
+        }
+
+        .call-btn svg {
+            fill: white;
+        }
+
+        /* 输入显示区域 */
+        .dial-display {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 15px;
+            padding: 15px;
+            margin: 20px auto;
+            text-align: center;
+            font-size: 24px;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            max-width: 300px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        /* 联系人列表 */
+        .contacts-list {
+            margin-top: 10px;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .contact-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .contact-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(0, 122, 255, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-weight: bold;
+        }
+
+        .contact-info {
+            flex: 1;
+        }
+
+        .contact-name {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 3px;
+        }
+
+        .contact-number {
+            font-size: 14px;
+            color: #aaa;
+        }
+
+        /* 信息列表 */
+        .messages-list {
+            margin-top: 10px;
+        }
+
+        .message-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .message-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .message-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(0, 122, 255, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-weight: bold;
+        }
+
+        .message-info {
+            flex: 1;
+        }
+
+        .message-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+
+        .message-name {
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .message-time {
+            font-size: 12px;
+            color: #aaa;
+        }
+
+        .message-preview {
+            font-size: 14px;
+            color: #aaa;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* 通话记录列表 */
+        .call-log-list {
+            margin-top: 10px;
+        }
+
+        .call-log-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .call-log-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .call-log-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(0, 122, 255, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-weight: bold;
+        }
+
+        .call-log-info {
+            flex: 1;
+        }
+
+        .call-log-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+
+        .call-log-name {
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .call-log-time {
+            font-size: 12px;
+            color: #aaa;
+        }
+
+        .call-log-details {
+            display: flex;
+            align-items: center;
+            font-size: 14px;
+            color: #aaa;
+        }
+
+        .call-log-type {
+            margin-right: 10px;
+        }
+
+        .call-log-duration {
+            color: #888;
+        }
+
+        .incoming-call {
+            color: green;
+        }
+
+        .outgoing-call {
+            color: blue;
+        }
+
+        .missed-call {
+            color: red;
+        }
+
+        /* 底部导航栏 */
+        .bottom-nav {
+            position: fixed;
+            bottom: 20px;
+            left: 15px;
+            right: 15px;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            padding: 0 20px;
+            z-index: 998;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            padding: 10px;
+            border-radius: 15px;
+            transition: all 0.2s ease;
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .nav-icon {
+            width: 24px;
+            height: 24px;
+            margin-bottom: 5px;
+        }
+
+        .nav-icon svg {
+            width: 100%;
+            height: 100%;
+            fill: white;
+        }
+
+        .nav-label {
+            font-size: 12px;
+            color: #ddd;
+        }
+
+        /* 面板切换 */
+        .panel {
+            display: none;
+        }
+
+        .panel.active {
+            display: block;
+        }
+
+        /* 信息页面头部 */
+        .message-header {
+            display: flex;
+            align-items: center;
+            padding: 0 15px;
+            height: 50px;
+            background-color: transparent;
+            position: fixed;
+            top: 44px;
+            left: 0;
+            right: 0;
+            z-index: 999;
+        }
+
+        .contact-info-header {
+            display: flex;
+            align-items: center;
+            flex: 1;
+            justify-content: center;
+        }
+
+        .contact-avatar-header {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: rgba(0, 122, 255, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .contact-name-header {
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        /* 消息内容区域 */
+        .message-content {
+            flex: 1;
+            padding: 110px 15px 80px 15px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 消息包装器 */
+        .message-wrapper {
+            position: relative;
+            margin-bottom: 5px;
+            display: flex;
+        }
+
+        .message-wrapper.received {
+            justify-content: flex-start;
+        }
+
+        .message-wrapper.sent {
+            justify-content: flex-end;
+        }
+
+        /* 消息气泡 */
+        .message-bubble {
+            max-width: 70%;
+            border-radius: 20px;
+            padding: 10px 15px;
+            position: relative;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .message-bubble.received {
+            background-color: #d1f0d1; /* 浅绿色 */
+            color: #000000;
+        }
+
+        .message-bubble.sent {
+            background-color: #1286ff;
+            color: #ffffff;
+        }
+
+        .message-text {
+            font-size: 16px;
+            line-height: 1.4;
+        }
+
+        /* 时间戳 */
+        .timestamp {
+            position: absolute;
+            font-size: 11px;
+            color: #888888;
+            white-space: nowrap;
+            bottom: -17px;
+        }
+
+        .message-wrapper.received .timestamp {
+            left: 8px;
+        }
+
+        .message-wrapper.sent .timestamp {
+            right: 8px;
+        }
+
+        .message-wrapper.sent .timestamp::before {
+            content: '已传达 ';
+            font-size: 11px;
+            color: #888888;
+            font-weight: 400;
+            margin-right: 4px;
+        }
+
+        /* 输入区域 */
+        .message-input-container {
+            position: fixed;
+            bottom: 20px;
+            left: 15px;
+            right: 15px;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            padding: 8px 15px;
+            z-index: 998;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .message-input {
+            flex: 1;
+            padding: 10px 15px;
+            border: none;
+            background: transparent;
+            color: white;
+            font-size: 16px;
+            outline: none;
+        }
+
+        .message-input:focus {
+            outline: none;
+        }
+
+        .send-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(0, 122, 255, 0.3);
+            border: 1px solid rgba(0, 122, 255, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .send-btn:hover {
+            background: rgba(0, 122, 255, 0.5);
+            transform: scale(1.05);
+        }
+
+        .send-btn svg {
+            fill: white;
+        }
+
+        /* 自定义弹窗样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 20px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: white;
+        }
+
+        .modal-body {
+            margin-bottom: 20px;
+        }
+
+        .file-input {
+            width: 100%;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            color: white;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-primary {
+            background: rgba(0, 122, 255, 0.3);
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .dial-btn {
+                width: 60px;
+                height: 60px;
+                font-size: 20px;
+            }
+            
+            .delete-btn, .call-btn {
+                width: 60px;
+                height: 60px;
+            }
+            
+            .delete-btn svg, .call-btn svg {
+                width: 25px;
+                height: 25px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .dial-btn {
+                width: 50px;
+                height: 50px;
+                font-size: 18px;
+            }
+            
+            .delete-btn, .call-btn {
+                width: 50px;
+                height: 50px;
+            }
+            
+            .delete-btn svg, .call-btn svg {
+                width: 20px;
+                height: 20px;
+            }
+            
+            .dial-display {
+                font-size: 20px;
+                min-height: 50px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="phone">
+        <!-- 状态栏 -->
+        <div class="status-bar">
+            <div class="status-left">
+                <span class="time" id="current-time">00:00</span>
+            </div>
+            <div class="status-center">
+                <!-- 中间留空 -->
+            </div>
+            <div class="status-right">
+                <!-- 信号图标 -->
+                <svg class="status-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M5 17L5 12" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M12 17L12 7" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M19 17L19 2" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                <!-- 电池图标 -->
+                <svg class="status-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="2" y="7" width="16" height="10" rx="3" stroke="white" stroke-width="2"/>
+                    <path d="M20 10V14" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                    <rect x="4" y="9" width="12" height="6" rx="2" fill="white"/>
+                </svg>
+            </div>
+        </div>
+
+        <!-- 头部导航栏 -->
+        <div class="header">
+            <div class="back-btn" onclick="goBack()">
+                <svg viewBox="0 0 24 24">
+                    <path d="M20 11H7.83l5.59-7.03L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+                </svg>
+            </div>
+            <div class="header-content" id="mainHeader">
+                电话
+            </div>
+            <div class="header-actions">
+                <!-- 可以添加更多操作按钮 -->
+            </div>
+        </div>
+
+        <!-- 内容区域 -->
+        <div class="content">
+            <!-- 拨号面板 -->
+            <div class="panel active" id="dialPanel">
+                <!-- 输入显示区域 -->
+                <div class="dial-display" id="dialDisplay">
+                    <!-- 号码将在这里显示 -->
+                </div>
+
+                <!-- 拨号键盘 -->
+                <div class="dialpad">
+                    <div class="dial-btn" onclick="appendNumber('1')">1</div>
+                    <div class="dial-btn" onclick="appendNumber('2')">2</div>
+                    <div class="dial-btn" onclick="appendNumber('3')">3</div>
+                    <div class="dial-btn" onclick="appendNumber('4')">4</div>
+                    <div class="dial-btn" onclick="appendNumber('5')">5</div>
+                    <div class="dial-btn" onclick="appendNumber('6')">6</div>
+                    <div class="dial-btn" onclick="appendNumber('7')">7</div>
+                    <div class="dial-btn" onclick="appendNumber('8')">8</div>
+                    <div class="dial-btn" onclick="appendNumber('9')">9</div>
+                    <div class="special-btn">
+                        <div class="delete-btn" onclick="deleteNumber()">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="dial-btn" onclick="appendNumber('0')">0</div>
+                    <div class="special-btn">
+                        <div class="call-btn" onclick="makeCall()">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 联系人面板 -->
+            <div class="panel" id="contactsPanel">
+                <!-- 联系人页面的上导航栏 -->
+                <div class="contacts-nav" id="contactsNav">
+                    <div class="contacts-nav-item active" onclick="switchContactsTab('contacts')">联系人</div>
+                    <div class="contacts-nav-item" onclick="switchContactsTab('messages')">信息</div>
+                </div>
+                
+                <!-- 联系人列表 -->
+                <div class="contacts-list panel active" id="contactsList">
+                    <div class="contact-item" onclick="openMessages('张三', '张')">
+                        <div class="contact-avatar">张</div>
+                        <div class="contact-info">
+                            <div class="contact-name">张三</div>
+                            <div class="contact-number">13800138000</div>
+                        </div>
+                    </div>
+                    <div class="contact-item" onclick="openMessages('李四', '李')">
+                        <div class="contact-avatar">李</div>
+                        <div class="contact-info">
+                            <div class="contact-name">李四</div>
+                            <div class="contact-number">13900139000</div>
+                        </div>
+                    </div>
+                    <div class="contact-item" onclick="openMessages('王五', '王')">
+                        <div class="contact-avatar">王</div>
+                        <div class="contact-info">
+                            <div class="contact-name">王五</div>
+                            <div class="contact-number">13700137000</div>
+                        </div>
+                    </div>
+                    <div class="contact-item" onclick="openMessages('赵六', '赵')">
+                        <div class="contact-avatar">赵</div>
+                        <div class="contact-info">
+                            <div class="contact-name">赵六</div>
+                            <div class="contact-number">13600136000</div>
+                        </div>
+                    </div>
+                    <div class="contact-item" onclick="openMessages('孙七', '孙')">
+                        <div class="contact-avatar">孙</div>
+                        <div class="contact-info">
+                            <div class="contact-name">孙七</div>
+                            <div class="contact-number">13500135000</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 信息列表 -->
+                <div class="messages-list panel" id="messagesList">
+                    <div class="message-item" onclick="viewMessage('张三')">
+                        <div class="message-avatar">张</div>
+                        <div class="message-info">
+                            <div class="message-header">
+                                <div class="message-name">张三</div>
+                                <div class="message-time">10:30</div>
+                            </div>
+                            <div class="message-preview">你好，最近怎么样？</div>
+                        </div>
+                    </div>
+                    <div class="message-item" onclick="viewMessage('李四')">
+                        <div class="message-avatar">李</div>
+                        <div class="message-info">
+                            <div class="message-header">
+                                <div class="message-name">李四</div>
+                                <div class="message-time">昨天</div>
+                            </div>
+                            <div class="message-preview">明天一起吃饭吗？</div>
+                        </div>
+                    </div>
+                    <div class="message-item" onclick="viewMessage('王五')">
+                        <div class="message-avatar">王</div>
+                        <div class="message-info">
+                            <div class="message-header">
+                                <div class="message-name">王五</div>
+                                <div class="message-time">前天</div>
+                            </div>
+                            <div class="message-preview">谢谢你的帮助</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 通话记录面板 -->
+            <div class="panel" id="callLogPanel">
+                <div class="call-log-list">
+                    <div class="call-log-item">
+                        <div class="call-log-avatar">张</div>
+                        <div class="call-log-info">
+                            <div class="call-log-header">
+                                <div class="call-log-name">张三</div>
+                                <div class="call-log-time">今天 14:30</div>
+                            </div>
+                            <div class="call-log-details">
+                                <div class="call-log-type outgoing-call"> outgoing</div>
+                                <div class="call-log-duration">2分15秒</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="call-log-item">
+                        <div class="call-log-avatar">李</div>
+                        <div class="call-log-info">
+                            <div class="call-log-header">
+                                <div class="call-log-name">李四</div>
+                                <div class="call-log-time">今天 10:15</div>
+                            </div>
+                            <div class="call-log-details">
+                                <div class="call-log-type incoming-call"> incoming</div>
+                                <div class="call-log-duration">1分45秒</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="call-log-item">
+                        <div class="call-log-avatar">王</div>
+                        <div class="call-log-info">
+                            <div class="call-log-header">
+                                <div class="call-log-name">王五</div>
+                                <div class="call-log-time">昨天 16:20</div>
+                            </div>
+                            <div class="call-log-details">
+                                <div class="call-log-type missed-call"> missed</div>
+                                <div class="call-log-duration"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="call-log-item">
+                        <div class="call-log-avatar">赵</div>
+                        <div class="call-log-info">
+                            <div class="call-log-header">
+                                <div class="call-log-name">赵六</div>
+                                <div class="call-log-time">昨天 09:45</div>
+                            </div>
+                            <div class="call-log-details">
+                                <div class="call-log-type outgoing-call"> outgoing</div>
+                                <div class="call-log-duration">3分30秒</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 信息页面 -->
+            <div class="panel" id="messagePanel">
+                <!-- 信息页面头部 -->
+                <div class="message-header">
+                    <div class="glass-button" style="width: 30px; height: 30px;" onclick="backToContacts()">
+                        <svg viewBox="0 0 24 24" width="18" height="18">
+                            <path d="M20 11H7.83l5.59-7.03L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" fill="white"/>
+                        </svg>
+                    </div>
+                    <div style="flex: 1; display: flex; justify-content: center;">
+                        <div class="contact-avatar-header" id="messageContactAvatar" style="width: 30px; height: 30px; font-size: 14px;">张</div>
+                    </div>
+                    <div class="glass-button" style="width: 30px; height: 30px;" onclick="openBackgroundModal()">
+                        <svg viewBox="0 0 24 24" width="18" height="18">
+                            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="white"/>
+                        </svg>
+                    </div>
+                </div>
+                
+                <!-- 消息内容区域 -->
+                <div class="message-content" id="messageContent">
+                    <!-- 消息将在这里动态生成 -->
+                </div>
+                
+                <!-- 输入区域 -->
+                <div class="message-input-container">
+                    <input type="text" class="message-input" id="messageInput" placeholder="iMessage" onkeypress="handleKeyPress(event)">
+                    <button class="send-btn" onclick="sendMessage()">
+                        <svg viewBox="0 0 24 24" width="20" height="20">
+                            <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" fill="white"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 背景设置弹窗 -->
+            <div id="backgroundModal" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <div class="modal-title">设置背景</div>
+                        <button class="close-btn" onclick="closeBackgroundModal()">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="file" id="backgroundFile" class="file-input" accept="image/*">
+                        <p style="margin-top: 10px; font-size: 14px; color: #aaa;">选择图片文件作为聊天背景</p>
+                        
+                        <div style="margin-top: 15px;">
+                            <input type="text" id="backgroundUrl" class="file-input" placeholder="或输入图片URL">
+                            <p style="margin-top: 10px; font-size: 14px; color: #aaa;">输入图片URL作为聊天背景</p>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn" onclick="closeBackgroundModal()">取消</button>
+                        <button class="btn btn-primary" onclick="saveBackground()">保存</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 底部导航栏 -->
+        <div class="bottom-nav">
+            <div class="nav-item" onclick="switchPanel('callLogPanel')">
+                <div class="nav-icon">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3c-.46-4.17-3.77-7.48-7.94-7.94V1h-2v2.06C6.83 3.52 3.52 6.83 3.06 11H1v2h2.06c.46 4.17 3.77 7.48 7.94 7.94V23h2v-2.06c4.17-.46 7.48-3.77 7.94-7.94H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/>
+                    </svg>
+                </div>
+                <div class="nav-label">通话记录</div>
+            </div>
+            <div class="nav-item" onclick="switchPanel('dialPanel')">
+                <div class="nav-icon">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/>
+                    </svg>
+                </div>
+                <div class="nav-label">拨号</div>
+            </div>
+            <div class="nav-item" onclick="switchPanel('contactsPanel')">
+                <div class="nav-icon">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                    </svg>
+                </div>
+                <div class="nav-label">联系人</div>
+            </div>
+        </div>
+
+        <script>
+            // 更新时间
+            function updateTime() {
+                const now = new Date();
+                const timeString = now.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+                document.getElementById('current-time').textContent = timeString;
+            }
+
+            // 每秒更新一次时间
+            setInterval(updateTime, 1000);
+            updateTime(); // 初始化时间
+
+            // 页面加载完成后初始化
+            document.addEventListener('DOMContentLoaded', function() {
+                updateTime(); // 初始化时间
+                
+                // 初始化联系人导航栏状态
+                document.getElementById('contactsNav').style.display = 'none';
+            });
+
+            // 返回上一页
+            function goBack() {
+                window.location.href = 'index.html';
+            }
+
+            // 切换面板
+            function switchPanel(panelId) {
+                // 隐藏所有面板
+                document.querySelectorAll('.panel').forEach(panel => {
+                    panel.classList.remove('active');
+                });
+                
+                // 显示指定面板
+                document.getElementById(panelId).classList.add('active');
+                
+                // 处理头部标题和联系人导航栏
+                const headerContent = document.getElementById('mainHeader');
+                const contactsNav = document.getElementById('contactsNav');
+                const bottomNav = document.querySelector('.bottom-nav');
+                
+                if (panelId === 'contactsPanel') {
+                    // 显示联系人面板时，显示联系人导航栏和底部导航栏
+                    headerContent.style.display = 'none';
+                    contactsNav.style.display = 'flex';
+                    if (bottomNav) bottomNav.style.display = 'flex';
+                    // 默认显示联系人列表
+                    document.getElementById('contactsList').classList.add('active');
+                    document.getElementById('messagesList').classList.remove('active');
+                } else if (panelId === 'messagePanel') {
+                    // 信息面板不需要特殊处理，但需要隐藏底部导航栏
+                    headerContent.style.display = 'block';
+                    headerContent.textContent = '信息';
+                    if (contactsNav) contactsNav.style.display = 'none';
+                    if (bottomNav) bottomNav.style.display = 'none';
+                } else {
+                    // 其他面板显示对应的标题，并显示底部导航栏
+                    headerContent.style.display = 'block';
+                    if (contactsNav) contactsNav.style.display = 'none';
+                    if (bottomNav) bottomNav.style.display = 'flex';
+                    headerContent.textContent = 
+                        panelId === 'dialPanel' ? '拨号' : 
+                        panelId === 'callLogPanel' ? '通话记录' : '电话';
+                }
+            }
+
+            // 打开信息页面
+            function openMessages(contactName, contactAvatar) {
+                // 设置联系人信息
+                document.getElementById('messageContactAvatar').textContent = contactAvatar || contactName.charAt(0);
+                
+                // 切换到信息面板
+                switchPanel('messagePanel');
+                
+                // 加载消息历史
+                loadMessages(contactName);
+            }
+
+            // 查看信息
+            function viewMessage(contactName) {
+                openMessages(contactName, contactName.charAt(0));
+            }
+
+            // 返回联系人列表
+            function backToContacts() {
+                switchPanel('contactsPanel');
+            }
+
+            // 加载消息历史
+            function loadMessages(contactName) {
+                const messageContent = document.getElementById('messageContent');
+                messageContent.innerHTML = '';
+                
+                // 根据联系人名称获取不同的消息历史
+                let messages = [];
+                switch(contactName) {
+                    case '张三':
+                        messages = [
+                            { type: 'received', text: '你好！最近怎么样？', time: '10:30' },
+                            { type: 'sent', text: '我很好，谢谢！你呢？', time: '10:32' },
+                            { type: 'received', text: '我也很好。周末有什么计划吗？', time: '10:35' },
+                            { type: 'sent', text: '还没想好呢，你有什么建议吗？', time: '10:36' }
+                        ];
+                        break;
+                    case '李四':
+                        messages = [
+                            { type: 'received', text: '明天一起吃饭吗？', time: '昨天 14:20' },
+                            { type: 'sent', text: '好啊，几点在哪里？', time: '昨天 14:25' },
+                            { type: 'received', text: '晚上6点，老地方见！', time: '昨天 14:30' }
+                        ];
+                        break;
+                    case '王五':
+                        messages = [
+                            { type: 'sent', text: '谢谢你的帮助', time: '前天 09:15' },
+                            { type: 'received', text: '不客气，应该的。', time: '前天 09:20' }
+                        ];
+                        break;
+                    default:
+                        messages = [
+                            { type: 'received', text: '你好！', time: '现在' }
+                        ];
+                }
+                
+                messages.forEach(msg => {
+                    addMessageToView(msg.type, msg.text, msg.time);
+                });
+                
+                // 滚动到底部
+                messageContent.scrollTop = messageContent.scrollHeight;
+            }
+
+            // 添加消息到视图
+            function addMessageToView(type, text, time) {
+                const messageContent = document.getElementById('messageContent');
+                
+                // 创建消息包装器
+                const messageWrapper = document.createElement('div');
+                messageWrapper.className = `message-wrapper ${type}`;
+                
+                // 创建消息气泡
+                const messageBubble = document.createElement('div');
+                messageBubble.className = `message-bubble ${type}`;
+                
+                // 添加消息文本
+                const textDiv = document.createElement('div');
+                textDiv.className = 'message-text';
+                textDiv.textContent = text;
+                messageBubble.appendChild(textDiv);
+                
+                // 添加时间戳
+                const timestampDiv = document.createElement('div');
+                timestampDiv.className = 'timestamp';
+                timestampDiv.textContent = time;
+                
+                messageBubble.appendChild(timestampDiv);
+                messageWrapper.appendChild(messageBubble);
+                messageContent.appendChild(messageWrapper);
+                
+                // 滚动到底部
+                messageContent.scrollTop = messageContent.scrollHeight;
+            }
+
+            // 发送消息
+            function sendMessage() {
+                const input = document.getElementById('messageInput');
+                const message = input.value.trim();
+                
+                if (message) {
+                    const time = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+                    addMessageToView('sent', message, time);
+                    input.value = '';
+                    
+                    // 模拟回复
+                    setTimeout(() => {
+                        const replyTime = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+                        addMessageToView('received', '好的，我收到了你的消息。', replyTime);
+                    }, 1000);
+                }
+            }
+
+            // 处理键盘事件
+            function handleKeyPress(event) {
+                if (event.key === 'Enter') {
+                    sendMessage();
+                }
+            }
+
+            // 切换联系人面板内的标签
+            function switchContactsTab(tabId) {
+                // 更新导航栏状态
+                document.querySelectorAll('.contacts-nav-item').forEach(item => {
+                    item.classList.remove('active');
+                });
+                event.target.classList.add('active');
+                
+                // 切换内容显示
+                if (tabId === 'contacts') {
+                    document.getElementById('contactsList').classList.add('active');
+                    document.getElementById('messagesList').classList.remove('active');
+                } else if (tabId === 'messages') {
+                    document.getElementById('contactsList').classList.remove('active');
+                    document.getElementById('messagesList').classList.add('active');
+                }
+            }
+
+            // 添加数字到拨号显示
+            function appendNumber(number) {
+                const display = document.getElementById('dialDisplay');
+                display.textContent += number;
+            }
+
+            // 删除最后一个数字
+            function deleteNumber() {
+                const display = document.getElementById('dialDisplay');
+                display.textContent = display.textContent.slice(0, -1);
+            }
+
+            // 拨打电话
+            function makeCall() {
+                const number = document.getElementById('dialDisplay').textContent;
+                if (number) {
+                    alert(`正在拨打: ${number}`);
+                    // 这里可以添加实际的拨号逻辑
+                } else {
+                    alert('请输入电话号码');
+                }
+            }
+
+            // 通过联系人拨打电话
+            function callContact(name, number) {
+                alert(`正在拨打 ${name}: ${number}`);
+                // 这里可以添加实际的拨号逻辑
+            }
+
+            // 打开背景设置弹窗
+            function openBackgroundModal() {
+                document.getElementById('backgroundModal').style.display = 'flex';
+            }
+
+            // 关闭背景设置弹窗
+            function closeBackgroundModal() {
+                document.getElementById('backgroundModal').style.display = 'none';
+            }
+
+            // 保存背景设置
+            function saveBackground() {
+                const fileInput = document.getElementById('backgroundFile');
+                const file = fileInput.files[0];
+                
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        // 直接应用背景到消息内容区域
+                        const messageContent = document.getElementById('messageContent');
+                        messageContent.style.backgroundImage = `url(${e.target.result})`;
+                        messageContent.style.backgroundSize = 'cover';
+                        messageContent.style.backgroundPosition = 'center';
+                        messageContent.style.backgroundRepeat = 'no-repeat';
+                        
+                        // 关闭弹窗
+                        closeBackgroundModal();
+                        
+                        // 清空文件输入框
+                        fileInput.value = '';
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    // 如果没有选择文件，关闭弹窗
+                    closeBackgroundModal();
+                }
+            }
+
+            // 页面加载时不需要从localStorage恢复背景设置
+            document.addEventListener('DOMContentLoaded', function() {
+                // 不再从localStorage读取背景设置
+            });
+
+        </script>
+    </div>
+</body>
+</html>
