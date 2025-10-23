@@ -771,10 +771,8 @@
                     document.body.style.backgroundSize = 'cover';
                     document.body.style.backgroundPosition = 'center';
                     
-                    // 保存背景到本地存储
+                    // 保存背景到本地存储（只保存为通话背景，不保存为全局背景）
                     localStorage.setItem('callBackground', selectedBackground);
-                    // 同时保存为全局背景
-                    localStorage.setItem('globalBackground', selectedBackground);
                     
                     // 关闭弹窗
                     closeBackgroundModal();
@@ -813,15 +811,10 @@
 
             // 页面加载时恢复背景
             window.addEventListener('DOMContentLoaded', function() {
-                // 优先使用全局背景，如果没有则使用通话背景
-                const savedGlobalBackground = localStorage.getItem('globalBackground');
+                // 只使用通话背景，不使用全局背景
                 const savedBackground = localStorage.getItem('callBackground');
                 
-                if (savedGlobalBackground) {
-                    document.body.style.backgroundImage = `url("${savedGlobalBackground}")`;
-                    document.body.style.backgroundSize = 'cover';
-                    document.body.style.backgroundPosition = 'center';
-                } else if (savedBackground) {
+                if (savedBackground) {
                     document.body.style.backgroundImage = `url("${savedBackground}")`;
                     document.body.style.backgroundSize = 'cover';
                     document.body.style.backgroundPosition = 'center';
