@@ -1187,6 +1187,12 @@
                 document.getElementById('current-time').textContent = timeString;
             }
 
+            // 返回主屏幕
+            function goBack() {
+                // 通过主屏幕的消息机制实现页面返回功能
+                window.location.href = 'index.html';
+            }
+
             // 每秒更新一次时间
             setInterval(updateTime, 1000);
             updateTime(); // 初始化时间
@@ -1346,7 +1352,7 @@
                 // 从localStorage读取拨号背景设置
                 const savedDialBackground = localStorage.getItem('dialBackground');
                 if (savedDialBackground) {
-                    document.body.style.backgroundImage = `url(${savedDialBackground})`;
+                    document.body.style.backgroundImage = `url("${savedDialBackground}")`;
                     document.body.style.backgroundSize = 'cover';
                     document.body.style.backgroundPosition = 'center';
                     document.body.style.backgroundRepeat = 'no-repeat';
