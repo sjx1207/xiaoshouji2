@@ -1767,15 +1767,13 @@
                 if (tabId === 'contacts') {
                     document.getElementById('contactsList').classList.add('active');
                     document.getElementById('messagesList').classList.remove('active');
-                    // 显示联系人标题
+                    // 隐藏标题，显示联系人导航栏
                     document.getElementById('mainHeader').style.display = 'none';
                 } else if (tabId === 'messages') {
                     document.getElementById('contactsList').classList.remove('active');
                     document.getElementById('messagesList').classList.add('active');
-                    // 显示信息标题
-                    const headerContent = document.getElementById('mainHeader');
-                    headerContent.style.display = 'block';
-                    headerContent.textContent = '信息';
+                    // 隐藏标题，显示联系人导航栏
+                    document.getElementById('mainHeader').style.display = 'none';
                     // 重新渲染信息列表
                     renderMessageList();
                 }
