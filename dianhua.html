@@ -1308,13 +1308,15 @@
                     const reader = new FileReader();
                     reader.onload = function(e) {
                         // 设置全局背景
-                        document.body.style.backgroundImage = `url(${e.target.result})`;
+                        document.body.style.backgroundImage = `url("${e.target.result}")`;
                         document.body.style.backgroundSize = 'cover';
                         document.body.style.backgroundPosition = 'center';
                         document.body.style.backgroundRepeat = 'no-repeat';
                         
                         // 保存到localStorage
                         localStorage.setItem('dialBackground', e.target.result);
+                        // 同时保存为全局背景
+                        localStorage.setItem('globalBackground', e.target.result);
                         
                         // 关闭弹窗
                         closeDialBackgroundModal();
@@ -1327,13 +1329,15 @@
                 } else if (url) {
                     // 处理URL输入
                     // 设置全局背景
-                    document.body.style.backgroundImage = `url(${url})`;
+                    document.body.style.backgroundImage = `url("${url}")`;
                     document.body.style.backgroundSize = 'cover';
                     document.body.style.backgroundPosition = 'center';
                     document.body.style.backgroundRepeat = 'no-repeat';
                     
                     // 保存到localStorage
                     localStorage.setItem('dialBackground', url);
+                    // 同时保存为全局背景
+                    localStorage.setItem('globalBackground', url);
                     
                     // 关闭弹窗
                     closeDialBackgroundModal();
@@ -1349,9 +1353,16 @@
 
             // 页面加载时从localStorage恢复背景设置
             document.addEventListener('DOMContentLoaded', function() {
-                // 从localStorage读取拨号背景设置
+                // 优先使用全局背景，如果没有则使用拨号背景
+                const savedGlobalBackground = localStorage.getItem('globalBackground');
                 const savedDialBackground = localStorage.getItem('dialBackground');
-                if (savedDialBackground) {
+                
+                if (savedGlobalBackground) {
+                    document.body.style.backgroundImage = `url("${savedGlobalBackground}")`;
+                    document.body.style.backgroundSize = 'cover';
+                    document.body.style.backgroundPosition = 'center';
+                    document.body.style.backgroundRepeat = 'no-repeat';
+                } else if (savedDialBackground) {
                     document.body.style.backgroundImage = `url("${savedDialBackground}")`;
                     document.body.style.backgroundSize = 'cover';
                     document.body.style.backgroundPosition = 'center';
