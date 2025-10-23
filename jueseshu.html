@@ -365,6 +365,43 @@
             box-shadow: 0 5px 15px rgba(255, 59, 48, 0.4);
         }
 
+        /* 上传选项 */
+        .upload-options {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .upload-option {
+            flex: 1;
+            border: 2px dashed rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .upload-option:hover {
+            border-color: rgba(0, 122, 255, 0.5);
+            background: rgba(0, 122, 255, 0.05);
+        }
+
+        .upload-option .upload-icon {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .upload-option .upload-text {
+            font-size: 12px;
+            color: #ddd;
+        }
+
+        /* URL上传容器 */
+        .url-upload-container {
+            margin-bottom: 15px;
+        }
+
         /* 隐藏文件输入框 */
         .hidden-file-input {
             display: none;
@@ -603,11 +640,25 @@
                 </div>
                 <div class="form-group">
                     <label class="form-label">角色头像</label>
-                    <div class="upload-area" onclick="document.getElementById('avatarUpload').click()">
-                        <div class="upload-icon">👤</div>
-                        <div class="upload-text" id="uploadText">点击选择头像</div>
+                    <div class="upload-options">
+                        <div class="upload-option" onclick="document.getElementById('avatarUpload').click()">
+                            <div class="upload-icon">📁</div>
+                            <div class="upload-text">本地上传</div>
+                        </div>
+                        <div class="upload-option" onclick="showUrlUpload()">
+                            <div class="upload-icon">🔗</div>
+                            <div class="upload-text">URL上传</div>
+                        </div>
                     </div>
                     <input type="file" id="avatarUpload" class="hidden-file-input" accept="image/*" onchange="handleAvatarUpload(event)">
+                    <div class="url-upload-container" id="urlUploadContainer" style="display: none; margin-top: 10px;">
+                        <input type="text" class="form-input" id="avatarUrl" placeholder="请输入头像图片URL">
+                        <button class="submit-btn" style="margin-top: 10px; width: 100%;" onclick="handleUrlUpload()">使用此URL</button>
+                    </div>
+                    <div class="upload-area" id="avatarPreviewArea" onclick="document.getElementById('avatarUpload').click()">
+                        <div class="upload-icon">👤</div>
+                        <div class="upload-text" id="uploadText">点击选择头像或使用URL上传</div>
+                    </div>
                 </div>
                 <button class="submit-btn" onclick="addCharacter()">保存角色</button>
             </div>
@@ -1223,39 +1274,75 @@
                 document.getElementById('addCharacterModal').classList.remove('active');
             }
 
-            // 处理头像上传 - 为手机优化
+            // 显示URL上传界面
+            function showUrlUpload() {
+                document.getElementById('urlUploadContainer').style.display = 'block';
+                document.getElementById('avatarUrl').focus();
+            }
+
+            // 处理URL上传
+            function handleUrlUpload() {
+                const url = document.getElementById('avatarUrl').value.trim();
+                if (!url) {
+                    showPageAlert('请输入有效的图片URL');
+                    return;
+                }
+
+                // 验证URL格式
+                try {
+                    new URL(url);
+                } catch (e) {
+                    showPageAlert('请输入有效的图片URL');
+                    return;
+                }
+
+                // 验证是否为图片URL（简单检查）
+                if (!/\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i.test(url) && 
+                    !/^(http|https):\/\/[^ "]+$/i.test(url)) {
+                    showPageAlert('请输入有效的图片URL');
+                    return;
+                }
+
+                // 保存URL到临时变量
+                window.tempAvatar = url;
+                
+                // 更新预览区域
+                document.getElementById('avatarPreviewArea').innerHTML = `
+                    <img src="${url}" style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover; margin: 0 auto 10px;">
+                    <div class="upload-text" id="uploadText">头像已选择</div>
+                `;
+                
+                // 隐藏URL输入框
+                document.getElementById('urlUploadContainer').style.display = 'none';
+                document.getElementById('avatarUrl').value = '';
+                
+                showPageAlert('头像URL设置成功！');
+            }
+
+            // 处理头像上传 - 移除所有大小限制
             function handleAvatarUpload(event) {
                 const file = event.target.files[0];
                 if (file) {
-                    // 移除文件大小限制，允许上传更大的图片
-                    // 检查文件大小 - 在手机端不限制
-                    if (file.size > 10 * 1024 * 1024) { // 10MB限制（仅作为基本保护）
-                        showPageAlert('头像文件太大，请选择小于10MB的图片');
-                        return;
-                    }
-                    
                     const reader = new FileReader();
                     reader.onload = function(e) {
-                        // 为手机优化的图片压缩
-                        compressImageForMobile(e.target.result)
-                            .then(compressedData => {
-                                // 保存头像数据到临时变量
-                                window.tempAvatar = compressedData;
-                                // 更新上传区域显示
-                                document.querySelector('.upload-area').innerHTML = `
-                                    <img src="${compressedData}" style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover; margin: 0 auto 10px;">
-                                    <div class="upload-text" id="uploadText">头像已选择</div>
-                                `;
-                            })
-                            .catch(error => {
-                                console.error('图片处理失败:', error);
-                                // 移除大小检查，直接使用原始数据
-                                window.tempAvatar = e.target.result;
-                                document.querySelector('.upload-area').innerHTML = `
-                                    <img src="${e.target.result}" style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover; margin: 0 auto 10px;">
-                                    <div class="upload-text" id="uploadText">头像已选择</div>
-                                `;
-                            });
+                        try {
+                            // 直接使用原始数据，不进行任何压缩或大小检查
+                            window.tempAvatar = e.target.result;
+                            // 更新上传区域显示
+                            document.getElementById('avatarPreviewArea').innerHTML = `
+                                <img src="${e.target.result}" style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover; margin: 0 auto 10px;">
+                                <div class="upload-text" id="uploadText">头像已选择</div>
+                            `;
+                            
+                            // 隐藏URL输入框
+                            document.getElementById('urlUploadContainer').style.display = 'none';
+                        } catch (error) {
+                            console.error('图片处理失败:', error);
+                            showPageAlert('图片处理失败，请重新选择');
+                        }
+                    };
+                    reader.onerror = function() {
+                        showPageAlert('图片读取失败，请重新选择');
                     };
                     reader.readAsDataURL(file);
                 }
@@ -1343,74 +1430,56 @@
                     }
                 }
                 
-                // 检查存储空间是否足够（限制角色数量）
-                if (characters.length >= 100) { // 增加角色数量限制到100个
-                    showPageAlert('角色数量已达上限（100个），请删除一些角色后再添加');
-                    return;
-                }
-                
-                // 创建新角色对象
+                // 创建新角色对象（移除所有大小限制）
                 const newCharacter = {
                     id: Date.now(),
                     name: name,
                     desc: desc,
-                    avatar: window.tempAvatar || null,
+                    avatar: window.tempAvatar || null, // 直接使用，不检查大小
                     createdAt: new Date().toISOString()
                 };
                 
-                // 优化头像数据大小
-                if (newCharacter.avatar && newCharacter.avatar.startsWith('data:image')) {
-                    // 压缩头像数据
-                    newCharacter.avatar = compressImageData(newCharacter.avatar);
-                }
-                
-                // 添加到角色数组
+                // 添加新角色到数组
                 characters.push(newCharacter);
                 
-                // 保存到本地存储，添加错误处理
+                // 保存到本地存储（不进行大小检查）
                 try {
-                    const charactersString = JSON.stringify(characters);
-                    // 检查数据大小
-                    if (charactersString.length > 10 * 1024 * 1024) { // 10MB限制（更宽松）
-                        showPageAlert('数据太大无法保存，请减少角色数量或简化头像');
-                        return;
-                    }
-                    localStorage.setItem('characters', charactersString);
+                    localStorage.setItem('characters', JSON.stringify(characters));
                 } catch (e) {
                     if (e.name === 'QuotaExceededError') {
-                        // 存储空间不足，尝试清理旧数据
-                        showPageAlert('存储空间不足，正在尝试清理...');
-                        cleanAndFixCharacters();
-                        
-                        // 再次尝试保存
+                        // 即使存储空间不足也尝试保存，让用户决定如何处理
+                        showPageAlert('存储空间可能不足，但仍尝试保存角色。如果保存失败，请删除一些角色或清理浏览器缓存。');
+                        // 尝试清理旧数据后再次保存
                         try {
-                            localStorage.setItem('characters', JSON.stringify(characters));
-                            showPageAlert('角色添加成功！');
-                        } catch (retryError) {
-                            if (retryError.name === 'QuotaExceededError') {
-                                showPageAlert('存储空间仍然不足，请删除一些角色后再添加');
-                            } else {
-                                showPageAlert('保存角色时出错，请重试');
+                            // 保留最新的50个角色
+                            if (characters.length > 50) {
+                                characters = characters.slice(-50);
+                                localStorage.setItem('characters', JSON.stringify(characters));
+                                showPageAlert('已自动清理旧数据，保存了最新的50个角色。');
                             }
+                        } catch (e2) {
+                            showPageAlert('保存角色时出错，请重试或清理浏览器缓存。');
                             return;
                         }
                     } else {
-                        showPageAlert('保存角色时出错，请重试');
+                        showPageAlert('保存角色时出错，请重试。');
                         return;
                     }
                 }
                 
-                // 重新加载角色列表
+                // 更新UI
                 loadCharacters();
-                
-                // 关闭弹窗并重置表单
                 closeAddCharacterModal();
+                
+                // 重置表单
                 document.getElementById('characterName').value = '';
                 document.getElementById('characterDesc').value = '';
-                document.querySelector('.upload-area').innerHTML = `
+                document.getElementById('avatarPreviewArea').innerHTML = `
                     <div class="upload-icon">👤</div>
-                    <div class="upload-text" id="uploadText">点击选择头像</div>
+                    <div class="upload-text" id="uploadText">点击选择头像或使用URL上传</div>
                 `;
+                document.getElementById('urlUploadContainer').style.display = 'none';
+                document.getElementById('avatarUrl').value = '';
                 window.tempAvatar = null;
                 
                 // 显示成功提示
@@ -1487,22 +1556,18 @@
                 // 设置头像
                 const avatarImg = document.getElementById('detailAvatar');
                 if (character.avatar) {
-                    // 如果头像数据太大，进行压缩处理
-                    if (character.avatar.length > 500 * 1024) { // 500KB（更宽松的限制）
-                        compressImage(character.avatar, 150, 150, 0.8)
-                            .then(compressedData => {
-                                avatarImg.src = compressedData;
-                                avatarImg.alt = character.name;
-                            })
-                            .catch(() => {
-                                // 如果压缩失败，使用原始数据
-                                avatarImg.src = character.avatar;
-                                avatarImg.alt = character.name;
-                            });
-                    } else {
+                    // 检查avatar是URL还是base64数据
+                    if (character.avatar.startsWith('http://') || character.avatar.startsWith('https://')) {
+                        // 如果是URL，直接使用
                         avatarImg.src = character.avatar;
-                        avatarImg.alt = character.name;
+                    } else {
+                        // 如果是base64数据，直接使用
+                        avatarImg.src = character.avatar;
                     }
+                    avatarImg.alt = character.name;
+                    // 确保父元素显示图片
+                    avatarImg.parentElement.innerHTML = '';
+                    avatarImg.parentElement.appendChild(avatarImg);
                 } else {
                     avatarImg.src = '';
                     avatarImg.alt = '👤';
@@ -1516,16 +1581,23 @@
                     modal.classList.add('active');
                     // 确保弹窗可见
                     setTimeout(() => {
-                        modal.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    }, 100);
-                } else {
-                    console.error('角色详情弹窗不存在');
+                        modal.style.opacity = '1';
+                        modal.style.visibility = 'visible';
+                    }, 10);
                 }
             }
 
             // 关闭角色详情弹窗
             function closeCharacterDetailModal() {
-                document.getElementById('characterDetailModal').classList.remove('active');
+                const modal = document.getElementById('characterDetailModal');
+                if (modal) {
+                    modal.classList.remove('active');
+                    // 确保弹窗完全隐藏
+                    setTimeout(() => {
+                        modal.style.opacity = '0';
+                        modal.style.visibility = 'hidden';
+                    }, 300); // 与CSS过渡时间匹配
+                }
                 currentCharacter = null;
                 currentCharacterIndex = null;
             }
