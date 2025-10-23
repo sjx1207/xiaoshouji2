@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>信息</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+                'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+                sans-serif;
+            background: linear-gradient(135deg, #1a1a1a, #000);
+            color: #fff;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .phone {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* 状态栏样式 */
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 15px;
+            height: 44px;
+            background-color: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            color: white;
+            font-size: 16px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+
+        .status-left, .status-center, .status-right {
+            display: flex;
+            align-items: center;
+        }
+
+        .status-left {
+            flex: 1;
+        }
+
+        .status-center {
+            flex: 2;
+            justify-content: center;
+        }
+
+        .status-right {
+            flex: 1;
+            justify-content: flex-end;
+        }
+
+        .status-icon {
+            width: 18px;
+            height: 18px;
+            margin: 0 5px;
+        }
+
+        /* 信息页面头部 */
+        .message-header {
+            display: flex;
+            align-items: center;
+            padding: 0 15px;
+            height: 50px;
+            background-color: transparent;
+            position: fixed;
+            top: 44px;
+            left: 0;
+            right: 0;
+            z-index: 999;
+        }
+
+        /* 圆角液态玻璃效果按钮 */
+        .glass-button {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .glass-button:hover {
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        .back-btn {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .back-btn svg {
+            width: 18px;
+            height: 18px;
+            fill: white;
+        }
+
+        /* 消息内容区域 */
+        .message-content {
+            flex: 1;
+            padding: 110px 15px 80px 15px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 消息包装器 */
+        .message-wrapper {
+            position: relative;
+            margin-bottom: 5px;
+            display: flex;
+        }
+
+        .message-wrapper.received {
+            justify-content: flex-start;
+        }
+
+        .message-wrapper.sent {
+            justify-content: flex-end;
+        }
+
+        /* 消息气泡 */
+        .message-bubble {
+            max-width: 70%;
+            border-radius: 20px;
+            padding: 10px 15px;
+            position: relative;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .message-bubble.received {
+            background-color: #d1f0d1; /* 浅绿色 */
+            color: #000000;
+        }
+
+        .message-bubble.sent {
+            background-color: #1286ff;
+            color: #ffffff;
+        }
+
+        .message-text {
+            font-size: 16px;
+            line-height: 1.4;
+        }
+
+        /* 时间戳 */
+        .timestamp {
+            position: absolute;
+            font-size: 11px;
+            color: #888888;
+            white-space: nowrap;
+            bottom: -17px;
+        }
+
+        .message-wrapper.received .timestamp {
+            left: 8px;
+        }
+
+        .message-wrapper.sent .timestamp {
+            right: 8px;
+        }
+
+        .message-wrapper.sent .timestamp::before {
+            content: '已传达 ';
+            font-size: 11px;
+            color: #888888;
+            font-weight: 400;
+            margin-right: 4px;
+        }
+
+        /* 输入区域 */
+        .message-input-container {
+            position: fixed;
+            bottom: 20px;
+            left: 15px;
+            right: 15px;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            padding: 8px 15px;
+            z-index: 998;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .message-input {
+            flex: 1;
+            padding: 10px 15px;
+            border: none;
+            background: transparent;
+            color: white;
+            font-size: 16px;
+            outline: none;
+        }
+
+        .message-input:focus {
+            outline: none;
+        }
+
+        .send-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(0, 122, 255, 0.3);
+            border: 1px solid rgba(0, 122, 255, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .send-btn:hover {
+            background: rgba(0, 122, 255, 0.5);
+            transform: scale(1.05);
+        }
+
+        .send-btn svg {
+            fill: white;
+        }
+
+        /* 自定义弹窗样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 20px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: white;
+        }
+
+        .modal-body {
+            margin-bottom: 20px;
+        }
+
+        .file-input {
+            width: 100%;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            color: white;
+            margin-bottom: 10px;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-primary {
+            background: rgba(0, 122, 255, 0.3);
+        }
+
+        .contact-avatar-header {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: rgba(0, 122, 255, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="phone">
+        <!-- 状态栏 -->
+        <div class="status-bar">
+            <div class="status-left">
+                <span class="time" id="current-time">00:00</span>
+            </div>
+            <div class="status-center">
+                <!-- 中间留空 -->
+            </div>
+            <div class="status-right">
+                <!-- 信号图标 -->
+                <svg class="status-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M5 17L5 12" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M12 17L12 7" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M19 17L19 2" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                <!-- 电池图标 -->
+                <svg class="status-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="2" y="7" width="16" height="10" rx="3" stroke="white" stroke-width="2"/>
+                    <path d="M20 10V14" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                    <rect x="4" y="9" width="12" height="6" rx="2" fill="white"/>
+                </svg>
+            </div>
+        </div>
+
+        <!-- 信息页面头部 -->
+        <div class="message-header">
+            <div class="glass-button" style="width: 30px; height: 30px;" onclick="goBack()">
+                <svg viewBox="0 0 24 24" width="18" height="18">
+                    <path d="M20 11H7.83l5.59-7.03L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" fill="white"/>
+                </svg>
+            </div>
+            <div style="flex: 1; display: flex; justify-content: center;">
+                <div class="contact-avatar-header" id="messageContactAvatar">张</div>
+            </div>
+            <div class="glass-button" style="width: 30px; height: 30px;" onclick="openBackgroundModal()">
+                <svg viewBox="0 0 24 24" width="18" height="18">
+                    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="white"/>
+                </svg>
+            </div>
+        </div>
+        
+        <!-- 消息内容区域 -->
+        <div class="message-content" id="messageContent">
+            <!-- 消息将在这里动态生成 -->
+        </div>
+        
+        <!-- 输入区域 -->
+        <div class="message-input-container">
+            <input type="text" class="message-input" id="messageInput" placeholder="iMessage" onkeypress="handleKeyPress(event)">
+            <button class="send-btn" onclick="sendMessage()">
+                <svg viewBox="0 0 24 24" width="20" height="20">
+                    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" fill="white"/>
+                </svg>
+            </button>
+        </div>
+
+        <!-- 背景设置弹窗 -->
+        <div id="backgroundModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="modal-title">设置背景</div>
+                    <button class="close-btn" onclick="closeBackgroundModal()">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <input type="file" id="backgroundFile" class="file-input" accept="image/*">
+                    <p style="margin-top: 10px; font-size: 14px; color: #aaa;">选择图片文件作为聊天背景</p>
+                    
+                    <div style="margin-top: 15px;">
+                        <input type="text" id="backgroundUrl" class="file-input" placeholder="或输入图片URL">
+                        <p style="margin-top: 10px; font-size: 14px; color: #aaa;">输入图片URL作为聊天背景</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn" onclick="closeBackgroundModal()">取消</button>
+                    <button class="btn btn-primary" onclick="saveBackground()">保存</button>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            // 更新时间
+            function updateTime() {
+                const now = new Date();
+                const timeString = now.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+                document.getElementById('current-time').textContent = timeString;
+            }
+
+            // 每秒更新一次时间
+            setInterval(updateTime, 1000);
+            updateTime(); // 初始化时间
+
+            // 返回上一页
+            function goBack() {
+                window.location.href = 'dianhua.html';
+            }
+
+            // 打开背景设置弹窗
+            function openBackgroundModal() {
+                document.getElementById('backgroundModal').style.display = 'flex';
+            }
+
+            // 关闭背景设置弹窗
+            function closeBackgroundModal() {
+                document.getElementById('backgroundModal').style.display = 'none';
+            }
+
+            // 保存背景设置
+            function saveBackground() {
+                const fileInput = document.getElementById('backgroundFile');
+                const urlInput = document.getElementById('backgroundUrl');
+                const file = fileInput.files[0];
+                const url = urlInput.value.trim();
+                
+                const messageContent = document.getElementById('messageContent');
+                
+                if (file) {
+                    // 处理文件上传
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        messageContent.style.backgroundImage = `url(${e.target.result})`;
+                        messageContent.style.backgroundSize = 'cover';
+                        messageContent.style.backgroundPosition = 'center';
+                        messageContent.style.backgroundRepeat = 'no-repeat';
+                        
+                        // 关闭弹窗
+                        closeBackgroundModal();
+                        
+                        // 清空输入框
+                        fileInput.value = '';
+                        urlInput.value = '';
+                    };
+                    reader.readAsDataURL(file);
+                } else if (url) {
+                    // 处理URL输入
+                    messageContent.style.backgroundImage = `url(${url})`;
+                    messageContent.style.backgroundSize = 'cover';
+                    messageContent.style.backgroundPosition = 'center';
+                    messageContent.style.backgroundRepeat = 'no-repeat';
+                    
+                    // 关闭弹窗
+                    closeBackgroundModal();
+                    
+                    // 清空输入框
+                    fileInput.value = '';
+                    urlInput.value = '';
+                } else {
+                    // 如果没有选择文件也没有输入URL，关闭弹窗
+                    closeBackgroundModal();
+                }
+            }
+
+            // 添加消息到视图
+            function addMessageToView(type, text, time) {
+                const messageContent = document.getElementById('messageContent');
+                
+                // 创建消息包装器
+                const messageWrapper = document.createElement('div');
+                messageWrapper.className = `message-wrapper ${type}`;
+                
+                // 创建消息气泡
+                const messageBubble = document.createElement('div');
+                messageBubble.className = `message-bubble ${type}`;
+                
+                // 添加消息文本
+                const textDiv = document.createElement('div');
+                textDiv.className = 'message-text';
+                textDiv.textContent = text;
+                messageBubble.appendChild(textDiv);
+                
+                // 添加时间戳
+                const timestampDiv = document.createElement('div');
+                timestampDiv.className = 'timestamp';
+                timestampDiv.textContent = time;
+                
+                messageBubble.appendChild(timestampDiv);
+                messageWrapper.appendChild(messageBubble);
+                messageContent.appendChild(messageWrapper);
+                
+                // 滚动到底部
+                messageContent.scrollTop = messageContent.scrollHeight;
+            }
+
+            // 发送消息
+            function sendMessage() {
+                const input = document.getElementById('messageInput');
+                const message = input.value.trim();
+                
+                if (message) {
+                    const time = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+                    addMessageToView('sent', message, time);
+                    input.value = '';
+                    
+                    // 模拟回复
+                    setTimeout(() => {
+                        const replyTime = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+                        addMessageToView('received', '好的，我收到了你的消息。', replyTime);
+                    }, 1000);
+                }
+            }
+
+            // 处理键盘事件
+            function handleKeyPress(event) {
+                if (event.key === 'Enter') {
+                    sendMessage();
+                }
+            }
+
+            // 页面加载完成后初始化
+            document.addEventListener('DOMContentLoaded', function() {
+                updateTime(); // 初始化时间
+                
+                // 获取URL参数中的联系人信息
+                const urlParams = new URLSearchParams(window.location.search);
+                const contactName = urlParams.get('contact');
+                const contactAvatar = urlParams.get('avatar');
+                
+                if (contactName) {
+                    document.getElementById('messageContactAvatar').textContent = contactAvatar || contactName.charAt(0);
+                    // 可以在这里加载联系人的消息历史
+                    loadMessages(contactName);
+                }
+            });
+
+            // 加载消息历史
+            function loadMessages(contactName) {
+                // 根据联系人名称获取不同的消息历史
+                let messages = [];
+                switch(contactName) {
+                    case '张三':
+                        messages = [
+                            { type: 'received', text: '你好！最近怎么样？', time: '10:30' },
+                            { type: 'sent', text: '我很好，谢谢！你呢？', time: '10:32' },
+                            { type: 'received', text: '我也很好。周末有什么计划吗？', time: '10:35' },
+                            { type: 'sent', text: '还没想好呢，你有什么建议吗？', time: '10:36' }
+                        ];
+                        break;
+                    case '李四':
+                        messages = [
+                            { type: 'received', text: '明天一起吃饭吗？', time: '昨天 14:20' },
+                            { type: 'sent', text: '好啊，几点在哪里？', time: '昨天 14:25' },
+                            { type: 'received', text: '晚上6点，老地方见！', time: '昨天 14:30' }
+                        ];
+                        break;
+                    case '王五':
+                        messages = [
+                            { type: 'sent', text: '谢谢你的帮助', time: '前天 09:15' },
+                            { type: 'received', text: '不客气，应该的。', time: '前天 09:20' }
+                        ];
+                        break;
+                    default:
+                        messages = [
+                            { type: 'received', text: '你好！', time: '现在' }
+                        ];
+                }
+                
+                messages.forEach(msg => {
+                    addMessageToView(msg.type, msg.text, msg.time);
+                });
+                
+                // 滚动到底部
+                const messageContent = document.getElementById('messageContent');
+                messageContent.scrollTop = messageContent.scrollHeight;
+            }
+        </script>
+    </div>
+</body>
+</html>
