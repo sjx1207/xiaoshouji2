@@ -565,8 +565,8 @@
         }
 
         .contact-avatar-header {
-            width: 30px;
-            height: 30px;
+            width: 44px;
+            height: 44px;
             border-radius: 50%;
             background: rgba(0, 122, 255, 0.3);
             display: flex;
@@ -574,7 +574,7 @@
             justify-content: center;
             margin-right: 10px;
             font-weight: bold;
-            font-size: 14px;
+            font-size: 18px;
         }
 
         .contact-name-header {
@@ -791,42 +791,72 @@
         /* 响应式设计 */
         @media (max-width: 768px) {
             .dial-btn {
-                width: 60px;
-                height: 60px;
-                font-size: 20px;
+                width: 70px;
+                height: 70px;
+                font-size: 24px;
             }
             
             .delete-btn, .call-btn {
-                width: 60px;
-                height: 60px;
+                width: 70px;
+                height: 70px;
             }
             
             .delete-btn svg, .call-btn svg {
-                width: 25px;
-                height: 25px;
+                width: 30px;
+                height: 30px;
             }
         }
 
         @media (max-width: 480px) {
             .dial-btn {
-                width: 50px;
-                height: 50px;
-                font-size: 18px;
+                width: 80px;
+                height: 80px;
+                font-size: 28px;
             }
             
             .delete-btn, .call-btn {
-                width: 50px;
-                height: 50px;
+                width: 80px;
+                height: 80px;
             }
             
             .delete-btn svg, .call-btn svg {
-                width: 20px;
-                height: 20px;
+                width: 35px;
+                height: 35px;
             }
             
             .dial-display {
-                font-size: 20px;
-                min-height: 50px;
+                font-size: 28px;
+                min-height: 70px;
+            }
+            
+            .dialpad {
+                gap: 20px;
+                max-width: none;
+                margin: 30px auto;
+            }
+        }
+        
+        /* 针对小屏幕手机的优化 */
+        @media (max-width: 375px) {
+            .dial-btn {
+                width: 75px;
+                height: 75px;
+                font-size: 26px;
+            }
+            
+            .delete-btn, .call-btn {
+                width: 75px;
+                height: 75px;
+            }
+            
+            .delete-btn svg, .call-btn svg {
+                width: 32px;
+                height: 32px;
+            }
+            
+            .dial-display {
+                font-size: 26px;
+                min-height: 65px;
             }
         }
     </style>
