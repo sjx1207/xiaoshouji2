@@ -345,7 +345,7 @@
 
         /* 信息列表 */
         .messages-list {
-            margin-top: 10px;
+            margin-top: 70px; /* 为固定导航栏留出空间 */
         }
 
         .message-item {
@@ -954,41 +954,7 @@
                 
                 <!-- 联系人列表 -->
                 <div class="contacts-list panel active" id="contactsList">
-                    <div class="contact-item" onclick="openMessages('张三', '张')">
-                        <div class="contact-avatar">张</div>
-                        <div class="contact-info">
-                            <div class="contact-name">张三</div>
-                            <div class="contact-number">13800138000</div>
-                        </div>
-                    </div>
-                    <div class="contact-item" onclick="openMessages('李四', '李')">
-                        <div class="contact-avatar">李</div>
-                        <div class="contact-info">
-                            <div class="contact-name">李四</div>
-                            <div class="contact-number">13900139000</div>
-                        </div>
-                    </div>
-                    <div class="contact-item" onclick="openMessages('王五', '王')">
-                        <div class="contact-avatar">王</div>
-                        <div class="contact-info">
-                            <div class="contact-name">王五</div>
-                            <div class="contact-number">13700137000</div>
-                        </div>
-                    </div>
-                    <div class="contact-item" onclick="openMessages('赵六', '赵')">
-                        <div class="contact-avatar">赵</div>
-                        <div class="contact-info">
-                            <div class="contact-name">赵六</div>
-                            <div class="contact-number">13600136000</div>
-                        </div>
-                    </div>
-                    <div class="contact-item" onclick="openMessages('孙七', '孙')">
-                        <div class="contact-avatar">孙</div>
-                        <div class="contact-info">
-                            <div class="contact-name">孙七</div>
-                            <div class="contact-number">13500135000</div>
-                        </div>
-                    </div>
+                    <!-- 联系人列表将在这里动态生成 -->
                 </div>
                 
                 <!-- 信息列表 -->
@@ -1313,10 +1279,8 @@
                         document.body.style.backgroundPosition = 'center';
                         document.body.style.backgroundRepeat = 'no-repeat';
                         
-                        // 保存到localStorage
+                        // 保存到localStorage（只保存为拨号背景，不保存为全局背景）
                         localStorage.setItem('dialBackground', e.target.result);
-                        // 同时保存为全局背景
-                        localStorage.setItem('globalBackground', e.target.result);
                         
                         // 关闭弹窗
                         closeDialBackgroundModal();
@@ -1334,10 +1298,8 @@
                     document.body.style.backgroundPosition = 'center';
                     document.body.style.backgroundRepeat = 'no-repeat';
                     
-                    // 保存到localStorage
+                    // 保存到localStorage（只保存为拨号背景，不保存为全局背景）
                     localStorage.setItem('dialBackground', url);
-                    // 同时保存为全局背景
-                    localStorage.setItem('globalBackground', url);
                     
                     // 关闭弹窗
                     closeDialBackgroundModal();
@@ -1353,16 +1315,10 @@
 
             // 页面加载时从localStorage恢复背景设置
             document.addEventListener('DOMContentLoaded', function() {
-                // 优先使用全局背景，如果没有则使用拨号背景
-                const savedGlobalBackground = localStorage.getItem('globalBackground');
+                // 只使用拨号背景，不使用全局背景
                 const savedDialBackground = localStorage.getItem('dialBackground');
                 
-                if (savedGlobalBackground) {
-                    document.body.style.backgroundImage = `url("${savedGlobalBackground}")`;
-                    document.body.style.backgroundSize = 'cover';
-                    document.body.style.backgroundPosition = 'center';
-                    document.body.style.backgroundRepeat = 'no-repeat';
-                } else if (savedDialBackground) {
+                if (savedDialBackground) {
                     document.body.style.backgroundImage = `url("${savedDialBackground}")`;
                     document.body.style.backgroundSize = 'cover';
                     document.body.style.backgroundPosition = 'center';
@@ -1487,6 +1443,11 @@
                 const messagesList = document.getElementById('messagesList');
                 messagesList.innerHTML = '';
                 
+                if (messageList.length === 0) {
+                    messagesList.innerHTML = '<div style="text-align: center; padding: 20px; color: #aaa;">暂无消息</div>';
+                    return;
+                }
+                
                 messageList.forEach(message => {
                     const messageItem = document.createElement('div');
                     messageItem.className = 'message-item';
@@ -1495,6 +1456,7 @@
                         <div class="message-info">
                             <div class="message-header">
                                 <div class="message-name">${message.name}</div>
+                                <div class="message-time">${message.time}</div>
                             </div>
                             <div class="message-preview">${message.preview}</div>
                         </div>
@@ -1767,13 +1729,9 @@
                 if (tabId === 'contacts') {
                     document.getElementById('contactsList').classList.add('active');
                     document.getElementById('messagesList').classList.remove('active');
-                    // 隐藏标题，显示联系人导航栏
-                    document.getElementById('mainHeader').style.display = 'none';
                 } else if (tabId === 'messages') {
                     document.getElementById('contactsList').classList.remove('active');
                     document.getElementById('messagesList').classList.add('active');
-                    // 隐藏标题，显示联系人导航栏
-                    document.getElementById('mainHeader').style.display = 'none';
                     // 重新渲染信息列表
                     renderMessageList();
                 }
