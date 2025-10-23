@@ -767,12 +767,14 @@
             function confirmBackground() {
                 if (selectedBackground) {
                     // 设置背景
-                    document.body.style.backgroundImage = `url(${selectedBackground})`;
+                    document.body.style.backgroundImage = `url("${selectedBackground}")`;
                     document.body.style.backgroundSize = 'cover';
                     document.body.style.backgroundPosition = 'center';
                     
                     // 保存背景到本地存储
                     localStorage.setItem('callBackground', selectedBackground);
+                    // 同时保存为全局背景
+                    localStorage.setItem('globalBackground', selectedBackground);
                     
                     // 关闭弹窗
                     closeBackgroundModal();
@@ -811,9 +813,16 @@
 
             // 页面加载时恢复背景
             window.addEventListener('DOMContentLoaded', function() {
+                // 优先使用全局背景，如果没有则使用通话背景
+                const savedGlobalBackground = localStorage.getItem('globalBackground');
                 const savedBackground = localStorage.getItem('callBackground');
-                if (savedBackground) {
-                    document.body.style.backgroundImage = `url(${savedBackground})`;
+                
+                if (savedGlobalBackground) {
+                    document.body.style.backgroundImage = `url("${savedGlobalBackground}")`;
+                    document.body.style.backgroundSize = 'cover';
+                    document.body.style.backgroundPosition = 'center';
+                } else if (savedBackground) {
+                    document.body.style.backgroundImage = `url("${savedBackground}")`;
                     document.body.style.backgroundSize = 'cover';
                     document.body.style.backgroundPosition = 'center';
                 }
