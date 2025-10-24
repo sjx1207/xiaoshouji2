@@ -238,6 +238,7 @@
             margin: 10px auto 20px auto;
         }
 
+        /* AI回复按钮 */
         /* 挂断按钮 */
         .end-call-btn {
             width: 70px;
@@ -469,7 +470,7 @@
                 </div>
             </div>
 
-            <!-- 结束通话按钮 -->
+            <!-- 底部按钮 -->
             <div class="bottom-buttons">
                 <!-- 多人通话按钮（暂无功能） -->
                 <div class="func-btn">
@@ -492,7 +493,7 @@
                     </svg>
                 </div>
             </div>
-            
+
             <!-- 隐藏的文件上传输入框 -->
             <input type="file" id="backgroundUpload" class="file-input" accept="image/*" onchange="handleBackgroundUpload(event)">
             
@@ -521,306 +522,790 @@
                     </div>
                 </div>
             </div>
-        </div>
-
-        <script>
-            // 全局变量
-            let callStartTime = new Date();
-            let callTimerInterval = null;
-            let contactName = "张三";
-            let contactNumber = "13800138000";
-            let contactAvatar = "张";
-            let selectedBackground = null;
-
-            // 更新时间
-            function updateTime() {
-                const now = new Date();
-                const timeString = now.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
-                document.getElementById('current-time').textContent = timeString;
-            }
-
-            // 每秒更新一次时间
-            setInterval(updateTime, 1000);
-            updateTime(); // 初始化时间
-
-            // 开始通话计时
-            function startCallTimer() {
-                callStartTime = new Date();
-                callTimerInterval = setInterval(updateCallTimer, 1000);
-            }
-
-            // 更新通话计时器
-            function updateCallTimer() {
-                const now = new Date();
-                const diff = Math.floor((now - callStartTime) / 1000);
-                const minutes = Math.floor(diff / 60).toString().padStart(2, '0');
-                const seconds = (diff % 60).toString().padStart(2, '0');
-                document.getElementById('callTimer').textContent = `${minutes}:${seconds}`;
-            }
-
-            // 结束通话
-            function endCall() {
-                clearInterval(callTimerInterval);
-                
-                // 计算通话时长
-                const now = new Date();
-                const diff = Math.floor((now - callStartTime) / 1000);
-                const minutes = Math.floor(diff / 60).toString().padStart(2, '0');
-                const seconds = (diff % 60).toString().padStart(2, '0');
-                const duration = `${minutes}:${seconds}`;
-                
-                // 更新通话记录中的通话时长
-                const urlParams = new URLSearchParams(window.location.search);
-                const number = urlParams.get('number') || contactNumber;
-                
-                // 从localStorage获取通话记录
-                let callLogs = [];
-                const savedCallLogs = localStorage.getItem('callLogs');
-                if (savedCallLogs) {
-                    try {
-                        callLogs = JSON.parse(savedCallLogs);
-                    } catch (e) {
-                        console.error('解析通话记录数据时出错:', e);
-                    }
-                }
-                
-                // 更新最新的通话记录（应该是当前这次通话）
-                if (callLogs.length > 0 && callLogs[0].number === number) {
-                    callLogs[0].duration = duration;
-                    localStorage.setItem('callLogs', JSON.stringify(callLogs));
-                }
-                
-                // 返回到电话页面
-                window.location.href = 'dianhua.html';
-            }
-
-            // 处理键盘事件
-            function handleKeyPress(event) {
-                if (event.key === 'Enter') {
-                    sendMessage();
-                }
-            }
-
-            // 发送消息
-            function sendMessage() {
-                const input = document.getElementById('chatInput');
-                const message = input.value.trim();
-                
-                if (message) {
-                    // 添加发送中的状态
-                    const tempMessageId = addMessageToView('sent', message);
-                    input.value = '';
-                    
-                    // 添加发送中样式
-                    const messageElement = document.getElementById(tempMessageId);
-                    if (messageElement) {
-                        messageElement.classList.add('sending');
-                    }
-                    
-                    // 模拟网络延迟
-                    setTimeout(() => {
-                        // 移除发送中状态
-                        if (messageElement) {
-                            messageElement.classList.remove('sending');
-                        }
-                        
-                        // 模拟AI回复（多条消息）
-                        simulateAIReply(message);
-                    }, 300);
-                }
-            }
-
-            // 添加消息到视图
-            function addMessageToView(type, text) {
-                const chatMessages = document.getElementById('chatMessages');
-                
-                const messageDiv = document.createElement('div');
-                const messageId = 'msg-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
-                messageDiv.id = messageId;
-                messageDiv.className = `message ${type}`;
-                
-                // 添加发送者昵称
-                const senderDiv = document.createElement('div');
-                senderDiv.className = 'message-sender';
-                // 用户发送的消息显示"我"，AI回复的消息显示联系人姓名
-                senderDiv.textContent = type === 'sent' ? '我' : contactName;
-                
-                const textDiv = document.createElement('div');
-                textDiv.className = 'message-text';
-                textDiv.textContent = text;
-                
-                const timeDiv = document.createElement('div');
-                timeDiv.className = 'message-time';
-                timeDiv.textContent = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
-                
-                messageDiv.appendChild(senderDiv);
-                messageDiv.appendChild(textDiv);
-                messageDiv.appendChild(timeDiv);
-                chatMessages.appendChild(messageDiv);
-                
-                // 滚动到底部
-                chatMessages.scrollTop = chatMessages.scrollHeight;
-                
-                return messageId;
-            }
-
-            // 模拟AI回复（多条消息）
-            function simulateAIReply(userMessage) {
-                // 根据用户消息生成相关回复
-                let replies = [];
-                
-                if (userMessage.includes('你好') || userMessage.includes('您好')) {
-                    replies = [
-                        '你好！很高兴和你通话',
-                        '有什么我可以帮助你的吗？'
-                    ];
-                } else if (userMessage.includes('天气')) {
-                    replies = [
-                        '今天的天气很不错呢',
-                        '阳光明媚，适合外出走走'
-                    ];
-                } else if (userMessage.includes('吃饭') || userMessage.includes('吃')) {
-                    replies = [
-                        '我刚刚吃了点东西',
-                        '你吃饭了吗？'
-                    ];
-                } else if (userMessage.includes('再见') || userMessage.includes('拜拜')) {
-                    replies = [
-                        '再见！和你聊天很开心',
-                        '下次再聊吧！'
-                    ];
-                } else {
-                    // 随机回复
-                    const randomReplies = [
-                        '嗯，我听到了',
-                        '你说得很对',
-                        '这个想法很有趣',
-                        '我们可以继续聊这个话题',
-                        '我明白你的意思',
-                        '这确实是个好主意',
-                        '你觉得呢？',
-                        '我也这么认为'
-                    ];
-                    
-                    // 随机选择1-3条回复
-                    const count = Math.floor(Math.random() * 3) + 1;
-                    for (let i = 0; i < count; i++) {
-                        const randomIndex = Math.floor(Math.random() * randomReplies.length);
-                        replies.push(randomReplies[randomIndex]);
-                    }
-                }
-                
-                // 逐条显示回复，每条间隔1-2秒
-                replies.forEach((reply, index) => {
-                    const delay = (index + 1) * (Math.random() * 1000 + 1000); // 1-2秒间隔
-                    setTimeout(() => {
-                        addMessageToView('received', reply);
-                    }, delay);
-                });
-            }
-
-            // 处理背景上传
-            function handleBackgroundUpload(event) {
-                const file = event.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        // 显示预览
-                        const previewImage = document.getElementById('previewImage');
-                        const previewPlaceholder = document.getElementById('previewPlaceholder');
-                        previewImage.src = e.target.result;
-                        previewImage.style.display = 'block';
-                        previewPlaceholder.style.display = 'none';
-                        
-                        // 保存选择的背景
-                        selectedBackground = e.target.result;
-                        
-                        // 启用确定按钮
-                        document.getElementById('confirmBtn').disabled = false;
-                    };
-                    reader.readAsDataURL(file);
-                }
-            }
-
-            // 打开背景设置弹窗
-            function openBackgroundModal() {
-                document.getElementById('backgroundModal').style.display = 'flex';
-            }
-
-            // 关闭背景设置弹窗
-            function closeBackgroundModal() {
-                document.getElementById('backgroundModal').style.display = 'none';
-                // 清空文件输入框
-                document.getElementById('backgroundUpload').value = '';
-                // 重置预览
-                const previewImage = document.getElementById('previewImage');
-                const previewPlaceholder = document.getElementById('previewPlaceholder');
-                previewImage.style.display = 'none';
-                previewPlaceholder.style.display = 'block';
-                previewImage.src = '';
-                // 禁用确定按钮
-                document.getElementById('confirmBtn').disabled = true;
-                selectedBackground = null;
-            }
-
-            // 确认设置背景
-            function confirmBackground() {
-                if (selectedBackground) {
-                    // 设置背景
-                    document.body.style.backgroundImage = `url("${selectedBackground}")`;
-                    document.body.style.backgroundSize = 'cover';
-                    document.body.style.backgroundPosition = 'center';
-                    
-                    // 保存背景到本地存储（只保存为通话背景，不保存为全局背景）
-                    localStorage.setItem('callBackground', selectedBackground);
-                    
-                    // 关闭弹窗
-                    closeBackgroundModal();
-                    
-                    // 显示成功提示
-                    alert('通话背景已成功设置并保存！');
-                }
-            }
-
-            // 页面加载完成后初始化
-            document.addEventListener('DOMContentLoaded', function() {
-                // 获取URL参数
-                const urlParams = new URLSearchParams(window.location.search);
-                contactName = urlParams.get('name') || contactName;
-                contactNumber = urlParams.get('number') || contactNumber;
-                contactAvatar = urlParams.get('avatar') || contactAvatar;
-                
-                // 更新联系人信息
-                document.getElementById('contactName').textContent = contactName;
-                document.getElementById('contactNumber').textContent = contactNumber;
-                document.getElementById('contactAvatar').textContent = contactAvatar;
-                
-                // 如果是未知号码，设置灰色背景
-                if (contactName === '未知号码') {
-                    document.getElementById('contactAvatar').style.background = 'rgba(128, 128, 128, 0.3)';
-                }
-                
-                // 开始通话计时
-                startCallTimer();
-                
-                // 添加欢迎消息
-                setTimeout(() => {
-                    addMessageToView('received', `你好，我是${contactName}，很高兴和你通话！`);
-                }, 500);
-            });
-
-            // 页面加载时恢复背景
-            window.addEventListener('DOMContentLoaded', function() {
-                // 只使用通话背景，不使用全局背景
-                const savedBackground = localStorage.getItem('callBackground');
-                
-                if (savedBackground) {
-                    document.body.style.backgroundImage = `url("${savedBackground}")`;
-                    document.body.style.backgroundSize = 'cover';
-                    document.body.style.backgroundPosition = 'center';
-                }
-            });
-        </script>
+            
+            <!-- 人设设置弹窗 -->
+            <div id="personaModal" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <div class="modal-title">设置通话人设</div>
+                        <button class="close-btn" onclick="closePersonaModal()">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label class="form-label">你的昵称</label>
+                            <input type="text" class="form-input" id="userNickname" placeholder="请输入你的昵称">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">你的人设描述</label>
+                            <textarea class="form-textarea" id="userPersona" placeholder="请输入你的人设描述，如：性格、背景等"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">对方昵称</label>
+                            <input type="text" class="form-input" id="contactNickname" placeholder="请输入对方的昵称" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">对方人设描述</label>
+                            <textarea class="form-textarea" id="contactPersona" placeholder="请输入对方的人设描述，如：性格、背景等"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">从角色书中选择</label>
+                            <select class="form-input" id="characterSelect" onchange="loadCharacterInfo()">
+                                <option value="">请选择角色</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" onclick="closePersonaModal()">取消</button>
+                        <button class="btn btn-primary" onclick="confirmPersona()">确定</button>
+                    </div>
+                </div>
+            </div>
     </div>
+
+    <script>
+        // 全局变量
+        let callStartTime = new Date();
+        let callTimerInterval = null;
+        let contactName = "张三";
+        let contactNumber = "13800138000";
+        let contactAvatar = "张";
+        let selectedBackground = null;
+        let userPersonaInfo = { nickname: "", persona: "" };
+        let contactPersonaInfo = { nickname: "", persona: "" };
+
+        // 更新时间
+        function updateTime() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+            document.getElementById('current-time').textContent = timeString;
+        }
+
+        // 每秒更新一次时间
+        setInterval(updateTime, 1000);
+        updateTime(); // 初始化时间
+
+        // 开始通话计时
+        function startCallTimer() {
+            callStartTime = new Date();
+            callTimerInterval = setInterval(updateCallTimer, 1000);
+        }
+
+        // 更新通话计时器
+        function updateCallTimer() {
+            const now = new Date();
+            const diff = Math.floor((now - callStartTime) / 1000);
+            const minutes = Math.floor(diff / 60).toString().padStart(2, '0');
+            const seconds = (diff % 60).toString().padStart(2, '0');
+            document.getElementById('callTimer').textContent = `${minutes}:${seconds}`;
+        }
+
+        // 结束通话
+        function endCall() {
+            clearInterval(callTimerInterval);
+            
+            // 计算通话时长
+            const now = new Date();
+            const diff = Math.floor((now - callStartTime) / 1000);
+            const minutes = Math.floor(diff / 60).toString().padStart(2, '0');
+            const seconds = (diff % 60).toString().padStart(2, '0');
+            const duration = `${minutes}:${seconds}`;
+            
+            // 更新通话记录中的通话时长
+            const urlParams = new URLSearchParams(window.location.search);
+            const number = urlParams.get('number') || contactNumber;
+            
+            // 从localStorage获取通话记录
+            let callLogs = [];
+            const savedCallLogs = localStorage.getItem('callLogs');
+            if (savedCallLogs) {
+                try {
+                    callLogs = JSON.parse(savedCallLogs);
+                } catch (e) {
+                    console.error('解析通话记录数据时出错:', e);
+                }
+            }
+            
+            // 更新最新的通话记录（应该是当前这次通话）
+            if (callLogs.length > 0 && callLogs[0].number === number) {
+                callLogs[0].duration = duration;
+                localStorage.setItem('callLogs', JSON.stringify(callLogs));
+            }
+            
+            // 返回到电话页面
+            window.location.href = 'dianhua.html';
+        }
+
+        // 处理键盘事件
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        // 发送消息
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            
+            if (message) {
+                // 添加发送中的状态
+                const tempMessageId = addMessageToView('sent', message);
+                input.value = '';
+                
+                // 添加发送中样式
+                const messageElement = document.getElementById(tempMessageId);
+                if (messageElement) {
+                    messageElement.classList.add('sending');
+                }
+                
+                // 模拟网络延迟
+                setTimeout(() => {
+                    // 移除发送中状态
+                    if (messageElement) {
+                        messageElement.classList.remove('sending');
+                    }
+                    
+                    // 使用设置页面的AI功能发送消息
+                    sendAiMessageFromSettings(message);
+                }, 300);
+            }
+        }
+
+        // 添加消息到视图
+        function addMessageToView(type, text) {
+            const chatMessages = document.getElementById('chatMessages');
+            
+            const messageDiv = document.createElement('div');
+            const messageId = 'msg-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+            messageDiv.id = messageId;
+            messageDiv.className = `message ${type}`;
+            
+            // 添加发送者昵称
+            const senderDiv = document.createElement('div');
+            senderDiv.className = 'message-sender';
+            // 用户发送的消息显示"我"，AI回复的消息显示联系人姓名
+            senderDiv.textContent = type === 'sent' ? (userPersonaInfo.nickname || '我') : (contactPersonaInfo.nickname || contactName);
+            
+            const textDiv = document.createElement('div');
+            textDiv.className = 'message-text';
+            textDiv.textContent = text;
+            
+            const timeDiv = document.createElement('div');
+            timeDiv.className = 'message-time';
+            timeDiv.textContent = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+            
+            messageDiv.appendChild(senderDiv);
+            messageDiv.appendChild(textDiv);
+            messageDiv.appendChild(timeDiv);
+            chatMessages.appendChild(messageDiv);
+            
+            // 滚动到底部
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            
+            return messageId;
+        }
+
+        // 使用设置页面的AI功能发送消息
+        async function sendAiMessageFromSettings(message) {
+            // 显示正在输入的提示
+            const tempMessageId = addMessageToView('received', '正在输入...');
+            
+            try {
+                // 获取AI设置
+                const savedSettings = localStorage.getItem('aiSettings');
+                let settings = {
+                    provider: 'openai',
+                    url: 'https://api.openai.com/v1',
+                    key: '',
+                    model: 'gpt-3.5-turbo',
+                    enabled: true
+                };
+                
+                if (savedSettings) {
+                    try {
+                        settings = JSON.parse(savedSettings);
+                    } catch (e) {
+                        console.error('Failed to parse saved settings', e);
+                    }
+                }
+                
+                // 检查必要配置
+                if (!settings.key) {
+                    throw new Error('请在设置页面配置API密钥');
+                }
+                
+                if (!settings.model) {
+                    throw new Error('请在设置页面配置模型名称');
+                }
+                
+                // 根据提供商构建请求
+                let apiUrl = settings.url;
+                
+                // 确保URL格式正确
+                if (!apiUrl) {
+                    if (settings.provider === 'openai') {
+                        apiUrl = 'https://api.openai.com/v1';
+                    } else if (settings.provider === 'gemini') {
+                        apiUrl = 'https://generativelanguage.googleapis.com/v1beta';
+                    } else if (settings.provider === 'siliconflow') {
+                        apiUrl = 'https://api.siliconflow.cn/v1';
+                    } else if (settings.provider === 'deepseek') {
+                        apiUrl = 'https://api.deepseek.com/v1';
+                    } else {
+                        // 自定义提供商
+                        if (!apiUrl) {
+                            throw new Error('请在设置页面配置API地址');
+                        }
+                    }
+                }
+                
+                // 确保URL以/结尾（用于chat/completions）
+                if (settings.provider !== 'gemini' && !apiUrl.endsWith('/')) {
+                    apiUrl += '/';
+                }
+                
+                let fetchUrl = '';
+                let fetchOptions = {};
+                let aiResponse = '';
+                
+                // 构建系统提示，包含人设信息
+                let systemPrompt = "你是一个真实的人类，正在和朋友通话。你需要以真实、自然、有个性的方式进行对话，就像真实的朋友之间聊天一样。回复时不要使用括号，不要提及你是AI，要像真实的人类一样表达情感和观点。";
+                
+                // 添加用户人设信息
+                if (userPersonaInfo.nickname) {
+                    systemPrompt += `\n朋友姓名：${userPersonaInfo.nickname}`;
+                }
+                if (userPersonaInfo.persona) {
+                    systemPrompt += `\n朋友人设：${userPersonaInfo.persona}`;
+                }
+                
+                // 添加联系人人设信息
+                if (contactPersonaInfo.nickname) {
+                    systemPrompt += `\n你的姓名：${contactPersonaInfo.nickname}`;
+                }
+                if (contactPersonaInfo.persona) {
+                    systemPrompt += `\n你的人设：${contactPersonaInfo.persona}`;
+                }
+                
+                const messages = [
+                    {
+                        role: "system",
+                        content: systemPrompt
+                    },
+                    {
+                        role: "user",
+                        content: message
+                    }
+                ];
+                
+                if (settings.provider === 'gemini') {
+                    // Google Gemini API
+                    fetchUrl = `${apiUrl}/models/${settings.model}:generateContent?key=${settings.key}`;
+                    fetchOptions = {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            contents: [{
+                                parts: [{
+                                    text: message
+                                }]
+                            }]
+                        })
+                    };
+                } else if (settings.provider === 'siliconflow') {
+                    // SiliconFlow API
+                    fetchUrl = apiUrl.endsWith('/') ? `${apiUrl}chat/completions` : `${apiUrl}/chat/completions`;
+                    fetchOptions = {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${settings.key}`
+                        },
+                        body: JSON.stringify({
+                            model: settings.model,
+                            messages: messages,
+                            temperature: 0.8,
+                            max_tokens: 1000
+                        })
+                    };
+                } else if (settings.provider === 'deepseek') {
+                    // DeepSeek API
+                    fetchUrl = apiUrl.endsWith('/') ? `${apiUrl}chat/completions` : `${apiUrl}/chat/completions`;
+                    fetchOptions = {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${settings.key}`
+                        },
+                        body: JSON.stringify({
+                            model: settings.model,
+                            messages: messages,
+                            temperature: 0.8,
+                            max_tokens: 1000
+                        })
+                    };
+                } else if (settings.provider === 'openai') {
+                    // OpenAI API
+                    fetchUrl = apiUrl.endsWith('/') ? `${apiUrl}chat/completions` : `${apiUrl}/chat/completions`;
+                    fetchOptions = {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${settings.key}`
+                        },
+                        body: JSON.stringify({
+                            model: settings.model,
+                            messages: messages,
+                            temperature: 0.8,
+                            max_tokens: 1000
+                        })
+                    };
+                } else {
+                    // 自定义提供商
+                    fetchUrl = apiUrl.endsWith('/') ? `${apiUrl}chat/completions` : `${apiUrl}/chat/completions`;
+                    fetchOptions = {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${settings.key}`
+                        },
+                        body: JSON.stringify({
+                            model: settings.model,
+                            messages: messages,
+                            temperature: 0.8,
+                            max_tokens: 1000
+                        })
+                    };
+                }
+                
+                // 添加超时控制
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 15000); // 15秒超时
+                fetchOptions.signal = controller.signal;
+                
+                const response = await fetch(fetchUrl, fetchOptions);
+                clearTimeout(timeoutId);
+                
+                // 检查响应状态
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`API请求失败: ${response.status} ${response.statusText}\n请求URL: ${fetchUrl}\n${errorText}`);
+                }
+                
+                // 解析响应
+                const data = await response.json();
+                
+                if (settings.provider === 'gemini') {
+                    // Gemini响应格式
+                    aiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || '无法获取响应内容';
+                } else {
+                    // OpenAI/SiliconFlow/DeepSeek/自定义响应格式
+                    aiResponse = data.choices?.[0]?.message?.content || '无法获取响应内容';
+                }
+                
+                // 移除"正在输入..."的消息
+                const chatMessages = document.getElementById('chatMessages');
+                const typingMessage = document.getElementById(tempMessageId);
+                if (typingMessage) {
+                    chatMessages.removeChild(typingMessage);
+                }
+                
+                // 智能拆分AI回复为多条消息
+                // 首先按句号、感叹号、问号分割
+                const sentences = aiResponse.split(/[。！？.!?]\s*/).filter(s => s.trim().length > 0);
+                
+                // 如果句子太少，就按逗号分割
+                let messageParts = [];
+                if (sentences.length < 2) {
+                    messageParts = aiResponse.split(/[，,]\s*/).filter(s => s.trim().length > 0);
+                } else {
+                    messageParts = sentences;
+                }
+                
+                // 如果还是太少，就整体发送
+                if (messageParts.length === 0) {
+                    messageParts = [aiResponse];
+                }
+                
+                // 根据内容长度确定发送的消息数量
+                const contentLength = aiResponse.length;
+                let maxMessages, minMessages;
+                
+                maxMessages = Math.min(6, messageParts.length);
+                minMessages = Math.min(2, maxMessages);
+                
+                // 随机确定发送的消息数量（2-6条）
+                const messageCount = Math.max(minMessages, Math.min(maxMessages, Math.floor(Math.random() * (maxMessages - minMessages + 1)) + minMessages));
+                
+                // 只取前messageCount条消息
+                const messagesToSend = messageParts.slice(0, messageCount);
+                
+                // 逐条发送消息，每条消息间隔0.5-2秒
+                const baseDelay = 500;
+                const randomDelay = 1500;
+                
+                // 发送消息
+                for (let i = 0; i < messagesToSend.length; i++) {
+                    setTimeout(() => {
+                        addMessageToView('received', messagesToSend[i]);
+                    }, (i + 1) * (baseDelay + Math.random() * randomDelay));
+                }
+
+            } catch (error) {
+                console.error('AI回复出错:', error);
+                
+                // 移除"正在输入..."的消息
+                const chatMessages = document.getElementById('chatMessages');
+                const typingMessage = document.getElementById(tempMessageId);
+                if (typingMessage) {
+                    chatMessages.removeChild(typingMessage);
+                }
+                
+                // 显示错误信息
+                addMessageToView('received', '抱歉，我暂时无法回复，请稍后再试。');
+            }
+        }
+
+        // 处理背景上传
+        function handleBackgroundUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    // 显示预览
+                    const previewImage = document.getElementById('previewImage');
+                    const previewPlaceholder = document.getElementById('previewPlaceholder');
+                    previewImage.src = e.target.result;
+                    previewImage.style.display = 'block';
+                    previewPlaceholder.style.display = 'none';
+                    
+                    // 保存选择的背景
+                    selectedBackground = e.target.result;
+                    
+                    // 启用确定按钮
+                    document.getElementById('confirmBtn').disabled = false;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // 打开背景设置弹窗
+        function openBackgroundModal() {
+            document.getElementById('backgroundModal').style.display = 'flex';
+        }
+
+        // 关闭背景设置弹窗
+        function closeBackgroundModal() {
+            document.getElementById('backgroundModal').style.display = 'none';
+            // 清空文件输入框
+            document.getElementById('backgroundUpload').value = '';
+            // 重置预览
+            const previewImage = document.getElementById('previewImage');
+            const previewPlaceholder = document.getElementById('previewPlaceholder');
+            previewImage.style.display = 'none';
+            previewPlaceholder.style.display = 'block';
+            previewImage.src = '';
+            // 禁用确定按钮
+            document.getElementById('confirmBtn').disabled = true;
+            selectedBackground = null;
+        }
+
+        // 确认设置背景
+        function confirmBackground() {
+            if (selectedBackground) {
+                // 设置背景
+                document.body.style.backgroundImage = `url("${selectedBackground}")`;
+                document.body.style.backgroundSize = 'cover';
+                document.body.style.backgroundPosition = 'center';
+                
+                // 保存背景到本地存储（只保存为通话背景，不保存为全局背景）
+                localStorage.setItem('callBackground', selectedBackground);
+                
+                // 关闭弹窗
+                closeBackgroundModal();
+                
+                // 显示成功提示
+                alert('通话背景已成功设置并保存！');
+            }
+        }
+
+        // 打开人设设置弹窗
+        function openPersonaModal() {
+            // 加载角色书中的角色
+            loadCharactersFromRoleBook();
+            
+            // 设置对方昵称
+            document.getElementById('contactNickname').value = contactName;
+            
+            // 显示弹窗
+            document.getElementById('personaModal').style.display = 'flex';
+        }
+
+        // 关闭人设设置弹窗
+        function closePersonaModal() {
+            document.getElementById('personaModal').style.display = 'none';
+        }
+
+        // 从角色书中加载角色
+        function loadCharactersFromRoleBook() {
+            const characterSelect = document.getElementById('characterSelect');
+            characterSelect.innerHTML = '<option value="">请选择角色</option>';
+            
+            // 从localStorage获取角色数据
+            const savedCharacters = localStorage.getItem('characters');
+            let characters = [];
+            
+            if (savedCharacters) {
+                try {
+                    characters = JSON.parse(savedCharacters);
+                } catch (e) {
+                    console.error('解析角色数据时出错:', e);
+                }
+            }
+            
+            // 如果没有角色，显示提示信息
+            if (characters.length === 0) {
+                characterSelect.innerHTML += '<option value="" disabled>暂无角色，请先在角色书中添加角色</option>';
+                return;
+            }
+            
+            // 生成角色选项
+            characters.forEach(character => {
+                const option = document.createElement('option');
+                option.value = character.id;
+                option.textContent = character.name;
+                characterSelect.appendChild(option);
+            });
+        }
+
+        // 加载选中角色的信息
+        function loadCharacterInfo() {
+            const characterSelect = document.getElementById('characterSelect');
+            const selectedCharacterId = characterSelect.value;
+            
+            if (!selectedCharacterId) {
+                return;
+            }
+            
+            // 从localStorage获取角色数据
+            const savedCharacters = localStorage.getItem('characters');
+            let characters = [];
+            
+            if (savedCharacters) {
+                try {
+                    characters = JSON.parse(savedCharacters);
+                } catch (e) {
+                    console.error('解析角色数据时出错:', e);
+                    return;
+                }
+            }
+            
+            // 查找选中的角色
+            const selectedCharacter = characters.find(char => char.id == selectedCharacterId);
+            if (!selectedCharacter) {
+                return;
+            }
+            
+            // 填充对方人设信息
+            document.getElementById('contactNickname').value = selectedCharacter.name;
+            document.getElementById('contactPersona').value = selectedCharacter.desc || '';
+        }
+
+        // 确认人设设置
+        function confirmPersona() {
+            // 获取用户输入的人设信息
+            userPersonaInfo.nickname = document.getElementById('userNickname').value.trim();
+            userPersonaInfo.persona = document.getElementById('userPersona').value.trim();
+            
+            // 获取对方人设信息
+            contactPersonaInfo.nickname = document.getElementById('contactNickname').value.trim();
+            contactPersonaInfo.persona = document.getElementById('contactPersona').value.trim();
+            
+            // 保存到localStorage
+            localStorage.setItem('userPersonaInfo', JSON.stringify(userPersonaInfo));
+            localStorage.setItem('contactPersonaInfo', JSON.stringify(contactPersonaInfo));
+            
+            // 关闭弹窗
+            closePersonaModal();
+            
+            // 显示成功提示
+            alert('人设信息已保存！');
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 获取URL参数
+            const urlParams = new URLSearchParams(window.location.search);
+            contactName = urlParams.get('name') || contactName;
+            contactNumber = urlParams.get('number') || contactNumber;
+            contactAvatar = decodeURIComponent(urlParams.get('avatar') || contactAvatar);
+            
+            // 更新联系人信息
+            document.getElementById('contactName').textContent = contactName;
+            document.getElementById('contactNumber').textContent = contactNumber;
+            
+            // 处理头像显示
+            const avatarElement = document.getElementById('contactAvatar');
+            if (contactAvatar && (contactAvatar.startsWith('data:image') || 
+                                 contactAvatar.startsWith('http://') || 
+                                 contactAvatar.startsWith('https://'))) {
+                // 如果是图片URL或base64数据，创建img元素
+                avatarElement.innerHTML = '';
+                const img = document.createElement('img');
+                img.src = contactAvatar;
+                img.style.width = '100%';
+                img.style.height = '100%';
+                img.style.borderRadius = '50%';
+                img.style.objectFit = 'cover';
+                img.onerror = function() {
+                    // 如果图片加载失败，显示默认文字
+                    avatarElement.innerHTML = contactName.charAt(0);
+                };
+                avatarElement.appendChild(img);
+            } else {
+                // 如果不是图片URL，显示文字
+                avatarElement.textContent = contactAvatar || contactName.charAt(0);
+            }
+            
+            // 如果是未知号码，设置灰色背景
+            if (contactName === '未知号码') {
+                avatarElement.style.background = 'rgba(128, 128, 128, 0.3)';
+            }
+            
+            // 开始通话计时
+            startCallTimer();
+            
+            // 不再添加默认的欢迎消息
+            // setTimeout(() => {
+            //     addMessageToView('received', `你好，我是${contactName}，很高兴和你通话！`);
+            // }, 500);
+        });
+
+        // 页面加载时恢复背景和人设信息
+        window.addEventListener('DOMContentLoaded', function() {
+            // 只使用通话背景，不使用全局背景
+            const savedBackground = localStorage.getItem('callBackground');
+            
+            if (savedBackground) {
+                document.body.style.backgroundImage = `url("${savedBackground}")`;
+                document.body.style.backgroundSize = 'cover';
+                document.body.style.backgroundPosition = 'center';
+            }
+            
+            // 恢复人设信息
+            const savedPersona = localStorage.getItem('currentCallPersona');
+            
+            if (savedPersona) {
+                try {
+                    const personaInfo = JSON.parse(savedPersona);
+                    userPersonaInfo = personaInfo.user || { nickname: '', persona: '' };
+                    contactPersonaInfo = personaInfo.contact || { nickname: '', persona: '' };
+                } catch (e) {
+                    console.error('解析人设信息时出错:', e);
+                }
+            }
+        });
+
+        // 修改添加消息到视图函数，使用人设信息
+        function addMessageToView(type, text) {
+            const chatMessages = document.getElementById('chatMessages');
+            
+            const messageDiv = document.createElement('div');
+            const messageId = 'msg-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+            messageDiv.id = messageId;
+            messageDiv.className = `message ${type}`;
+            
+            // 添加发送者昵称，使用人设信息
+            const senderDiv = document.createElement('div');
+            senderDiv.className = 'message-sender';
+            // 用户发送的消息显示用户昵称，AI回复的消息显示联系人昵称
+            if (type === 'sent') {
+                senderDiv.textContent = userPersonaInfo.nickname || '我';
+            } else {
+                senderDiv.textContent = contactPersonaInfo.nickname || contactName;
+            }
+            
+            const textDiv = document.createElement('div');
+            textDiv.className = 'message-text';
+            textDiv.textContent = text;
+            
+            const timeDiv = document.createElement('div');
+            timeDiv.className = 'message-time';
+            timeDiv.textContent = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+            
+            messageDiv.appendChild(senderDiv);
+            messageDiv.appendChild(textDiv);
+            messageDiv.appendChild(timeDiv);
+            chatMessages.appendChild(messageDiv);
+            
+            // 滚动到底部
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            
+            return messageId;
+        }
+        
+        // 修改模拟AI回复函数，使用人设信息
+        function simulateAIReply(userMessage) {
+            // 使用设置页面的AI功能发送消息
+            sendAiMessageFromSettings(userMessage);
+        }
+        
+        // 保留原来的模拟AI回复函数作为备用
+        function simulateAIReplyFallback(userMessage) {
+            // 根据用户消息生成相关回复
+            let replies = [];
+            
+            if (userMessage.includes('你好') || userMessage.includes('您好')) {
+                replies = [
+                    '你好！很高兴和你通话',
+                    '有什么我可以帮助你的吗？'
+                ];
+            } else if (userMessage.includes('天气')) {
+                replies = [
+                    '今天的天气很不错呢',
+                    '阳光明媚，适合外出走走'
+                ];
+            } else if (userMessage.includes('吃饭') || userMessage.includes('吃')) {
+                replies = [
+                    '我刚刚吃了点东西',
+                    '你吃饭了吗？'
+                ];
+            } else if (userMessage.includes('再见') || userMessage.includes('拜拜')) {
+                replies = [
+                    '再见！和你聊天很开心',
+                    '下次再聊吧！'
+                ];
+            } else {
+                // 随机回复
+                const randomReplies = [
+                    '嗯，我听到了',
+                    '你说得很对',
+                    '这个想法很有趣',
+                    '我们可以继续聊这个话题',
+                    '我明白你的意思',
+                    '这确实是个好主意',
+                    '你觉得呢？',
+                    '我也这么认为'
+                ];
+                
+                // 随机选择1-3条回复
+                const count = Math.floor(Math.random() * 3) + 1;
+                for (let i = 0; i < count; i++) {
+                    const randomIndex = Math.floor(Math.random() * randomReplies.length);
+                    replies.push(randomReplies[randomIndex]);
+                }
+            }
+            
+            // 逐条显示回复，每条间隔1-2秒
+            replies.forEach((reply, index) => {
+                const delay = (index + 1) * (Math.random() * 1000 + 1000); // 1-2秒间隔
+                setTimeout(() => {
+                    addMessageToView('received', reply);
+                }, delay);
+            });
+        }
+    </script>
 </body>
 </html>
