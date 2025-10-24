@@ -310,6 +310,7 @@
             margin-bottom: 10px;
             cursor: pointer;
             transition: all 0.2s ease;
+            position: relative;
         }
 
         .contact-item:hover {
@@ -330,6 +331,58 @@
 
         .contact-info {
             flex: 1;
+        }
+        
+        /* 联系人菜单按钮 */
+        .menu-btn {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            margin-left: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .menu-btn svg {
+            width: 18px;
+            height: 18px;
+            fill: white;
+        }
+        
+        /* 联系人菜单 */
+        .contact-menu {
+            position: absolute;
+            right: 10px;
+            top: 50px;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 10px 0;
+            display: none;
+            z-index: 1001;
+            min-width: 120px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .contact-menu-item {
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s ease;
+        }
+        
+        .contact-menu-item:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .contact-menu-item.delete {
+            color: #ff3b30;
         }
 
         .contact-name {
@@ -1108,6 +1161,44 @@
                     </div>
                 </div>
             </div>
+            
+            <!-- 联系人资料弹窗 -->
+            <div id="contactDetailModal" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <div class="modal-title">联系人资料</div>
+                        <button class="close-btn" onclick="closeContactDetailModal()">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <div style="text-align: center; margin-bottom: 20px;">
+                            <div class="contact-detail-avatar" id="detailAvatar" style="width: 80px; height: 80px; border-radius: 50%; background: rgba(0, 122, 255, 0.3); display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; font-weight: bold; font-size: 24px;"></div>
+                            <input type="text" id="detailName" class="file-input" placeholder="昵称" style="width: 100%; margin-bottom: 10px;">
+                            <input type="text" id="detailNumber" class="file-input" placeholder="专属号码" style="width: 100%; margin-bottom: 10px;">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn" onclick="closeContactDetailModal()">取消</button>
+                        <button class="btn btn-primary" onclick="saveContactDetail()">保存</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 删除联系人确认弹窗 -->
+            <div id="deleteContactConfirmModal" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <div class="modal-title">确认删除</div>
+                        <button class="close-btn" onclick="closeDeleteContactConfirmModal()">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <p>确定要删除这个联系人吗？</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn" onclick="closeDeleteContactConfirmModal()">取消</button>
+                        <button class="btn btn-primary" onclick="confirmDeleteContact()" style="background: rgba(255, 59, 48, 0.3); border-color: rgba(255, 59, 48, 0.5);">删除</button>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- 底部导航栏 -->
@@ -1145,6 +1236,8 @@
             let contacts = [];
             // 信息列表数组
             let messageList = [];
+            // 当前联系人索引
+            let currentContactIndex = null;
             
             // 更新时间
             function updateTime() {
@@ -1234,8 +1327,32 @@
                         typeClass = 'missed-call';
                     }
                     
+                    // 同步通话记录中的头像与通讯录
+                    let avatarHtml = '';
+                    // 查找通讯录中是否有匹配的联系人
+                    const matchingContact = contacts.find(contact => contact.number === log.number);
+                    if (matchingContact) {
+                        // 如果通讯录中有匹配的联系人，使用通讯录中的头像
+                        if (matchingContact.avatar && (matchingContact.avatar.startsWith('data:image') || 
+                                                      matchingContact.avatar.startsWith('http://') || 
+                                                      matchingContact.avatar.startsWith('https://'))) {
+                            avatarHtml = `<img src="${matchingContact.avatar}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;" onerror="this.parentElement.innerHTML='${matchingContact.name.charAt(0)}'">`;
+                        } else {
+                            avatarHtml = matchingContact.avatar || matchingContact.name.charAt(0);
+                        }
+                    } else {
+                        // 如果通讯录中没有匹配的联系人，使用通话记录中原有的头像
+                        if (log.avatar && (log.avatar.startsWith('data:image') || 
+                                          log.avatar.startsWith('http://') || 
+                                          log.avatar.startsWith('https://'))) {
+                            avatarHtml = `<img src="${log.avatar}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;" onerror="this.parentElement.innerHTML='${log.name.charAt(0)}'">`;
+                        } else {
+                            avatarHtml = log.avatar || log.name.charAt(0);
+                        }
+                    }
+                    
                     callLogItem.innerHTML = `
-                        <div class="call-log-avatar">${log.avatar}</div>
+                        <div class="call-log-avatar">${avatarHtml}</div>
                         <div class="call-log-info">
                             <div class="call-log-header">
                                 <div class="call-log-name">${log.name}</div>
@@ -1247,7 +1364,7 @@
                             </div>
                         </div>
                     `;
-                    callLogItem.onclick = () => callContact(log.name, log.avatar, log.number);
+                    callLogItem.onclick = () => callContact(log.name, matchingContact ? matchingContact.avatar : log.avatar, log.number);
                     callLogList.appendChild(callLogItem);
                 });
             }
@@ -1395,17 +1512,43 @@
                 const contactsList = document.getElementById('contactsList');
                 contactsList.innerHTML = '';
                 
-                contacts.forEach(contact => {
+                contacts.forEach((contact, index) => {
                     const contactItem = document.createElement('div');
                     contactItem.className = 'contact-item';
+                    contactItem.dataset.index = index; // 保存索引以便操作
+                    
+                    // 检查头像是否为base64数据URL或其他图片格式
+                    let avatarHtml = '';
+                    if (contact.avatar && (contact.avatar.startsWith('data:image') || 
+                                          contact.avatar.startsWith('http://') || 
+                                          contact.avatar.startsWith('https://'))) {
+                        avatarHtml = `<img src="${contact.avatar}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;" onerror="this.parentElement.innerHTML='${contact.name.charAt(0)}'">`;
+                    } else {
+                        avatarHtml = contact.avatar || contact.name.charAt(0);
+                    }
+                    
                     contactItem.innerHTML = `
-                        <div class="contact-avatar">${contact.avatar}</div>
+                        <div class="contact-avatar">${avatarHtml}</div>
                         <div class="contact-info">
                             <div class="contact-name">${contact.name}</div>
                             <div class="contact-number">${contact.number}</div>
                         </div>
+                        <div class="menu-btn" onclick="showContactMenu(event, ${index})">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
+                            </svg>
+                        </div>
+                        <div class="contact-menu" id="contactMenu${index}">
+                            <div class="contact-menu-item" onclick="viewContactDetail(${index})">查看资料</div>
+                            <div class="contact-menu-item delete" onclick="deleteContactDirect(${index})">删除联系人</div>
+                        </div>
                     `;
-                    contactItem.onclick = () => callContact(contact.name, contact.avatar, contact.number);
+                    contactItem.onclick = (e) => {
+                        // 防止点击菜单按钮时触发拨打电话
+                        if (!e.target.closest('.menu-btn') && !e.target.closest('.contact-menu')) {
+                            callContact(contact.name, contact.avatar, contact.number);
+                        }
+                    };
                     contactsList.appendChild(contactItem);
                 });
             }
@@ -1434,8 +1577,11 @@
                 callLogs.unshift(callLog);
                 localStorage.setItem('callLogs', JSON.stringify(callLogs));
                 
-                // 跳转到通话页面
-                window.location.href = `tonghua.html?number=${encodeURIComponent(number)}&name=${encodeURIComponent(name)}&avatar=${encodeURIComponent(avatar)}`;
+                // 跳转到通话页面，传递base64头像数据
+                const encodedName = encodeURIComponent(name);
+                const encodedNumber = encodeURIComponent(number);
+                const encodedAvatar = encodeURIComponent(avatar || name.charAt(0));
+                window.location.href = `tonghua.html?number=${encodedNumber}&name=${encodedName}&avatar=${encodedAvatar}`;
             }
 
             // 渲染信息列表
@@ -1451,8 +1597,19 @@
                 messageList.forEach(message => {
                     const messageItem = document.createElement('div');
                     messageItem.className = 'message-item';
+                    
+                    // 检查头像是否为base64数据URL或其他图片格式
+                    let avatarHtml = '';
+                    if (message.avatar && (message.avatar.startsWith('data:image') || 
+                                          message.avatar.startsWith('http://') || 
+                                          message.avatar.startsWith('https://'))) {
+                        avatarHtml = `<img src="${message.avatar}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;" onerror="this.parentElement.innerHTML='${message.name.charAt(0)}'">`;
+                    } else {
+                        avatarHtml = message.avatar || message.name.charAt(0);
+                    }
+                    
                     messageItem.innerHTML = `
-                        <div class="message-avatar">${message.avatar}</div>
+                        <div class="message-avatar">${avatarHtml}</div>
                         <div class="message-info">
                             <div class="message-item-header">
                                 <div class="message-name">${message.name}</div>
@@ -1468,8 +1625,10 @@
 
             // 打开信息页面
             function openMessages(contactName, contactAvatar) {
-                // 跳转到独立的信息页面
-                window.location.href = `faxinxi.html?contact=${encodeURIComponent(contactName)}&avatar=${encodeURIComponent(contactAvatar || contactName.charAt(0))}`;
+                // 跳转到独立的信息页面，传递base64头像数据
+                const encodedName = encodeURIComponent(contactName);
+                const encodedAvatar = encodeURIComponent(contactAvatar || contactName.charAt(0));
+                window.location.href = `faxinxi.html?contact=${encodedName}&avatar=${encodedAvatar}`;
             }
 
             // 打开添加角色弹窗
@@ -1557,10 +1716,29 @@
                     return;
                 }
                 
-                // 生成头像（使用角色的头像或名称的第一个字符）
+                // 生成头像（使用角色的头像数据，支持base64格式）
                 let avatar = selectedCharacter.name.charAt(0);
                 if (selectedCharacter.avatar) {
+                    // 直接使用角色的头像数据（可能是base64数据URL）
                     avatar = selectedCharacter.avatar;
+                }
+                
+                // 获取世界书数据（如果存在）
+                let worldInfo = '';
+                const savedWorlds = localStorage.getItem('worlds');
+                if (savedWorlds) {
+                    try {
+                        const worlds = JSON.parse(savedWorlds);
+                        // 如果角色有关联的世界ID，获取对应的世界信息
+                        if (selectedCharacter.worldId) {
+                            const world = worlds.find(w => w.id == selectedCharacter.worldId);
+                            if (world) {
+                                worldInfo = world.desc || '';
+                            }
+                        }
+                    } catch (e) {
+                        console.error('解析世界书数据时出错:', e);
+                    }
                 }
                 
                 // 添加到联系人列表
@@ -1568,7 +1746,8 @@
                     name: selectedCharacter.name, 
                     avatar: avatar, 
                     number: number,
-                    roleId: selectedCharacter.id  // 保存角色ID以便识别来源
+                    roleId: selectedCharacter.id,  // 保存角色ID以便识别来源
+                    worldInfo: worldInfo  // 保存世界书信息
                 });
                 localStorage.setItem('contacts', JSON.stringify(contacts));
                 
@@ -1578,7 +1757,7 @@
                     messageList.push({ 
                         name: selectedCharacter.name, 
                         avatar: avatar, 
-                        preview: '新消息', 
+                        preview: worldInfo ? '来自世界书：' + worldInfo.substring(0, 20) + '...' : '新消息', 
                         time: '现在' 
                     });
                     localStorage.setItem('messageList', JSON.stringify(messageList));
@@ -1763,6 +1942,20 @@
                         avatar = contact.avatar;
                     }
                     
+                    // 如果没有找到完全匹配的联系人，尝试模糊匹配（去除空格和特殊字符）
+                    if (!contact) {
+                        const cleanNumber = number.replace(/\s|-/g, '');
+                        contact = contacts.find(c => {
+                            const cleanContactNumber = c.number.replace(/\s|-/g, '');
+                            return cleanContactNumber === cleanNumber;
+                        });
+                        
+                        if (contact) {
+                            name = contact.name;
+                            avatar = contact.avatar;
+                        }
+                    }
+                    
                     // 记录通话日志
                     const now = new Date();
                     const timeString = now.toLocaleDateString('zh-CN', { 
@@ -1790,6 +1983,125 @@
                 } else {
                     alert('请输入电话号码');
                 }
+            }
+
+            // 显示联系人菜单
+            function showContactMenu(event, index) {
+                event.stopPropagation(); // 阻止事件冒泡
+                
+                // 隐藏所有菜单
+                document.querySelectorAll('.contact-menu').forEach(menu => {
+                    menu.style.display = 'none';
+                });
+                
+                // 显示当前联系人的菜单
+                const menu = document.getElementById(`contactMenu${index}`);
+                menu.style.display = 'block';
+                
+                // 点击其他地方隐藏菜单
+                document.addEventListener('click', function hideMenu(e) {
+                    if (!e.target.closest(`#contactMenu${index}`) && !e.target.closest('.menu-btn')) {
+                        menu.style.display = 'none';
+                        document.removeEventListener('click', hideMenu);
+                    }
+                });
+            }
+
+            // 查看联系人详情
+            function viewContactDetail(index) {
+                const contact = contacts[index];
+                if (contact) {
+                    // 设置头像
+                    const avatarElement = document.getElementById('detailAvatar');
+                    if (contact.avatar && (contact.avatar.startsWith('data:image') || 
+                                          contact.avatar.startsWith('http://') || 
+                                          contact.avatar.startsWith('https://'))) {
+                        avatarElement.innerHTML = `<img src="${contact.avatar}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;" onerror="this.parentElement.innerHTML='${contact.name.charAt(0)}'">`;
+                    } else {
+                        avatarElement.innerHTML = contact.avatar || contact.name.charAt(0);
+                    }
+                    
+                    // 设置昵称和号码
+                    document.getElementById('detailName').value = contact.name;
+                    document.getElementById('detailNumber').value = contact.number;
+                    
+                    // 保存当前联系人索引
+                    currentContactIndex = index;
+                    
+                    // 显示弹窗
+                    document.getElementById('contactDetailModal').style.display = 'flex';
+                }
+            }
+
+            // 关闭联系人详情弹窗
+            function closeContactDetailModal() {
+                document.getElementById('contactDetailModal').style.display = 'none';
+                currentContactIndex = null;
+            }
+
+            // 保存联系人详情
+            function saveContactDetail() {
+                if (currentContactIndex !== null) {
+                    const newName = document.getElementById('detailName').value.trim();
+                    const newNumber = document.getElementById('detailNumber').value.trim();
+                    
+                    if (newName && newNumber) {
+                        // 更新联系人信息
+                        contacts[currentContactIndex].name = newName;
+                        contacts[currentContactIndex].number = newNumber;
+                        
+                        // 更新localStorage
+                        localStorage.setItem('contacts', JSON.stringify(contacts));
+                        
+                        // 更新信息列表中的联系人信息
+                        const message = messageList.find(m => m.name === newName);
+                        if (message) {
+                            message.name = newName;
+                            localStorage.setItem('messageList', JSON.stringify(messageList));
+                        }
+                        
+                        // 重新渲染联系人列表
+                        renderContacts();
+                        
+                        // 关闭弹窗
+                        closeContactDetailModal();
+                    } else {
+                        alert('请填写完整的联系人信息');
+                    }
+                }
+            }
+
+            // 直接删除联系人
+            function deleteContactDirect(index) {
+                // 保存索引以便在确认后使用
+                currentContactIndex = index;
+                
+                // 显示确认删除弹窗
+                document.getElementById('deleteContactConfirmModal').style.display = 'flex';
+            }
+            
+            // 确认删除联系人
+            function confirmDeleteContact() {
+                if (currentContactIndex !== null) {
+                    // 从联系人数组中删除
+                    contacts.splice(currentContactIndex, 1);
+                    
+                    // 更新localStorage
+                    localStorage.setItem('contacts', JSON.stringify(contacts));
+                    
+                    // 重新渲染联系人列表
+                    renderContacts();
+                    
+                    // 关闭确认弹窗
+                    document.getElementById('deleteContactConfirmModal').style.display = 'none';
+                    currentContactIndex = null;
+                }
+            }
+            
+            // 关闭删除联系人确认弹窗
+            function closeDeleteContactConfirmModal() {
+                document.getElementById('deleteContactConfirmModal').style.display = 'none';
+                currentContactIndex = null;
             }
         </script>
     </div>
