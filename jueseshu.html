@@ -572,6 +572,28 @@
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(255, 59, 48, 0.4);
         }
+        
+        /* 修复工具按钮样式 */
+        .repair-btn {
+            width: 100%;
+            padding: 12px;
+            border-radius: 12px;
+            border: none;
+            color: white;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+        
+        .repair-warning-btn {
+            background: linear-gradient(135deg, #FF9500, #FFA500);
+        }
+        
+        .repair-info-btn {
+            background: linear-gradient(135deg, #5856D6, #AF52DE);
+        }
     </style>
 </head>
 <body>
@@ -679,6 +701,8 @@
                     <div class="character-detail-desc" id="detailDesc"></div>
                 </div>
                 <button class="delete-btn" onclick="deleteCharacter()">删除角色</button>
+                <!-- 添加编辑按钮 -->
+                <button class="delete-btn" onclick="editCharacter()" style="background: linear-gradient(135deg, #34C759, #30D158); margin-top: 10px;">编辑角色</button>
                 <!-- 添加数据清理按钮 -->
                 <button class="delete-btn" onclick="cleanAndFixCharacters()" style="background: linear-gradient(135deg, #007AFF, #0A84FF); margin-top: 10px;">清理数据</button>
             </div>
@@ -698,9 +722,9 @@
                 </div>
                 <!-- 添加手机端修复工具按钮 -->
                 <div style="margin-top: 15px; text-align: center; display: flex; flex-direction: column; gap: 10px;">
-                    <button class="confirm-btn confirm-cancel-btn" onclick="emergencyFixCharacters()" style="background: linear-gradient(135deg, #FF9500, #FFA500); font-size: 14px; padding: 8px;">紧急修复</button>
-                    <button class="confirm-btn confirm-cancel-btn" onclick="mobileDataRepair()" style="background: linear-gradient(135deg, #5856D6, #AF52DE); font-size: 14px; padding: 8px;">数据修复</button>
-                    <button class="confirm-btn confirm-delete-btn" onclick="mobileEmergencyReset()" style="font-size: 14px; padding: 8px;">紧急重置</button>
+                    <button class="repair-btn repair-warning-btn" onclick="emergencyFixCharacters()">紧急修复</button>
+                    <button class="repair-btn repair-info-btn" onclick="mobileDataRepair()">数据修复</button>
+                    <button class="repair-btn confirm-delete-btn" onclick="mobileEmergencyReset()">紧急重置</button>
                 </div>
             </div>
         </div>
@@ -849,10 +873,15 @@
                                     return false;
                                 }
                                 
-                                // 检查索引是否有效
-                                if (index < 0) {
-                                    console.log('发现无效索引的角色，索引:', index);
-                                    return false;
+                                // 确保每个角色都有ID
+                                if (!character.id) {
+                                    character.id = Date.now() + index; // 生成唯一ID
+                                    console.log('为角色生成ID:', character.id);
+                                }
+                                
+                                // 确保有创建时间
+                                if (!character.createdAt) {
+                                    character.createdAt = new Date().toISOString();
                                 }
                                 
                                 // 限制角色名称长度
@@ -916,9 +945,26 @@
                 characters.forEach((character, index) => {
                     const characterCard = document.createElement('div');
                     characterCard.className = 'character-card';
+                    
+                    // 处理头像显示，增加更好的错误处理
+                    let avatarHtml = '';
+                    if (character.avatar) {
+                        // 检查头像数据是否为有效的base64数据或URL
+                        if (character.avatar.startsWith('data:image') || 
+                            character.avatar.startsWith('http://') || 
+                            character.avatar.startsWith('https://')) {
+                            avatarHtml = `<img src="${character.avatar}" alt="${character.name}" onerror="this.onerror=null;this.parentElement.innerHTML='👤';console.log('头像加载失败:', this.src.substring(0, 100))">`;
+                        } else {
+                            // 如果不是有效的图片格式，显示默认头像
+                            avatarHtml = '👤';
+                        }
+                    } else {
+                        avatarHtml = '👤';
+                    }
+                    
                     characterCard.innerHTML = `
                         <div class="character-avatar">
-                            ${character.avatar ? `<img src="${character.avatar}" alt="${character.name}" onerror="this.src='';this.parentElement.innerHTML='👤'">` : '👤'}
+                            ${avatarHtml}
                         </div>
                         <div class="character-name">${character.name}</div>
                         <div class="character-desc">${character.desc || ''}</div>
@@ -1159,7 +1205,7 @@
                     // 验证索引位置的角色是否匹配
                     const characterAtIndex = characters[currentCharacterIndex];
                     if (characterAtIndex && 
-                        ((currentCharacter && characterAtIndex.id === currentCharacter.id) ||
+                        ((currentCharacter && characterAtIndex.id && currentCharacter.id && characterAtIndex.id === currentCharacter.id) ||
                          (currentCharacter && characterAtIndex.name === currentCharacter.name))) {
                         // 索引匹配，直接删除
                         characters.splice(currentCharacterIndex, 1);
@@ -1172,7 +1218,7 @@
                 // 策略2: 通过ID查找删除（如果策略1失败）
                 if (!deleteSuccess && currentCharacter && currentCharacter.id) {
                     const foundIndex = characters.findIndex(char => 
-                        char && char.id === currentCharacter.id);
+                        char && char.id && char.id === currentCharacter.id);
                     if (foundIndex !== -1) {
                         characters.splice(foundIndex, 1);
                         deleteSuccess = true;
@@ -1197,9 +1243,10 @@
                 if (!deleteSuccess && currentCharacter) {
                     const foundIndex = characters.findIndex(char => {
                         if (!char) return false;
-                        // 比较关键属性
-                        return (currentCharacter.name && char.name === currentCharacter.name) ||
-                               (currentCharacter.desc && char.desc === currentCharacter.desc);
+                        // 比较关键属性，使用更宽松的匹配条件
+                        return (currentCharacter.name && char.name && char.name === currentCharacter.name) ||
+                               (currentCharacter.desc && char.desc && char.desc === currentCharacter.desc) ||
+                               (currentCharacter.id && char.id && char.id === currentCharacter.id);
                     });
                     
                     if (foundIndex !== -1) {
@@ -1210,13 +1257,39 @@
                     }
                 }
                 
+                // 策略5: 如果所有策略都失败，但currentCharacter存在，尝试按对象引用删除
+                if (!deleteSuccess && currentCharacter) {
+                    const foundIndex = characters.findIndex(char => {
+                        // 更宽松的对象匹配
+                        if (!char) return false;
+                        // 检查必要字段是否匹配
+                        if (currentCharacter.name && char.name && char.name === currentCharacter.name) return true;
+                        if (currentCharacter.id && char.id && char.id === currentCharacter.id) return true;
+                        // 最后尝试JSON字符串匹配
+                        try {
+                            return JSON.stringify(char) === JSON.stringify(currentCharacter);
+                        } catch (e) {
+                            return false;
+                        }
+                    });
+                    if (foundIndex !== -1) {
+                        characters.splice(foundIndex, 1);
+                        deleteSuccess = true;
+                        deleteIndex = foundIndex;
+                        console.log('通过对象匹配删除成功');
+                    }
+                }
+                
                 // 如果所有策略都失败
                 if (!deleteSuccess) {
                     console.error('删除失败，未找到匹配的角色');
                     console.log('当前角色:', currentCharacter);
                     console.log('当前索引:', currentCharacterIndex);
                     console.log('角色列表:', characters);
-                    showPageAlert('删除失败，请尝试刷新页面后重试');
+                    
+                    // 尝试最后的清理方法：重新加载数据并再次尝试
+                    loadCharacters();
+                    showPageAlert('删除失败，已重新加载数据，请再次尝试删除');
                     closeConfirmDeleteModal();
                     return;
                 }
@@ -1271,7 +1344,22 @@
 
             // 关闭添加角色弹窗
             function closeAddCharacterModal() {
-                document.getElementById('addCharacterModal').classList.remove('active');
+                const modal = document.getElementById('addCharacterModal');
+                if (modal) {
+                    modal.classList.remove('active');
+                    
+                    // 恢复添加角色弹窗的原始状态
+                    const titleElement = modal.querySelector('.modal-title');
+                    if (titleElement) {
+                        titleElement.textContent = '添加角色';
+                    }
+                    
+                    const saveButton = modal.querySelector('.submit-btn');
+                    if (saveButton) {
+                        saveButton.textContent = '保存角色';
+                        saveButton.onclick = addCharacter;
+                    }
+                }
             }
 
             // 显示URL上传界面
@@ -1307,107 +1395,125 @@
                 window.tempAvatar = url;
                 
                 // 更新预览区域
-                document.getElementById('avatarPreviewArea').innerHTML = `
-                    <img src="${url}" style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover; margin: 0 auto 10px;">
-                    <div class="upload-text" id="uploadText">头像已选择</div>
-                `;
+                const previewArea = document.getElementById('avatarPreviewArea');
+                if (previewArea) {  // 确保元素存在
+                    previewArea.innerHTML = `
+                        <img src="${url}" style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover; margin: 0 auto 10px;">
+                        <div class="upload-text" id="uploadText">头像已选择</div>
+                    `;
+                }
                 
                 // 隐藏URL输入框
-                document.getElementById('urlUploadContainer').style.display = 'none';
+                const urlContainer = document.getElementById('urlUploadContainer');
+                if (urlContainer) {  // 确保元素存在
+                    urlContainer.style.display = 'none';
+                }
                 document.getElementById('avatarUrl').value = '';
                 
                 showPageAlert('头像URL设置成功！');
             }
 
-            // 处理头像上传 - 移除所有大小限制
+            // 处理头像上传 - 参考33聊天室的图片处理方式
             function handleAvatarUpload(event) {
                 const file = event.target.files[0];
                 if (file) {
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        try {
-                            // 直接使用原始数据，不进行任何压缩或大小检查
-                            window.tempAvatar = e.target.result;
+                    // 检查文件类型
+                    if (!file.type.startsWith('image/')) {
+                        showPageAlert('请选择有效的图片文件');
+                        return;
+                    }
+                    
+                    // 显示加载提示
+                    const previewArea = document.getElementById('avatarPreviewArea');
+                    if (previewArea) {
+                        previewArea.innerHTML = `
+                            <div class="upload-icon">⏳</div>
+                            <div class="upload-text" id="uploadText">正在处理图片...</div>
+                        `;
+                    }
+                    
+                    // 压缩图片
+                    compressImage(file, 300, 300, 0.8)
+                        .then(compressedData => {
+                            // 保存压缩后的图片数据
+                            window.tempAvatar = compressedData;
                             // 更新上传区域显示
-                            document.getElementById('avatarPreviewArea').innerHTML = `
-                                <img src="${e.target.result}" style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover; margin: 0 auto 10px;">
-                                <div class="upload-text" id="uploadText">头像已选择</div>
-                            `;
+                            if (previewArea) {
+                                previewArea.innerHTML = `
+                                    <img src="${compressedData}" style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover; margin: 0 auto 10px;" onerror="this.onerror=null;this.parentElement.innerHTML='<div class=\\'upload-icon\\'>👤</div><div class=\\'upload-text\\' id=\\'uploadText\\'>头像加载失败</div>'">
+                                    <div class="upload-text" id="uploadText">头像已选择</div>
+                                `;
+                            }
                             
                             // 隐藏URL输入框
-                            document.getElementById('urlUploadContainer').style.display = 'none';
-                        } catch (error) {
-                            console.error('图片处理失败:', error);
+                            const urlContainer = document.getElementById('urlUploadContainer');
+                            if (urlContainer) {
+                                urlContainer.style.display = 'none';
+                            }
+                        })
+                        .catch(error => {
+                            console.error('图片压缩失败:', error);
                             showPageAlert('图片处理失败，请重新选择');
-                        }
-                    };
-                    reader.onerror = function() {
-                        showPageAlert('图片读取失败，请重新选择');
-                    };
-                    reader.readAsDataURL(file);
+                            // 恢复默认显示
+                            if (previewArea) {
+                                previewArea.innerHTML = `
+                                    <div class="upload-icon">👤</div>
+                                    <div class="upload-text" id="uploadText">点击选择头像或使用URL上传</div>
+                                `;
+                            }
+                        });
                 }
             }
             
-            // 为手机优化的图片压缩
-            function compressImageForMobile(src) {
+            // 图片压缩函数 - 参考33聊天室的实现
+            function compressImage(file, maxWidth = 800, maxHeight = 800, quality = 0.7) {
                 return new Promise((resolve, reject) => {
-                    const img = new Image();
-                    img.onload = () => {
-                        // 为手机屏幕优化尺寸，但保持更高的分辨率
-                        let width = img.width;
-                        let height = img.height;
-                        const maxWidth = 300;  // 为手机优化，提高分辨率
-                        const maxHeight = 300; // 为手机优化，提高分辨率
-                        
-                        // 按比例缩放，但保持更高的质量
-                        if (width > height) {
-                            if (width > maxWidth) {
-                                height = Math.round((height * maxWidth) / width);
-                                width = maxWidth;
+                    const reader = new FileReader();
+                    reader.readAsDataURL(file);
+                    reader.onload = (event) => {
+                        const img = new Image();
+                        img.src = event.target.result;
+                        img.onload = () => {
+                            const canvas = document.createElement('canvas');
+                            const ctx = canvas.getContext('2d');
+
+                            let width = img.width;
+                            let height = img.height;
+
+                            if (width > height) {
+                                if (width > maxWidth) {
+                                    height = Math.round(height * (maxWidth / width));
+                                    width = maxWidth;
+                                }
+                            } else {
+                                if (height > maxHeight) {
+                                    width = Math.round(width * (maxHeight / height));
+                                    height = maxHeight;
+                                }
                             }
-                        } else {
-                            if (height > maxHeight) {
-                                width = Math.round((width * maxHeight) / height);
-                                height = maxHeight;
-                            }
-                        }
-                        
-                        // 创建canvas进行压缩
-                        const canvas = document.createElement('canvas');
-                        canvas.width = width;
-                        canvas.height = height;
-                        const ctx = canvas.getContext('2d');
-                        
-                        // 绘制图片
-                        ctx.drawImage(img, 0, 0, width, height);
-                        
-                        // 尝试不同的质量级别，但保持更高的质量
-                        let quality = 0.9; // 更高的质量
-                        let compressedData;
-                        
-                        do {
-                            compressedData = canvas.toDataURL('image/jpeg', quality);
-                            if (compressedData.length < 500 * 1024) { // 500KB目标（更宽松）
-                                break;
-                            }
-                            quality -= 0.1;
-                        } while (quality > 0.3); // 保持更高的最低质量
-                        
-                        // 如果还是太大，使用更小的尺寸压缩
-                        if (compressedData.length >= 500 * 1024) {
-                            canvas.width = Math.round(width * 0.9);
-                            canvas.height = Math.round(height * 0.9);
-                            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                            compressedData = canvas.toDataURL('image/jpeg', 0.8);
-                        }
-                        
-                        resolve(compressedData);
+
+                            canvas.width = width;
+                            canvas.height = height;
+                            ctx.drawImage(img, 0, 0, width, height);
+
+                            resolve(canvas.toDataURL(file.type, quality));
+                        };
+                        img.onerror = reject;
                     };
-                    img.onerror = reject;
-                    img.src = src;
+                    reader.onerror = reject;
                 });
             }
-            
+
+            // 文件转base64函数 - 参考33聊天室的实现
+            function fileToBase64(file) {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.readAsDataURL(file);
+                    reader.onload = () => resolve(reader.result);
+                    reader.onerror = error => reject(error);
+                });
+            }
+
             // 添加角色
             function addCharacter() {
                 const name = document.getElementById('characterName').value.trim();
@@ -1430,113 +1536,57 @@
                     }
                 }
                 
-                // 创建新角色对象（移除所有大小限制）
+                // 检查是否已存在同名角色
+                const existingCharacter = characters.find(char => char.name === name);
+                if (existingCharacter) {
+                    showPageAlert('已存在同名角色，请使用不同的名称');
+                    return;
+                }
+                
+                // 创建新角色对象
                 const newCharacter = {
-                    id: Date.now(),
+                    id: Date.now() + Math.floor(Math.random() * 10000), // 确保唯一ID
                     name: name,
                     desc: desc,
-                    avatar: window.tempAvatar || null, // 直接使用，不检查大小
+                    avatar: window.tempAvatar || null,
                     createdAt: new Date().toISOString()
                 };
                 
                 // 添加新角色到数组
                 characters.push(newCharacter);
                 
-                // 保存到本地存储（不进行大小检查）
+                // 保存到本地存储
                 try {
                     localStorage.setItem('characters', JSON.stringify(characters));
                 } catch (e) {
-                    if (e.name === 'QuotaExceededError') {
-                        // 即使存储空间不足也尝试保存，让用户决定如何处理
-                        showPageAlert('存储空间可能不足，但仍尝试保存角色。如果保存失败，请删除一些角色或清理浏览器缓存。');
-                        // 尝试清理旧数据后再次保存
-                        try {
-                            // 保留最新的50个角色
-                            if (characters.length > 50) {
-                                characters = characters.slice(-50);
-                                localStorage.setItem('characters', JSON.stringify(characters));
-                                showPageAlert('已自动清理旧数据，保存了最新的50个角色。');
-                            }
-                        } catch (e2) {
-                            showPageAlert('保存角色时出错，请重试或清理浏览器缓存。');
-                            return;
-                        }
-                    } else {
-                        showPageAlert('保存角色时出错，请重试。');
-                        return;
-                    }
+                    console.error('保存角色时出错:', e);
+                    showPageAlert('保存角色时出错，请重试');
+                    return;
                 }
                 
                 // 更新UI
                 loadCharacters();
                 closeAddCharacterModal();
                 
-                // 重置表单
+                // 重置表单和临时变量
                 document.getElementById('characterName').value = '';
                 document.getElementById('characterDesc').value = '';
-                document.getElementById('avatarPreviewArea').innerHTML = `
-                    <div class="upload-icon">👤</div>
-                    <div class="upload-text" id="uploadText">点击选择头像或使用URL上传</div>
-                `;
-                document.getElementById('urlUploadContainer').style.display = 'none';
+                const previewArea = document.getElementById('avatarPreviewArea');
+                if (previewArea) {
+                    previewArea.innerHTML = `
+                        <div class="upload-icon">👤</div>
+                        <div class="upload-text" id="uploadText">点击选择头像或使用URL上传</div>
+                    `;
+                }
+                const urlContainer = document.getElementById('urlUploadContainer');
+                if (urlContainer) {
+                    urlContainer.style.display = 'none';
+                }
                 document.getElementById('avatarUrl').value = '';
-                window.tempAvatar = null;
+                window.tempAvatar = undefined; // 重置为undefined而不是null
                 
                 // 显示成功提示
                 showPageAlert('角色添加成功！');
-            }
-            
-            // 压缩图片数据
-            function compressImageData(imageData) {
-                // 如果图片数据太大，尝试压缩
-                if (imageData.length > 500 * 1024) { // 500KB（更宽松的限制）
-                    // 这里可以添加图片压缩逻辑
-                    // 简单处理：截取部分数据避免过大
-                    console.log('图片数据较大，进行压缩处理');
-                    // 为了简单起见，我们只保留前500KB数据
-                    if (imageData.length > 500 * 1024) {
-                        return imageData.substring(0, 500 * 1024);
-                    }
-                }
-                return imageData;
-            }
-            
-            // 压缩图片函数
-            function compressImage(src, maxWidth, maxHeight, quality) {
-                return new Promise((resolve, reject) => {
-                    const img = new Image();
-                    img.onload = () => {
-                        // 按比例缩放
-                        let width = img.width;
-                        let height = img.height;
-                        
-                        if (width > height) {
-                            if (width > maxWidth) {
-                                height = Math.round((height * maxWidth) / width);
-                                width = maxWidth;
-                            }
-                        } else {
-                            if (height > maxHeight) {
-                                width = Math.round((width * maxHeight) / height);
-                                height = maxHeight;
-                            }
-                        }
-                        
-                        // 创建canvas进行压缩
-                        const canvas = document.createElement('canvas');
-                        canvas.width = width;
-                        canvas.height = height;
-                        const ctx = canvas.getContext('2d');
-                        
-                        // 绘制图片
-                        ctx.drawImage(img, 0, 0, width, height);
-                        
-                        // 返回压缩后的数据
-                        resolve(canvas.toDataURL('image/jpeg', quality));
-                    };
-                    img.onerror = reject;
-                    img.src = src;
-                });
             }
 
             // 查看角色详情
@@ -1550,28 +1600,58 @@
                 currentCharacterIndex = index;
                 
                 // 设置详情弹窗内容
-                document.getElementById('detailName').textContent = character.name;
-                document.getElementById('detailDesc').textContent = character.desc;
+                const detailName = document.getElementById('detailName');
+                const detailDesc = document.getElementById('detailDesc');
+                
+                if (detailName) {
+                    detailName.textContent = character.name;
+                }
+                if (detailDesc) {
+                    detailDesc.textContent = character.desc || '';
+                }
                 
                 // 设置头像
-                const avatarImg = document.getElementById('detailAvatar');
-                if (character.avatar) {
-                    // 检查avatar是URL还是base64数据
-                    if (character.avatar.startsWith('http://') || character.avatar.startsWith('https://')) {
-                        // 如果是URL，直接使用
-                        avatarImg.src = character.avatar;
+                const avatarContainer = document.querySelector('.character-detail-avatar');
+                if (avatarContainer) {
+                    // 清空容器
+                    avatarContainer.innerHTML = '';
+                    
+                    if (character.avatar) {
+                        // 检查avatar是URL还是base64数据
+                        if (character.avatar.startsWith('http://') || character.avatar.startsWith('https://')) {
+                            // 如果是URL，创建img元素并设置属性
+                            const img = document.createElement('img');
+                            img.src = character.avatar;
+                            img.alt = character.name;
+                            img.style.cssText = 'width:100%;height:100%;object-fit:cover;';
+                            img.onerror = function() {
+                                // 如果图片加载失败，显示默认头像
+                                console.log('详情页头像加载失败:', this.src.substring(0, 100));
+                                this.onerror = null;
+                                this.parentElement.innerHTML = '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:40px;">👤</div>';
+                            };
+                            avatarContainer.appendChild(img);
+                        } else if (character.avatar.startsWith('data:image')) {
+                            // 如果是base64数据，创建img元素并设置属性
+                            const img = document.createElement('img');
+                            img.src = character.avatar;
+                            img.alt = character.name;
+                            img.style.cssText = 'width:100%;height:100%;object-fit:cover;';
+                            img.onerror = function() {
+                                // 如果图片加载失败，显示默认头像
+                                console.log('详情页头像加载失败:', this.src.substring(0, 100));
+                                this.onerror = null;
+                                this.parentElement.innerHTML = '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:40px;">👤</div>';
+                            };
+                            avatarContainer.appendChild(img);
+                        } else {
+                            // 如果不是有效的图片格式，使用默认头像
+                            avatarContainer.innerHTML = '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:40px;">👤</div>';
+                        }
                     } else {
-                        // 如果是base64数据，直接使用
-                        avatarImg.src = character.avatar;
+                        // 没有头像数据，使用默认头像
+                        avatarContainer.innerHTML = '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:40px;">👤</div>';
                     }
-                    avatarImg.alt = character.name;
-                    // 确保父元素显示图片
-                    avatarImg.parentElement.innerHTML = '';
-                    avatarImg.parentElement.appendChild(avatarImg);
-                } else {
-                    avatarImg.src = '';
-                    avatarImg.alt = '👤';
-                    avatarImg.parentElement.innerHTML = '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:40px;">👤</div>';
                 }
                 
                 // 打开详情弹窗
@@ -1602,7 +1682,164 @@
                 currentCharacterIndex = null;
             }
 
-            // 增强的删除角色功能 - 专为手机优化
+            // 编辑角色
+            function editCharacter() {
+                // 关闭详情弹窗
+                closeCharacterDetailModal();
+                
+                // 打开编辑弹窗
+                openEditCharacterModal();
+            }
+
+            // 打开编辑角色弹窗
+            function openEditCharacterModal() {
+                // 设置表单数据
+                if (currentCharacter) {
+                    document.getElementById('characterName').value = currentCharacter.name || '';
+                    document.getElementById('characterDesc').value = currentCharacter.desc || '';
+                    
+                    // 设置头像预览
+                    const previewArea = document.getElementById('avatarPreviewArea');
+                    if (previewArea) {
+                        if (currentCharacter.avatar) {
+                            if (currentCharacter.avatar.startsWith('data:image') || 
+                                currentCharacter.avatar.startsWith('http://') || 
+                                currentCharacter.avatar.startsWith('https://')) {
+                                previewArea.innerHTML = `
+                                    <img src="${currentCharacter.avatar}" style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover; margin: 0 auto 10px;">
+                                    <div class="upload-text" id="uploadText">当前头像</div>
+                                `;
+                            } else {
+                                previewArea.innerHTML = `
+                                    <div class="upload-icon">👤</div>
+                                    <div class="upload-text" id="uploadText">点击选择新头像</div>
+                                `;
+                            }
+                        } else {
+                            previewArea.innerHTML = `
+                                <div class="upload-icon">👤</div>
+                                <div class="upload-text" id="uploadText">点击选择头像</div>
+                            `;
+                        }
+                    }
+                    
+                    // 保存当前角色到临时变量
+                    window.tempAvatar = currentCharacter.avatar || null;
+                    
+                    // 显示添加角色弹窗（用于编辑）
+                    const modal = document.getElementById('addCharacterModal');
+                    if (modal) {
+                        // 更改标题为编辑角色
+                        const titleElement = modal.querySelector('.modal-title');
+                        if (titleElement) {
+                            titleElement.textContent = '编辑角色';
+                        }
+                        
+                        // 更改保存按钮文字
+                        const saveButton = modal.querySelector('.submit-btn');
+                        if (saveButton) {
+                            saveButton.textContent = '更新角色';
+                            // 更改保存按钮的点击事件
+                            saveButton.onclick = updateCharacter;
+                        }
+                        
+                        modal.classList.add('active');
+                    }
+                }
+            }
+
+            // 更新角色
+            function updateCharacter() {
+                console.log('更新角色函数被调用');
+                const name = document.getElementById('characterName').value.trim();
+                const desc = document.getElementById('characterDesc').value.trim();
+                
+                if (!name) {
+                    showPageAlert('请输入角色名称');
+                    return;
+                }
+                
+                // 获取保存的角色数据
+                const savedCharacters = localStorage.getItem('characters');
+                let characters = [];
+                
+                if (savedCharacters) {
+                    try {
+                        characters = JSON.parse(savedCharacters);
+                    } catch (e) {
+                        console.error('解析角色数据时出错:', e);
+                        showPageAlert('数据解析错误');
+                        return;
+                    }
+                }
+                
+                // 查找并更新角色
+                let updated = false;
+                for (let i = 0; i < characters.length; i++) {
+                    if (characters[i].id === currentCharacter.id) {
+                        characters[i].name = name;
+                        characters[i].desc = desc;
+                        characters[i].avatar = window.tempAvatar || characters[i].avatar;
+                        updated = true;
+                        break;
+                    }
+                }
+                
+                if (!updated) {
+                    showPageAlert('未找到要更新的角色');
+                    return;
+                }
+                
+                // 保存到本地存储
+                try {
+                    localStorage.setItem('characters', JSON.stringify(characters));
+                } catch (e) {
+                    console.error('保存角色时出错:', e);
+                    showPageAlert('保存角色时出错，请重试');
+                    return;
+                }
+                
+                // 更新UI
+                loadCharacters();
+                closeAddCharacterModal();
+                
+                // 重置表单和临时变量
+                document.getElementById('characterName').value = '';
+                document.getElementById('characterDesc').value = '';
+                const previewArea = document.getElementById('avatarPreviewArea');
+                if (previewArea) {
+                    previewArea.innerHTML = `
+                        <div class="upload-icon">👤</div>
+                        <div class="upload-text" id="uploadText">点击选择头像或使用URL上传</div>
+                    `;
+                }
+                const urlContainer = document.getElementById('urlUploadContainer');
+                if (urlContainer) {
+                    urlContainer.style.display = 'none';
+                }
+                document.getElementById('avatarUrl').value = '';
+                window.tempAvatar = undefined; // 重置为undefined而不是null
+                
+                // 恢复添加角色弹窗的原始状态
+                const modal = document.getElementById('addCharacterModal');
+                if (modal) {
+                    const titleElement = modal.querySelector('.modal-title');
+                    if (titleElement) {
+                        titleElement.textContent = '添加角色';
+                    }
+                    
+                    const saveButton = modal.querySelector('.submit-btn');
+                    if (saveButton) {
+                        saveButton.textContent = '保存角色';
+                        saveButton.onclick = addCharacter;
+                    }
+                }
+                
+                // 显示成功提示
+                showPageAlert('角色更新成功！');
+            }
+
+            // 删除角色
             function deleteCharacter() {
                 console.log('删除角色函数被调用');
                 console.log('当前角色:', currentCharacter);
@@ -1632,103 +1869,9 @@
                 
                 // 显示删除确认弹窗
                 showDeleteConfirm(currentCharacter, currentCharacterIndex);
-                closeCharacterDetailModal();
+                // 注意：不要在这里关闭详情弹窗，而是在确认删除后再关闭
             }
 
-            // 手机友好的长按处理
-            function handleLongPressStart(event, character, index) {
-                console.log('长按开始事件触发');
-                console.log('角色:', character);
-                console.log('索引:', index);
-                
-                // 防止事件冒泡
-                event.preventDefault();
-                event.stopPropagation();
-                
-                // 在手机上立即显示反馈
-                const characterCard = event.target.closest('.character-card');
-                if (characterCard) {
-                    characterCard.style.backgroundColor = 'rgba(255, 59, 48, 0.3)'; // 红色背景反馈
-                }
-                
-                // 设置长按定时器（手机上可以稍微缩短时间）
-                longPressTimer = setTimeout(() => {
-                    console.log('长按触发');
-                    // 长按触发
-                    if (characterCard) {
-                        characterCard.classList.add('long-press');
-                        // 震动反馈（如果设备支持）
-                        if (navigator.vibrate) {
-                            navigator.vibrate(50); // 50ms震动
-                        }
-                        showDeleteConfirm(character, index);
-                    }
-                }, 300); // 手机上300ms更合适
-            }
-
-            // 改进的删除确认功能
-            function showDeleteConfirm(character, index) {
-                currentCharacter = character;
-                currentCharacterIndex = index;
-                const confirmModal = document.getElementById('confirmDeleteModal');
-                if (confirmModal) {
-                    confirmModal.classList.add('active');
-                    // 在手机上确保弹窗可见
-                    setTimeout(() => {
-                        confirmModal.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    }, 100);
-                } else {
-                    console.error('确认删除弹窗不存在');
-                    showPageAlert('系统错误，请刷新页面后重试');
-                }
-            }
-
-            // 显示页面内提示信息（替代浏览器alert）
-            function showPageAlert(message) {
-                // 创建提示元素
-                const alertElement = document.createElement('div');
-                alertElement.style.cssText = `
-                    position: fixed;
-                    top: 50%;
-                    left: 50%;
-                    transform: translate(-50%, -50%);
-                    background: rgba(0, 0, 0, 0.8);
-                    color: white;
-                    padding: 20px;
-                    border-radius: 10px;
-                    z-index: 2000;
-                    text-align: center;
-                    backdrop-filter: blur(10px);
-                    border: 1px solid rgba(255, 255, 255, 0.1);
-                    max-width: 80%;
-                `;
-                alertElement.textContent = message;
-                
-                // 添加到页面
-                document.body.appendChild(alertElement);
-                
-                // 3秒后自动移除
-                setTimeout(() => {
-                    if (alertElement.parentNode) {
-                        alertElement.parentNode.removeChild(alertElement);
-                    }
-                }, 3000);
-            }
-            
-            // 重置所有角色数据
-            function resetAllCharacters() {
-                if (confirm('这将删除所有角色数据，确定要继续吗？')) {
-                    try {
-                        localStorage.removeItem('characters');
-                        loadCharacters();
-                        showPageAlert('所有角色数据已重置！');
-                    } catch (e) {
-                        console.error('重置角色数据时出错:', e);
-                        showPageAlert('重置数据时出错，请重试');
-                    }
-                }
-            }
-            
             // 紧急修复功能
             function emergencyFixCharacters() {
                 if (confirm('这将清理所有角色数据，确定要继续吗？')) {
@@ -1866,7 +2009,100 @@
             
             // 手机端紧急重置功能
             function mobileEmergencyReset() {
-                if (confirm('这将删除所有角色数据，确定要继续吗？\n\n注意：此操作不可撤销！')) {
+                // 使用自定义确认对话框替代浏览器confirm
+                const confirmMessage = '这将删除所有角色数据，确定要继续吗？\n\n注意：此操作不可撤销！';
+                
+                // 创建自定义确认弹窗
+                const confirmModal = document.createElement('div');
+                confirmModal.style.cssText = `
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(0, 0, 0, 0.5);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    z-index: 3000;
+                `;
+                
+                confirmModal.innerHTML = `
+                    <div style="
+                        background: rgba(30, 30, 30, 0.95);
+                        backdrop-filter: blur(20px);
+                        -webkit-backdrop-filter: blur(20px);
+                        border-radius: 20px;
+                        padding: 25px;
+                        width: 90%;
+                        max-width: 300px;
+                        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+                        border: 1px solid rgba(255, 255, 255, 0.1);
+                    ">
+                        <div style="
+                            display: flex;
+                            justify-content: space-between;
+                            align-items: center;
+                            margin-bottom: 20px;
+                        ">
+                            <div style="font-size: 18px; font-weight: bold;">确认重置</div>
+                            <button class="close-btn" style="
+                                background: transparent;
+                                border: none;
+                                color: white;
+                                font-size: 24px;
+                                cursor: pointer;
+                                width: 30px;
+                                height: 30px;
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                border-radius: 50%;
+                            ">&times;</button>
+                        </div>
+                        <div style="font-size: 16px; margin-bottom: 20px; text-align: center;">
+                            ${confirmMessage}
+                        </div>
+                        <div style="display: flex; gap: 10px;">
+                            <button id="cancelReset" style="
+                                flex: 1;
+                                padding: 12px;
+                                border-radius: 12px;
+                                border: none;
+                                background: rgba(255, 255, 255, 0.1);
+                                color: white;
+                                font-size: 16px;
+                                font-weight: bold;
+                                cursor: pointer;
+                            ">取消</button>
+                            <button id="confirmReset" style="
+                                flex: 1;
+                                padding: 12px;
+                                border-radius: 12px;
+                                border: none;
+                                background: linear-gradient(135deg, #FF3B30, #FF453A);
+                                color: white;
+                                font-size: 16px;
+                                font-weight: bold;
+                                cursor: pointer;
+                            ">确定</button>
+                        </div>
+                    </div>
+                `;
+                
+                document.body.appendChild(confirmModal);
+                
+                // 添加事件监听器
+                confirmModal.querySelector('.close-btn').addEventListener('click', function() {
+                    document.body.removeChild(confirmModal);
+                });
+                
+                confirmModal.querySelector('#cancelReset').addEventListener('click', function() {
+                    document.body.removeChild(confirmModal);
+                });
+                
+                confirmModal.querySelector('#confirmReset').addEventListener('click', function() {
+                    // 执行重置操作
                     try {
                         localStorage.removeItem('characters');
                         loadCharacters();
@@ -1879,11 +2115,45 @@
                     } catch (e) {
                         console.error('紧急重置失败:', e);
                         showPageAlert('重置失败，请手动清除浏览器数据');
+                    } finally {
+                        // 关闭确认弹窗
+                        document.body.removeChild(confirmModal);
                     }
-                }
+                });
+            }
+            
+            // 显示页面内提示信息（替代浏览器alert）
+            function showPageAlert(message) {
+                // 创建提示元素
+                const alertElement = document.createElement('div');
+                alertElement.style.cssText = `
+                    position: fixed;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    background: rgba(0, 0, 0, 0.8);
+                    color: white;
+                    padding: 20px;
+                    border-radius: 10px;
+                    z-index: 2000;
+                    text-align: center;
+                    backdrop-filter: blur(10px);
+                    border: 1px solid rgba(255, 255, 255, 0.1);
+                    max-width: 80%;
+                `;
+                alertElement.textContent = message;
+                
+                // 添加到页面
+                document.body.appendChild(alertElement);
+                
+                // 3秒后自动移除
+                setTimeout(() => {
+                    if (alertElement.parentNode) {
+                        alertElement.parentNode.removeChild(alertElement);
+                    }
+                }, 3000);
             }
         </script>
     </div>
 </body>
-
 </html>
