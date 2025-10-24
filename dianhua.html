@@ -1199,6 +1199,45 @@
                     </div>
                 </div>
             </div>
+            
+            <!-- 人设设置弹窗 -->
+            <div id="personaModal" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <div class="modal-title">设置通话人设</div>
+                        <button class="close-btn" onclick="closePersonaModal()">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label class="form-label">你的昵称</label>
+                            <input type="text" class="file-input" id="userNickname" placeholder="请输入你的昵称">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">你的人设描述</label>
+                            <textarea class="file-input" id="userPersona" placeholder="请输入你的人设描述，如：性格、背景等" style="min-height: 80px;"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">对方昵称</label>
+                            <input type="text" class="file-input" id="contactNickname" placeholder="请输入对方的昵称" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">对方人设描述</label>
+                            <textarea class="file-input" id="contactPersona" placeholder="请输入对方的人设描述，如：性格、背景等" style="min-height: 80px;"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">从角色书中选择</label>
+                            <select class="file-input" id="characterSelect" onchange="loadCharacterInfo()">
+                                <option value="">请选择角色</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn" onclick="closePersonaModal()">取消</button>
+                        <button class="btn" onclick="savePersonaInfo()">保存</button>
+                        <button class="btn btn-primary" onclick="confirmCall()">拨打电话</button>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- 底部导航栏 -->
@@ -1555,33 +1594,18 @@
 
             // 点击联系人拨打电话
             function callContact(name, avatar, number) {
-                // 记录通话日志
-                const now = new Date();
-                const timeString = now.toLocaleDateString('zh-CN', { 
-                    month: 'short', 
-                    day: 'numeric' 
-                }) + ' ' + now.toLocaleTimeString('zh-CN', { 
-                    hour: '2-digit', 
-                    minute: '2-digit' 
-                });
-                
-                const callLog = {
+                // 创建联系人对象
+                const contact = {
                     name: name,
                     avatar: avatar,
-                    number: number,
-                    type: 'outgoing',
-                    duration: '00:00', // 通话时长将在通话结束后更新
-                    time: timeString
+                    number: number
                 };
                 
-                callLogs.unshift(callLog);
-                localStorage.setItem('callLogs', JSON.stringify(callLogs));
+                // 打开人设设置弹窗
+                openPersonaModal(contact);
                 
-                // 跳转到通话页面，传递base64头像数据
-                const encodedName = encodeURIComponent(name);
-                const encodedNumber = encodeURIComponent(number);
-                const encodedAvatar = encodeURIComponent(avatar || name.charAt(0));
-                window.location.href = `tonghua.html?number=${encodedNumber}&name=${encodedName}&avatar=${encodedAvatar}`;
+                // 保存联系人信息以便后续使用
+                window.pendingCall = contact;
             }
 
             // 渲染信息列表
@@ -1636,38 +1660,6 @@
                 // 加载角色书中的角色
                 loadCharactersFromRoleBook();
                 document.getElementById('addCharacterModal').style.display = 'flex';
-            }
-
-            // 从角色书中加载角色
-            function loadCharactersFromRoleBook() {
-                const characterSelect = document.getElementById('characterSelect');
-                characterSelect.innerHTML = '<option value="">请选择角色</option>';
-                
-                // 从localStorage获取角色数据
-                const savedCharacters = localStorage.getItem('characters');
-                let characters = [];
-                
-                if (savedCharacters) {
-                    try {
-                        characters = JSON.parse(savedCharacters);
-                    } catch (e) {
-                        console.error('解析角色数据时出错:', e);
-                    }
-                }
-                
-                // 如果没有角色，显示提示信息
-                if (characters.length === 0) {
-                    characterSelect.innerHTML += '<option value="" disabled>暂无角色，请先在角色书中添加角色</option>';
-                    return;
-                }
-                
-                // 生成角色选项
-                characters.forEach(character => {
-                    const option = document.createElement('option');
-                    option.value = character.id;
-                    option.textContent = character.name;
-                    characterSelect.appendChild(option);
-                });
             }
 
             // 关闭添加角色弹窗
@@ -1956,36 +1948,301 @@
                         }
                     }
                     
-                    // 记录通话日志
-                    const now = new Date();
-                    const timeString = now.toLocaleDateString('zh-CN', { 
-                        month: 'short', 
-                        day: 'numeric' 
-                    }) + ' ' + now.toLocaleTimeString('zh-CN', { 
-                        hour: '2-digit', 
-                        minute: '2-digit' 
-                    });
-                    
-                    const callLog = {
+                    // 创建联系人对象
+                    const contactObj = {
                         name: name,
                         avatar: avatar,
-                        number: number,
-                        type: 'outgoing',
-                        duration: '00:00', // 通话时长将在通话结束后更新
-                        time: timeString
+                        number: number
                     };
                     
-                    callLogs.unshift(callLog);
-                    localStorage.setItem('callLogs', JSON.stringify(callLogs));
+                    // 打开人设设置弹窗
+                    openPersonaModal(contactObj);
                     
-                    // 跳转到通话页面
-                    window.location.href = `tonghua.html?number=${encodeURIComponent(number)}&name=${encodeURIComponent(name)}&avatar=${encodeURIComponent(avatar)}`;
+                    // 保存联系人信息以便后续使用
+                    window.pendingCall = contactObj;
                 } else {
                     alert('请输入电话号码');
                 }
             }
 
             // 显示联系人菜单
+            function showContactMenu(event, index) {
+                event.stopPropagation();
+                const menu = document.getElementById(`contactMenu${index}`);
+                menu.style.display = 'flex';
+            }
+
+            // 查看联系人详情
+            function viewContactDetail(index) {
+                const contact = contacts[index];
+                document.getElementById('contactDetailName').textContent = contact.name;
+                document.getElementById('contactDetailNumber').textContent = contact.number;
+                document.getElementById('contactDetailAvatar').innerHTML = contact.avatar || contact.name.charAt(0);
+                document.getElementById('contactDetailModal').style.display = 'flex';
+            }
+
+            // 关闭联系人详情弹窗
+            function closeContactDetailModal() {
+                document.getElementById('contactDetailModal').style.display = 'none';
+            }
+
+            // 删除联系人
+            function deleteContact(index) {
+                currentContactIndex = index;
+                document.getElementById('deleteContactConfirmModal').style.display = 'flex';
+            }
+
+            // 直接删除联系人
+            function deleteContactDirect(index) {
+                contacts.splice(index, 1);
+                localStorage.setItem('contacts', JSON.stringify(contacts));
+                renderContacts();
+            }
+
+            // 关闭删除联系人确认弹窗
+            function closeDeleteContactConfirmModal() {
+                document.getElementById('deleteContactConfirmModal').style.display = 'none';
+                currentContactIndex = null;
+            }
+            
+            // 打开人设设置弹窗
+            function openPersonaModal(contact) {
+                // 设置联系人信息
+                document.getElementById('contactNickname').value = contact.name;
+                document.getElementById('contactPersona').value = contact.persona || '';
+                
+                // 加载角色书中的角色
+                loadCharactersFromRoleBook();
+                
+                // 显示弹窗
+                document.getElementById('personaModal').style.display = 'flex';
+            }
+
+            // 关闭人设设置弹窗
+            function closePersonaModal() {
+                document.getElementById('personaModal').style.display = 'none';
+            }
+
+            // 从角色书中加载角色
+            function loadCharactersFromRoleBook() {
+                const characterSelect = document.getElementById('characterSelect');
+                characterSelect.innerHTML = '<option value="">请选择角色</option>';
+                
+                // 从localStorage获取角色数据
+                const savedCharacters = localStorage.getItem('characters');
+                let characters = [];
+                
+                if (savedCharacters) {
+                    try {
+                        characters = JSON.parse(savedCharacters);
+                    } catch (e) {
+                        console.error('解析角色数据时出错:', e);
+                    }
+                }
+                
+                // 如果没有角色，显示提示信息
+                if (characters.length === 0) {
+                    characterSelect.innerHTML += '<option value="" disabled>暂无角色，请先在角色书中添加角色</option>';
+                    return;
+                }
+                
+                // 生成角色选项
+                characters.forEach(character => {
+                    const option = document.createElement('option');
+                    option.value = character.id;
+                    option.textContent = character.name;
+                    characterSelect.appendChild(option);
+                });
+            }
+
+            // 加载选中角色的信息
+            function loadCharacterInfo() {
+                const characterSelect = document.getElementById('characterSelect');
+                const selectedCharacterId = characterSelect.value;
+                
+                if (!selectedCharacterId) {
+                    return;
+                }
+                
+                // 从localStorage获取角色数据
+                const savedCharacters = localStorage.getItem('characters');
+                let characters = [];
+                
+                if (savedCharacters) {
+                    try {
+                        characters = JSON.parse(savedCharacters);
+                    } catch (e) {
+                        console.error('解析角色数据时出错:', e);
+                        return;
+                    }
+                }
+                
+                // 查找选中的角色
+                const selectedCharacter = characters.find(char => char.id == selectedCharacterId);
+                if (!selectedCharacter) {
+                    return;
+                }
+                
+                // 填充对方人设信息
+                document.getElementById('contactNickname').value = selectedCharacter.name;
+                document.getElementById('contactPersona').value = selectedCharacter.desc || '';
+            }
+
+            // 保存人设信息
+            function savePersonaInfo() {
+                // 获取用户输入的人设信息
+                const userNickname = document.getElementById('userNickname').value.trim();
+                const userPersona = document.getElementById('userPersona').value.trim();
+                
+                // 获取对方人设信息
+                const contactNickname = document.getElementById('contactNickname').value.trim();
+                const contactPersona = document.getElementById('contactPersona').value.trim();
+                
+                // 保存到localStorage
+                const personaInfo = {
+                    user: {
+                        nickname: userNickname,
+                        persona: userPersona
+                    },
+                    contact: {
+                        nickname: contactNickname,
+                        persona: contactPersona
+                    }
+                };
+                
+                // 保存联系人的人设信息，以便下次使用
+                if (window.pendingCall) {
+                    const contact = window.pendingCall;
+                    const contactKey = contact.number || contact.name;
+                    const savedPersonas = JSON.parse(localStorage.getItem('contactPersonas') || '{}');
+                    savedPersonas[contactKey] = personaInfo;
+                    localStorage.setItem('contactPersonas', JSON.stringify(savedPersonas));
+                    
+                    // 显示成功提示
+                    alert('人设信息已保存！');
+                } else {
+                    // 如果没有待处理的通话，直接保存到localStorage
+                    localStorage.setItem('currentCallPersona', JSON.stringify(personaInfo));
+                    alert('人设信息已保存！');
+                }
+            }
+
+            // 加载联系人的人设信息
+            function loadContactPersonaInfo() {
+                if (window.pendingCall) {
+                    const contact = window.pendingCall;
+                    const contactKey = contact.number || contact.name;
+                    const savedPersonas = JSON.parse(localStorage.getItem('contactPersonas') || '{}');
+                    const personaInfo = savedPersonas[contactKey];
+                    if (personaInfo) {
+                        document.getElementById('contactNickname').value = personaInfo.contact.nickname;
+                        document.getElementById('contactPersona').value = personaInfo.contact.persona;
+                    }
+                }
+            }
+
+
+
+            // 点击联系人拨打电话
+            function callContact(name, avatar, number) {
+                // 创建联系人对象
+                const contact = {
+                    name: name,
+                    avatar: avatar,
+                    number: number
+                };
+                
+                // 检查是否已保存该联系人的人设信息
+                const savedPersonas = JSON.parse(localStorage.getItem('contactPersonas') || '{}');
+                const contactKey = number || name; // 使用号码或姓名作为键
+                
+                if (savedPersonas[contactKey]) {
+                    // 如果已保存人设信息，直接使用
+                    const personaInfo = savedPersonas[contactKey];
+                    document.getElementById('userNickname').value = personaInfo.user.nickname || '';
+                    document.getElementById('userPersona').value = personaInfo.user.persona || '';
+                    document.getElementById('contactNickname').value = personaInfo.contact.nickname || name;
+                    document.getElementById('contactPersona').value = personaInfo.contact.persona || '';
+                }
+                
+                // 打开人设设置弹窗
+                openPersonaModal(contact);
+                
+                // 保存联系人信息以便后续使用
+                window.pendingCall = contact;
+            }
+
+            // 确认拨打电话
+            function confirmCall() {
+                // 检查是否有待处理的通话
+                if (!window.pendingCall) {
+                    alert('没有待处理的通话');
+                    return;
+                }
+                
+                const contact = window.pendingCall;
+                
+                // 获取用户输入的人设信息
+                const userNickname = document.getElementById('userNickname').value.trim();
+                const userPersona = document.getElementById('userPersona').value.trim();
+                
+                // 获取对方人设信息
+                const contactNickname = document.getElementById('contactNickname').value.trim();
+                const contactPersona = document.getElementById('contactPersona').value.trim();
+                
+                // 保存到localStorage
+                const personaInfo = {
+                    user: {
+                        nickname: userNickname,
+                        persona: userPersona
+                    },
+                    contact: {
+                        nickname: contactNickname,
+                        persona: contactPersona
+                    }
+                };
+                localStorage.setItem('currentCallPersona', JSON.stringify(personaInfo));
+                
+                // 保存联系人的人设信息，以便下次使用
+                const contactKey = contact.number || contact.name;
+                const savedPersonas = JSON.parse(localStorage.getItem('contactPersonas') || '{}');
+                savedPersonas[contactKey] = personaInfo;
+                localStorage.setItem('contactPersonas', JSON.stringify(savedPersonas));
+                
+                // 记录通话日志
+                const now = new Date();
+                const timeString = now.toLocaleDateString('zh-CN', { 
+                    month: 'short', 
+                    day: 'numeric' 
+                }) + ' ' + now.toLocaleTimeString('zh-CN', { 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
+                });
+                
+                const callLog = {
+                    name: contact.name,
+                    avatar: contact.avatar,
+                    number: contact.number,
+                    type: 'outgoing',
+                    duration: '00:00', // 通话时长将在通话结束后更新
+                    time: timeString
+                };
+                
+                callLogs.unshift(callLog);
+                localStorage.setItem('callLogs', JSON.stringify(callLogs));
+                
+                // 关闭人设设置弹窗
+                closePersonaModal();
+                
+                // 跳转到通话页面，传递参数
+                const encodedName = encodeURIComponent(contact.name);
+                const encodedNumber = encodeURIComponent(contact.number);
+                const encodedAvatar = encodeURIComponent(contact.avatar || contact.name.charAt(0));
+                window.location.href = `tonghua.html?number=${encodedNumber}&name=${encodedName}&avatar=${encodedAvatar}`;
+            }
+
+            // 显示联系人菜单
+
             function showContactMenu(event, index) {
                 event.stopPropagation(); // 阻止事件冒泡
                 
