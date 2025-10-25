@@ -2203,6 +2203,14 @@
                 };
                 localStorage.setItem('currentCallPersona', JSON.stringify(personaInfo));
                 
+                // 保存联系人信息到localStorage
+                const callContactInfo = {
+                    name: contact.name,
+                    number: contact.number,
+                    avatar: contact.avatar
+                };
+                localStorage.setItem('callContactInfo', JSON.stringify(callContactInfo));
+                
                 // 保存联系人的人设信息，以便下次使用
                 const contactKey = contact.number || contact.name;
                 const savedPersonas = JSON.parse(localStorage.getItem('contactPersonas') || '{}');
@@ -2234,11 +2242,8 @@
                 // 关闭人设设置弹窗
                 closePersonaModal();
                 
-                // 跳转到通话页面，传递参数
-                const encodedName = encodeURIComponent(contact.name);
-                const encodedNumber = encodeURIComponent(contact.number);
-                const encodedAvatar = encodeURIComponent(contact.avatar || contact.name.charAt(0));
-                window.location.href = `tonghua.html?number=${encodedNumber}&name=${encodedName}&avatar=${encodedAvatar}`;
+                // 跳转到通话页面，不传递参数
+                window.location.href = 'tonghua.html';
             }
 
             // 显示联系人菜单
