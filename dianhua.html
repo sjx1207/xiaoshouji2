@@ -1654,11 +1654,17 @@
             }
 
             // 打开信息页面
+            // 打开信息页面
             function openMessages(contactName, contactAvatar) {
-                // 跳转到独立的信息页面，传递base64头像数据
-                const encodedName = encodeURIComponent(contactName);
-                const encodedAvatar = encodeURIComponent(contactAvatar || contactName.charAt(0));
-                window.location.href = `faxinxi.html?contact=${encodedName}&avatar=${encodedAvatar}`;
+                // 将联系人信息保存到localStorage
+                const contactInfo = {
+                    name: contactName,
+                    avatar: contactAvatar || contactName.charAt(0)
+                };
+                localStorage.setItem('messageContactInfo', JSON.stringify(contactInfo));
+                
+                // 跳转到信息页面，不传递URL参数
+                window.location.href = 'faxinxi.html';
             }
 
             // 打开添加角色弹窗
