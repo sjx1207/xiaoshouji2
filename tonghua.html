@@ -117,6 +117,13 @@
             color: #aaa;
         }
 
+        /* 当前时间显示 */
+        .current-datetime {
+            font-size: 14px;
+            color: #aaa;
+            margin-top: 5px;
+        }
+
         /* 聊天容器 */
         .chat-container {
             flex: 1;
@@ -453,6 +460,7 @@
                 <div class="contact-name" id="contactName">张三</div>
                 <div class="contact-number" id="contactNumber">13800138000</div>
                 <div class="call-timer" id="callTimer">00:00</div>
+                <div class="current-datetime" id="currentDateTime"></div>
             </div>
 
             <!-- 聊天区域 -->
@@ -572,12 +580,21 @@
         let selectedBackground = null;
         let userPersonaInfo = { nickname: "", persona: "" };
         let contactPersonaInfo = { nickname: "", persona: "" };
+        let conversationHistory = []; // 添加对话历史记录
 
         // 更新时间
         function updateTime() {
             const now = new Date();
             const timeString = now.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
             document.getElementById('current-time').textContent = timeString;
+            
+            // 更新通话页面的日期时间显示
+            const dateTimeString = now.toLocaleDateString('zh-CN', { 
+                month: 'short', 
+                day: 'numeric',
+                weekday: 'short'
+            }) + ' ' + timeString;
+            document.getElementById('currentDateTime').textContent = dateTimeString;
         }
 
         // 每秒更新一次时间
@@ -702,6 +719,17 @@
             // 滚动到底部
             chatMessages.scrollTop = chatMessages.scrollHeight;
             
+            // 将消息添加到对话历史记录中
+            conversationHistory.push({
+                role: type === 'sent' ? 'user' : 'assistant',
+                content: text
+            });
+            
+            // 限制对话历史记录的长度，避免过长
+            if (conversationHistory.length > 20) {
+                conversationHistory = conversationHistory.slice(-20);
+            }
+            
             return messageId;
         }
 
@@ -768,8 +796,20 @@
                 let fetchOptions = {};
                 let aiResponse = '';
                 
-                // 构建系统提示，包含人设信息
-                let systemPrompt = "你是一个真实的人类，正在和朋友通话。你需要以真实、自然、有个性的方式进行对话，就像真实的朋友之间聊天一样。回复时不要使用括号，不要提及你是AI，要像真实的人类一样表达情感和观点。";
+                // 获取当前时间（精确到分钟）
+                const now = new Date();
+                const currentTime = now.toLocaleString('zh-CN', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit',
+                    weekday: 'long'
+                });
+                
+                // 构建系统提示，包含人设信息和当前时间
+                let systemPrompt = `你是一个真实的人类，正在和朋友通话。你需要以真实、自然、有个性的方式进行对话，就像真实的朋友之间聊天一样。回复时不要使用括号，不要提及你是AI，要像真实的人类一样表达情感和观点。\n当前时间：${currentTime}`;
                 
                 // 添加用户人设信息
                 if (userPersonaInfo.nickname) {
@@ -787,16 +827,29 @@
                     systemPrompt += `\n你的人设：${contactPersonaInfo.persona}`;
                 }
                 
+                console.log('发送给AI的系统提示:', systemPrompt); // 调试信息
+                
+                // 构建消息历史，包含系统提示和对话历史
                 const messages = [
                     {
                         role: "system",
                         content: systemPrompt
-                    },
-                    {
-                        role: "user",
-                        content: message
                     }
                 ];
+                
+                // 添加对话历史记录
+                conversationHistory.forEach(msg => {
+                    messages.push({
+                        role: msg.role,
+                        content: msg.content
+                    });
+                });
+                
+                // 添加当前用户消息
+                messages.push({
+                    role: "user",
+                    content: message
+                });
                 
                 if (settings.provider === 'gemini') {
                     // Google Gemini API
