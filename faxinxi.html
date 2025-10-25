@@ -553,59 +553,81 @@
 
             // 页面加载完成后初始化
             document.addEventListener('DOMContentLoaded', function() {
-                updateTime(); // 初始化时间
+                // 从localStorage获取联系人信息，而不是从URL参数
+                const savedContactInfo = localStorage.getItem('messageContactInfo');
+                let contactName = '未知联系人';
+                let contactAvatar = '未知';
                 
-                // 获取URL参数中的联系人信息
-                const urlParams = new URLSearchParams(window.location.search);
-                const contactName = urlParams.get('contact');
-                const contactAvatar = urlParams.get('avatar');
-                
-                if (contactName) {
-                    document.getElementById('messageContactAvatar').textContent = contactAvatar || contactName.charAt(0);
-                    // 可以在这里加载联系人的消息历史
-                    loadMessages(contactName);
+                if (savedContactInfo) {
+                    try {
+                        const contactInfo = JSON.parse(savedContactInfo);
+                        contactName = contactInfo.name || contactName;
+                        contactAvatar = contactInfo.avatar || contactInfo.name.charAt(0);
+                    } catch (e) {
+                        console.error('解析联系人信息时出错:', e);
+                    }
+                } else {
+                    // 向后兼容：如果localStorage中没有联系人信息，尝试从URL参数获取
+                    const urlParams = new URLSearchParams(window.location.search);
+                    contactName = urlParams.get('contact') || contactName;
+                    contactAvatar = decodeURIComponent(urlParams.get('avatar') || contactName.charAt(0));
                 }
-            });
-
-            // 加载消息历史
-            function loadMessages(contactName) {
-                // 根据联系人名称获取不同的消息历史
+                
+                // 更新页面标题
+                document.title = `${contactName} - 信息`;
+                
+                // 处理头像显示
+                const avatarElement = document.getElementById('messageContactAvatar');
+                if (contactAvatar && (contactAvatar.startsWith('data:image') || 
+                                     contactAvatar.startsWith('http://') || 
+                                     contactAvatar.startsWith('https://'))) {
+                    // 如果是图片URL或base64数据，创建img元素
+                    avatarElement.innerHTML = '';
+                    const img = document.createElement('img');
+                    img.src = contactAvatar;
+                    img.style.width = '100%';
+                    img.style.height = '100%';
+                    img.style.borderRadius = '50%';
+                    img.style.objectFit = 'cover';
+                    img.onerror = function() {
+                        // 如果图片加载失败，显示默认文字
+                        avatarElement.innerHTML = contactName.charAt(0);
+                    };
+                    avatarElement.appendChild(img);
+                } else {
+                    // 如果不是图片URL，显示文字
+                    avatarElement.textContent = contactAvatar || contactName.charAt(0);
+                }
+                
+                // 从localStorage获取消息历史
+                const chatKey = `chat_${contactName}`;
+                const savedMessages = localStorage.getItem(chatKey);
                 let messages = [];
-                switch(contactName) {
-                    case '张三':
-                        messages = [
-                            { type: 'received', text: '你好！最近怎么样？', time: '10:30' },
-                            { type: 'sent', text: '我很好，谢谢！你呢？', time: '10:32' },
-                            { type: 'received', text: '我也很好。周末有什么计划吗？', time: '10:35' },
-                            { type: 'sent', text: '还没想好呢，你有什么建议吗？', time: '10:36' }
-                        ];
-                        break;
-                    case '李四':
-                        messages = [
-                            { type: 'received', text: '明天一起吃饭吗？', time: '昨天 14:20' },
-                            { type: 'sent', text: '好啊，几点在哪里？', time: '昨天 14:25' },
-                            { type: 'received', text: '晚上6点，老地方见！', time: '昨天 14:30' }
-                        ];
-                        break;
-                    case '王五':
-                        messages = [
-                            { type: 'sent', text: '谢谢你的帮助', time: '前天 09:15' },
-                            { type: 'received', text: '不客气，应该的。', time: '前天 09:20' }
-                        ];
-                        break;
-                    default:
-                        messages = [
-                            { type: 'received', text: '你好！', time: '现在' }
-                        ];
+                
+                if (savedMessages) {
+                    try {
+                        messages = JSON.parse(savedMessages);
+                    } catch (e) {
+                        console.error('解析消息数据时出错:', e);
+                    }
                 }
                 
-                messages.forEach(msg => {
-                    addMessageToView(msg.type, msg.text, msg.time);
-                });
+                // 渲染消息
+                renderMessages(messages);
                 
                 // 滚动到底部
                 const messageContent = document.getElementById('messageContent');
                 messageContent.scrollTop = messageContent.scrollHeight;
+            });
+
+            // 渲染消息
+            function renderMessages(messages) {
+                const messageContent = document.getElementById('messageContent');
+                messageContent.innerHTML = ''; // 清空消息内容
+                
+                messages.forEach(msg => {
+                    addMessageToView(msg.type, msg.text, msg.time);
+                });
             }
         </script>
     </div>
