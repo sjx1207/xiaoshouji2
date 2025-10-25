@@ -158,11 +158,40 @@
         .message-bubble.received {
             background-color: #d1f0d1; /* 浅绿色 */
             color: #000000;
+            border-bottom-left-radius: 5px; /* 左下角较小圆角，为尾巴留出空间 */
         }
 
         .message-bubble.sent {
             background-color: #1286ff;
             color: #ffffff;
+            border-bottom-right-radius: 5px; /* 右下角较小圆角，为尾巴留出空间 */
+        }
+
+        /* 消息气泡尾巴 - 真正尖锐的样式 */
+        .message-bubble.received::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: -3px;
+            width: 0;
+            height: 0;
+            border: 3px solid transparent;
+            border-top: 0;
+            border-right-color: #d1f0d1;
+            border-bottom: 0;
+        }
+
+        .message-bubble.sent::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            right: -3px;
+            width: 0;
+            height: 0;
+            border: 3px solid transparent;
+            border-top: 0;
+            border-left-color: #1286ff;
+            border-bottom: 0;
         }
 
         .message-text {
