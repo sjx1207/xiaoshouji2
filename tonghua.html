@@ -1136,11 +1136,24 @@
 
         // 页面加载完成后初始化
         document.addEventListener('DOMContentLoaded', function() {
-            // 获取URL参数
-            const urlParams = new URLSearchParams(window.location.search);
-            contactName = urlParams.get('name') || contactName;
-            contactNumber = urlParams.get('number') || contactNumber;
-            contactAvatar = decodeURIComponent(urlParams.get('avatar') || contactAvatar);
+            // 获取联系人信息
+            const savedContactInfo = localStorage.getItem('callContactInfo');
+            if (savedContactInfo) {
+                try {
+                    const contactInfo = JSON.parse(savedContactInfo);
+                    contactName = contactInfo.name || contactName;
+                    contactNumber = contactInfo.number || contactNumber;
+                    contactAvatar = contactInfo.avatar || contactAvatar;
+                } catch (e) {
+                    console.error('解析联系人信息时出错:', e);
+                }
+            } else {
+                // 如果没有保存的联系人信息，尝试从URL参数获取（向后兼容）
+                const urlParams = new URLSearchParams(window.location.search);
+                contactName = urlParams.get('name') || contactName;
+                contactNumber = urlParams.get('number') || contactNumber;
+                contactAvatar = decodeURIComponent(urlParams.get('avatar') || contactAvatar);
+            }
             
             // 更新联系人信息
             document.getElementById('contactName').textContent = contactName;
