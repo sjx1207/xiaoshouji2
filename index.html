@@ -1680,7 +1680,7 @@
             updateTime(); // 初始化时间
 
             // 页面加载时检查是否有保存的壁纸
-            window.onload = function() {
+            window.addEventListener('load', function() {
                 updateTime();
                 loadProfileData();
                 loadWallpaper();
@@ -1701,7 +1701,7 @@
                 // 从本地存储加载天气状态，如果没有则默认为晴天
                 const savedWeatherState = localStorage.getItem('weatherState') || 'sunny';
                 setWeatherState(savedWeatherState);
-            };
+            });
 
             // 监听来自图标管理页面的消息
             window.addEventListener('message', function(event) {
@@ -1794,22 +1794,26 @@
 
             // 加载个人资料数据
             function loadProfileData() {
-                // 加载头像
-                const savedAvatar = localStorage.getItem('profileAvatar');
-                if (savedAvatar) {
-                    document.getElementById('profileAvatar').innerHTML = `<img src="${savedAvatar}" alt="头像" style="width:100%;height:100%;object-fit:cover;object-position:center;border-radius:50%;">`;
-                }
+                try {
+                    // 加载头像
+                    const savedAvatar = localStorage.getItem('profileAvatar');
+                    if (savedAvatar) {
+                        document.getElementById('profileAvatar').innerHTML = `<img src="${savedAvatar}" alt="头像" style="width:100%;height:100%;object-fit:cover;object-position:center;border-radius:50%;">`;
+                    }
 
-                // 加载昵称
-                const savedNickname = localStorage.getItem('profileNickname');
-                if (savedNickname) {
-                    document.getElementById('profileNickname').textContent = savedNickname;
-                }
+                    // 加载昵称
+                    const savedNickname = localStorage.getItem('profileNickname');
+                    if (savedNickname) {
+                        document.getElementById('profileNickname').textContent = savedNickname;
+                    }
 
-                // 加载个性签名
-                const savedSignature = localStorage.getItem('profileSignature');
-                if (savedSignature) {
-                    document.getElementById('profileSignature').textContent = savedSignature;
+                    // 加载个性签名
+                    const savedSignature = localStorage.getItem('profileSignature');
+                    if (savedSignature) {
+                        document.getElementById('profileSignature').textContent = savedSignature;
+                    }
+                } catch (error) {
+                    console.error('加载个人资料时出错:', error);
                 }
             }
 
@@ -2215,12 +2219,26 @@
                 input.onchange = function(event) {
                     const file = event.target.files[0];
                     if (file) {
+                        // 检查文件大小（无限制）
+                        // if (file.size > 5 * 1024 * 1024) {
+                        //     alert('图片文件太大，请选择小于5MB的图片');
+                        //     return;
+                        // }
+                        
                         const reader = new FileReader();
                         reader.onload = function(e) {
-                            // 更新头像显示，确保正确比例
-                            document.getElementById('profileAvatar').innerHTML = `<img src="${e.target.result}" alt="头像" style="width:100%;height:100%;object-fit:cover;object-position:center;border-radius:50%;">`;
-                            // 保存到本地存储
-                            localStorage.setItem('profileAvatar', e.target.result);
+                            try {
+                                // 更新头像显示，确保正确比例
+                                document.getElementById('profileAvatar').innerHTML = `<img src="${e.target.result}" alt="头像" style="width:100%;height:100%;object-fit:cover;object-position:center;border-radius:50%;">`;
+                                // 保存到本地存储
+                                localStorage.setItem('profileAvatar', e.target.result);
+                            } catch (error) {
+                                console.error('保存头像时出错:', error);
+                                alert('保存头像失败，可能是存储空间不足');
+                            }
+                        };
+                        reader.onerror = function() {
+                            alert('读取图片文件时出错，请重试');
                         };
                         reader.readAsDataURL(file);
                     }
