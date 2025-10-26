@@ -587,10 +587,10 @@
             defaultIcons['yinyue'] = '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 3V12L19 5V19L12 12V21" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 
             // 页面加载时初始化
-            window.onload = function() {
+            window.addEventListener('load', function() {
                 updateTime();
                 renderAppIcons();
-            };
+            });
 
             // 渲染应用图标
             function renderAppIcons() {
