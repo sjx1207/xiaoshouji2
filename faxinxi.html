@@ -86,6 +86,7 @@
             z-index: 999;
         }
 
+        
         /* 圆角液态玻璃效果按钮 */
         .glass-button {
             background: rgba(255, 255, 255, 0.15);
@@ -125,7 +126,7 @@
         /* 消息内容区域 */
         .message-content {
             flex: 1;
-            padding: 110px 15px 80px 15px;
+            padding: 110px 15px 100px 15px; /* 增加底部内边距，确保消息不被输入框遮挡 */
             overflow-y: auto;
             display: flex;
             flex-direction: column;
@@ -158,40 +159,11 @@
         .message-bubble.received {
             background-color: #d1f0d1; /* 浅绿色 */
             color: #000000;
-            border-bottom-left-radius: 5px; /* 左下角较小圆角，为尾巴留出空间 */
         }
 
         .message-bubble.sent {
             background-color: #1286ff;
             color: #ffffff;
-            border-bottom-right-radius: 5px; /* 右下角较小圆角，为尾巴留出空间 */
-        }
-
-        /* 消息气泡尾巴 - 真正尖锐的样式 */
-        .message-bubble.received::before {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: -3px;
-            width: 0;
-            height: 0;
-            border: 3px solid transparent;
-            border-top: 0;
-            border-right-color: #d1f0d1;
-            border-bottom: 0;
-        }
-
-        .message-bubble.sent::before {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            right: -3px;
-            width: 0;
-            height: 0;
-            border: 3px solid transparent;
-            border-top: 0;
-            border-left-color: #1286ff;
-            border-bottom: 0;
         }
 
         .message-text {
@@ -302,6 +274,8 @@
             width: 90%;
             max-width: 400px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            max-height: 80vh;
+            overflow-y: auto;
         }
 
         .modal-header {
@@ -407,10 +381,17 @@
             <div style="flex: 1; display: flex; justify-content: center;">
                 <div class="contact-avatar-header" id="messageContactAvatar">张</div>
             </div>
-            <div class="glass-button" style="width: 30px; height: 30px;" onclick="openBackgroundModal()">
-                <svg viewBox="0 0 24 24" width="18" height="18">
-                    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="white"/>
-                </svg>
+            <div style="display: flex; gap: 10px;">
+                <div class="glass-button" style="width: 30px; height: 30px;" onclick="makeCall()">
+                    <svg viewBox="0 0 24 24" width="18" height="18">
+                        <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z" fill="white"/>
+                    </svg>
+                </div>
+                <div class="glass-button" style="width: 30px; height: 30px;" onclick="openSettingsModal()">
+                    <svg viewBox="0 0 24 24" width="18" height="18">
+                        <path d="M12 15.5A3.5 3.5 0 0 1 8.5 12 3.5 3.5 0 0 1 12 8.5a3.5 3.5 0 0 1 3.5 3.5 3.5 3.5 0 0 1-3.5 3.5m7.43-2.53c.04-.32.07-.64.07-.97 0-.33-.03-.66-.07-1l2.11-1.63c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.31-.61-.22l-2.49 1c-.52-.39-1.06-.73-1.69-.98l-.37-2.65A.506.506 0 0 0 14 2h-4c-.25 0-.46.18-.5.42l-.37 2.65c-.63.25-1.17.59-1.69.98l-2.49-1c-.22-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64L4.57 11c-.04.34-.07.67-.07 1 0 .33.03.65.07.97l-2.11 1.66c-.19.15-.25.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1.01c.52.4 1.06.74 1.69.99l.37 2.65c.04.24.25.42.5.42h4c.25 0 .46-.18.5-.42l.37-2.65c.63-.26 1.17-.59 1.69-.99l2.49 1.01c.22.08.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.66Z" fill="white"/>
+                    </svg>
+                </div>
             </div>
         </div>
         
@@ -422,11 +403,18 @@
         <!-- 输入区域 -->
         <div class="message-input-container">
             <input type="text" class="message-input" id="messageInput" placeholder="iMessage" onkeypress="handleKeyPress(event)">
-            <button class="send-btn" onclick="sendMessage()">
-                <svg viewBox="0 0 24 24" width="20" height="20">
-                    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" fill="white"/>
-                </svg>
-            </button>
+            <div style="display: flex; gap: 5px; margin-left: 10px;">
+                <button class="send-btn" onclick="sendAiMessage()" title="AI回复">
+                    <svg viewBox="0 0 24 24" width="20" height="20">
+                        <path d="M12 2L15.09 8.26L22 9L17 14L18.18 21L12 17.77L5.82 21L7 14L2 9L8.91 8.26L12 2Z" fill="white"/>
+                    </svg>
+                </button>
+                <button class="send-btn" onclick="sendMessage()">
+                    <svg viewBox="0 0 24 24" width="20" height="20">
+                        <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" fill="white"/>
+                    </svg>
+                </button>
+            </div>
         </div>
 
         <!-- 背景设置弹窗 -->
@@ -448,6 +436,51 @@
                 <div class="modal-footer">
                     <button class="btn" onclick="closeBackgroundModal()">取消</button>
                     <button class="btn btn-primary" onclick="saveBackground()">保存</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 设置弹窗 -->
+        <div id="settingsModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="modal-title">聊天设置</div>
+                    <button class="close-btn" onclick="closeSettingsModal()">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <!-- 背景设置 -->
+                    <div style="margin-bottom: 20px;">
+                        <h3 style="margin-bottom: 10px; font-size: 16px;">背景设置</h3>
+                        <input type="file" id="settingsBackgroundFile" class="file-input" accept="image/*">
+                        <p style="margin-top: 10px; font-size: 14px; color: #aaa;">选择图片文件作为聊天背景</p>
+                        
+                        <div style="margin-top: 15px;">
+                            <input type="text" id="settingsBackgroundUrl" class="file-input" placeholder="或输入图片URL">
+                            <p style="margin-top: 10px; font-size: 14px; color: #aaa;">输入图片URL作为聊天背景</p>
+                        </div>
+                    </div>
+                    
+                    <!-- 角色书导入 -->
+                    <div style="margin-bottom: 20px;">
+                        <h3 style="margin-bottom: 10px; font-size: 16px;">角色设定</h3>
+                        <div id="characterList" style="max-height: 150px; overflow-y: auto; margin-bottom: 10px; padding: 10px; background: rgba(255,255,255,0.1); border-radius: 10px;">
+                            <!-- 角色列表将在这里动态生成 -->
+                        </div>
+                        <button class="btn" onclick="importCharacter()" style="width: 100%;">从角色书导入角色</button>
+                    </div>
+                    
+                    <!-- 世界书导入 -->
+                    <div style="margin-bottom: 20px;">
+                        <h3 style="margin-bottom: 10px; font-size: 16px;">世界设定</h3>
+                        <div id="worldList" style="max-height: 150px; overflow-y: auto; margin-bottom: 10px; padding: 10px; background: rgba(255,255,255,0.1); border-radius: 10px;">
+                            <!-- 世界列表将在这里动态生成 -->
+                        </div>
+                        <button class="btn" onclick="importWorld()" style="width: 100%;">从世界书导入设定</button>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn" onclick="closeSettingsModal()">取消</button>
+                    <button class="btn btn-primary" onclick="saveSettings()">保存设置</button>
                 </div>
             </div>
         </div>
@@ -497,6 +530,9 @@
                         messageContent.style.backgroundPosition = 'center';
                         messageContent.style.backgroundRepeat = 'no-repeat';
                         
+                        // 保存背景到localStorage
+                        localStorage.setItem('messageBackground', e.target.result);
+                        
                         // 关闭弹窗
                         closeBackgroundModal();
                         
@@ -512,6 +548,9 @@
                     messageContent.style.backgroundPosition = 'center';
                     messageContent.style.backgroundRepeat = 'no-repeat';
                     
+                    // 保存背景到localStorage
+                    localStorage.setItem('messageBackground', url);
+                    
                     // 关闭弹窗
                     closeBackgroundModal();
                     
@@ -524,12 +563,175 @@
                 }
             }
 
+            // 页面加载完成后初始化
+            document.addEventListener('DOMContentLoaded', function() {
+                // 调试信息：显示所有相关的localStorage数据
+                console.log('=== 调试信息 ===');
+                console.log('messageContactInfo:', localStorage.getItem('messageContactInfo'));
+                console.log('messageList:', localStorage.getItem('messageList'));
+                console.log('contacts:', localStorage.getItem('contacts'));
+                console.log('characters:', localStorage.getItem('characters'));
+                console.log('================');
+                
+                // 从localStorage获取联系人信息
+                const savedContactInfo = localStorage.getItem('messageContactInfo');
+                let contactName = '未知联系人';
+                let contactAvatar = '未知';
+                let contactRoleId = null; // 角色ID
+                
+                if (savedContactInfo) {
+                    try {
+                        const contactInfo = JSON.parse(savedContactInfo);
+                        contactName = contactInfo.name || contactName;
+                        contactAvatar = contactInfo.avatar || contactName.charAt(0);
+                        contactRoleId = contactInfo.roleId || null; // 获取角色ID
+                        console.log('从messageContactInfo获取的联系人信息:', contactInfo); // 调试信息
+                    } catch (e) {
+                        console.error('解析联系人信息时出错:', e);
+                    }
+                }
+                
+                // 如果没有从messageContactInfo获取到头像，或者头像是默认的，尝试从信息列表中获取
+                if (contactAvatar === '未知' || contactAvatar === contactName.charAt(0)) {
+                    console.log('尝试从信息列表中获取头像'); // 调试信息
+                    // 从信息列表中查找匹配的联系人
+                    const savedMessageList = localStorage.getItem('messageList');
+                    if (savedMessageList) {
+                        try {
+                            const messageList = JSON.parse(savedMessageList);
+                            const matchingContact = messageList.find(item => item.name === contactName);
+                            if (matchingContact && matchingContact.avatar) {
+                                contactAvatar = matchingContact.avatar;
+                                console.log('从信息列表获取的头像:', contactAvatar); // 调试信息
+                                // 如果信息列表中有角色ID，也获取它
+                                if (matchingContact.roleId) {
+                                    contactRoleId = matchingContact.roleId;
+                                }
+                            }
+                        } catch (e) {
+                            console.error('解析信息列表时出错:', e);
+                        }
+                    }
+                }
+                
+                // 如果仍然没有获取到头像，或者头像是默认的，尝试从联系人列表中获取
+                if (contactAvatar === '未知' || contactAvatar === contactName.charAt(0)) {
+                    console.log('尝试从联系人列表中获取头像'); // 调试信息
+                    const savedContacts = localStorage.getItem('contacts');
+                    if (savedContacts) {
+                        try {
+                            const contacts = JSON.parse(savedContacts);
+                            const matchingContact = contacts.find(contact => contact.name === contactName);
+                            if (matchingContact && matchingContact.avatar) {
+                                contactAvatar = matchingContact.avatar;
+                                console.log('从联系人列表获取的头像:', contactAvatar); // 调试信息
+                                // 如果联系人列表中有角色ID，也获取它
+                                if (matchingContact.roleId) {
+                                    contactRoleId = matchingContact.roleId;
+                                }
+                            }
+                        } catch (e) {
+                            console.error('解析联系人列表时出错:', e);
+                        }
+                    }
+                }
+                
+                // 如果有角色ID，从角色书中获取角色信息
+                if (contactRoleId) {
+                    console.log('尝试从角色书中获取角色信息，角色ID:', contactRoleId); // 调试信息
+                    const savedCharacters = localStorage.getItem('characters');
+                    if (savedCharacters) {
+                        try {
+                            const characters = JSON.parse(savedCharacters);
+                            const character = characters.find(char => char.id == contactRoleId);
+                            if (character) {
+                                // 使用角色书中的头像和名称
+                                contactName = character.name || contactName;
+                                contactAvatar = character.avatar || contactAvatar;
+                                console.log('从角色书获取的角色信息:', character); // 调试信息
+                            }
+                        } catch (e) {
+                            console.error('解析角色书时出错:', e);
+                        }
+                    }
+                }
+                
+                // 更新页面标题
+                document.title = `${contactName} - 信息`;
+                
+                // 处理头像显示
+                const avatarElement = document.getElementById('messageContactAvatar');
+                console.log('最终显示的头像:', contactAvatar); // 调试信息
+                
+                // 确保头像元素存在
+                if (avatarElement) {
+                    // 确保正确处理头像信息
+                    if (contactAvatar && typeof contactAvatar === 'string') {
+                        if (contactAvatar.startsWith('data:image') || 
+                            contactAvatar.startsWith('http://') || 
+                            contactAvatar.startsWith('https://')) {
+                            // 如果是图片URL或base64数据，创建img元素
+                            avatarElement.innerHTML = '';
+                            const img = document.createElement('img');
+                            img.src = contactAvatar;
+                            img.style.width = '100%';
+                            img.style.height = '100%';
+                            img.style.borderRadius = '50%';
+                            img.style.objectFit = 'cover';
+                            img.onerror = function() {
+                                // 如果图片加载失败，显示默认文字
+                                avatarElement.innerHTML = contactName.charAt(0);
+                            };
+                            avatarElement.appendChild(img);
+                        } else {
+                            // 如果是文字头像，直接显示
+                            avatarElement.textContent = contactAvatar || contactName.charAt(0);
+                        }
+                    } else {
+                        // 默认使用联系人名称的第一个字符
+                        avatarElement.textContent = contactName.charAt(0);
+                    }
+                }
+                
+                // 为每个联系人创建独立的聊天键
+                const chatKey = `chat_${contactName}_${contactName.hashCode()}`;
+                const savedMessages = localStorage.getItem(chatKey);
+                let messages = [];
+                
+                if (savedMessages) {
+                    try {
+                        messages = JSON.parse(savedMessages);
+                        console.log(`从 ${chatKey} 加载消息:`, messages); // 调试信息
+                    } catch (e) {
+                        console.error('解析消息数据时出错:', e);
+                    }
+                }
+                
+                // 渲染消息
+                renderMessages(messages);
+                
+                // 滚动到底部
+                const messageContent = document.getElementById('messageContent');
+                messageContent.scrollTop = messageContent.scrollHeight;
+                
+                // 从localStorage恢复背景
+                const savedBackground = localStorage.getItem('messageBackground');
+                if (savedBackground) {
+                    messageContent.style.backgroundImage = `url(${savedBackground})`;
+                    messageContent.style.backgroundSize = 'cover';
+                    messageContent.style.backgroundPosition = 'center';
+                    messageContent.style.backgroundRepeat = 'no-repeat';
+                }
+            });
+
             // 添加消息到视图
             function addMessageToView(type, text, time) {
                 const messageContent = document.getElementById('messageContent');
                 
                 // 创建消息包装器
                 const messageWrapper = document.createElement('div');
+                const messageId = 'msg-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+                messageWrapper.id = messageId;
                 messageWrapper.className = `message-wrapper ${type}`;
                 
                 // 创建消息气泡
@@ -553,6 +755,8 @@
                 
                 // 滚动到底部
                 messageContent.scrollTop = messageContent.scrollHeight;
+                
+                return messageId;
             }
 
             // 发送消息
@@ -565,71 +769,28 @@
                     addMessageToView('sent', message, time);
                     input.value = '';
                     
-                    // 模拟回复
-                    setTimeout(() => {
-                        const replyTime = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
-                        addMessageToView('received', '好的，我收到了你的消息。', replyTime);
-                    }, 1000);
+                    // 保存消息到localStorage
+                    saveMessage('sent', message, time);
                 }
             }
 
-            // 处理键盘事件
-            function handleKeyPress(event) {
-                if (event.key === 'Enter') {
-                    sendMessage();
-                }
-            }
-
-            // 页面加载完成后初始化
-            document.addEventListener('DOMContentLoaded', function() {
-                // 从localStorage获取联系人信息，而不是从URL参数
+            // 发送AI消息 - 读取用户最后发送的消息并回复
+            function sendAiMessage() {
+                // 获取联系人名称
                 const savedContactInfo = localStorage.getItem('messageContactInfo');
                 let contactName = '未知联系人';
-                let contactAvatar = '未知';
                 
                 if (savedContactInfo) {
                     try {
                         const contactInfo = JSON.parse(savedContactInfo);
                         contactName = contactInfo.name || contactName;
-                        contactAvatar = contactInfo.avatar || contactInfo.name.charAt(0);
                     } catch (e) {
                         console.error('解析联系人信息时出错:', e);
                     }
-                } else {
-                    // 向后兼容：如果localStorage中没有联系人信息，尝试从URL参数获取
-                    const urlParams = new URLSearchParams(window.location.search);
-                    contactName = urlParams.get('contact') || contactName;
-                    contactAvatar = decodeURIComponent(urlParams.get('avatar') || contactName.charAt(0));
                 }
                 
-                // 更新页面标题
-                document.title = `${contactName} - 信息`;
-                
-                // 处理头像显示
-                const avatarElement = document.getElementById('messageContactAvatar');
-                if (contactAvatar && (contactAvatar.startsWith('data:image') || 
-                                     contactAvatar.startsWith('http://') || 
-                                     contactAvatar.startsWith('https://'))) {
-                    // 如果是图片URL或base64数据，创建img元素
-                    avatarElement.innerHTML = '';
-                    const img = document.createElement('img');
-                    img.src = contactAvatar;
-                    img.style.width = '100%';
-                    img.style.height = '100%';
-                    img.style.borderRadius = '50%';
-                    img.style.objectFit = 'cover';
-                    img.onerror = function() {
-                        // 如果图片加载失败，显示默认文字
-                        avatarElement.innerHTML = contactName.charAt(0);
-                    };
-                    avatarElement.appendChild(img);
-                } else {
-                    // 如果不是图片URL，显示文字
-                    avatarElement.textContent = contactAvatar || contactName.charAt(0);
-                }
-                
-                // 从localStorage获取消息历史
-                const chatKey = `chat_${contactName}`;
+                // 获取对话历史
+                const chatKey = `chat_${contactName}_${contactName.hashCode()}`;
                 const savedMessages = localStorage.getItem(chatKey);
                 let messages = [];
                 
@@ -641,13 +802,418 @@
                     }
                 }
                 
-                // 渲染消息
-                renderMessages(messages);
+                // 找到用户最后发送的消息
+                let lastUserMessage = '';
+                for (let i = messages.length - 1; i >= 0; i--) {
+                    if (messages[i].type === 'sent') {
+                        lastUserMessage = messages[i].text;
+                        break;
+                    }
+                }
                 
-                // 滚动到底部
-                const messageContent = document.getElementById('messageContent');
-                messageContent.scrollTop = messageContent.scrollHeight;
-            });
+                // 如果没有找到用户发送的消息，使用输入框中的内容
+                if (!lastUserMessage) {
+                    const input = document.getElementById('messageInput');
+                    lastUserMessage = input.value.trim();
+                }
+                
+                if (lastUserMessage) {
+                    // 显示"正在输入..."状态
+                    const typingTime = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+                    const typingId = addMessageToView('received', '正在输入...', typingTime);
+                    
+                    // 调用真实的AI模型
+                    getAiReplyFromSettings(lastUserMessage, (reply) => {
+                        // 移除"正在输入..."状态
+                        removeMessage(typingId);
+                        
+                        // 将AI回复拆分为多条消息（5-7条）
+                        const replyLines = splitReplyIntoLines(reply, 5, 7);
+                        
+                        // 逐条显示回复，每条间隔1-2秒
+                        replyLines.forEach((line, index) => {
+                            setTimeout(() => {
+                                const replyTime = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+                                addMessageToView('received', line, replyTime);
+                                saveMessage('received', line, replyTime);
+                            }, (index + 1) * (1000 + Math.random() * 1000)); // 1-2秒间隔
+                        });
+                    });
+                }
+            }
+
+            // 从设置页面调用AI模型
+            async function getAiReplyFromSettings(userMessage, callback) {
+                try {
+                    // 获取AI设置
+                    const savedSettings = localStorage.getItem('aiSettings');
+                    let settings = {
+                        provider: 'openai',
+                        url: 'https://api.openai.com/v1',
+                        key: '',
+                        model: 'gpt-3.5-turbo',
+                        enabled: true
+                    };
+                    
+                    if (savedSettings) {
+                        try {
+                            settings = JSON.parse(savedSettings);
+                        } catch (e) {
+                            console.error('Failed to parse saved settings', e);
+                            callback('AI设置解析失败');
+                            return;
+                        }
+                    }
+                    
+                    // 检查必要配置
+                    if (!settings.key) {
+                        callback('请在设置页面配置API密钥');
+                        return;
+                    }
+                    
+                    if (!settings.model) {
+                        callback('请在设置页面配置模型名称');
+                        return;
+                    }
+                    
+                    // 获取联系人信息和角色ID
+                    const savedContactInfo = localStorage.getItem('messageContactInfo');
+                    let contactName = '未知联系人';
+                    let contactRoleId = null;
+                    let characterDesc = ''; // 角色描述
+                    
+                    if (savedContactInfo) {
+                        try {
+                            const contactInfo = JSON.parse(savedContactInfo);
+                            contactName = contactInfo.name || contactName;
+                            contactRoleId = contactInfo.roleId || null;
+                        } catch (e) {
+                            console.error('解析联系人信息时出错:', e);
+                        }
+                    }
+                    
+                    // 如果有角色ID，从角色书中获取角色描述
+                    if (contactRoleId) {
+                        const savedCharacters = localStorage.getItem('characters');
+                        if (savedCharacters) {
+                            try {
+                                const characters = JSON.parse(savedCharacters);
+                                const character = characters.find(char => char.id == contactRoleId);
+                                if (character) {
+                                    characterDesc = character.desc || '';
+                                    contactName = character.name || contactName;
+                                }
+                            } catch (e) {
+                                console.error('解析角色书时出错:', e);
+                            }
+                        }
+                    }
+                    
+                    // 获取对话历史
+                    const chatKey = `chat_${contactName}_${contactName.hashCode()}`;
+                    const savedMessages = localStorage.getItem(chatKey);
+                    let messages = [];
+                    
+                    if (savedMessages) {
+                        try {
+                            messages = JSON.parse(savedMessages);
+                        } catch (e) {
+                            console.error('解析消息数据时出错:', e);
+                        }
+                    }
+                    
+                    // 构建系统提示，包含角色信息
+                    let systemPrompt = "你是一个真实的人类，正在和朋友聊天。你需要以真实、自然、有个性的方式进行对话，就像真实的朋友之间聊天一样。回复时不要使用括号，不要提及你是AI，要像真实的人类一样表达情感和观点。";
+                    
+                    // 如果选择了角色，使用角色信息
+                    if (characterDesc) {
+                        systemPrompt = `你正在扮演${contactName}这个角色，正在和朋友聊天。请以${contactName}的身份、语气和性格特点进行对话，就像真实的人类一样表达情感和观点。回复时不要使用括号，不要提及你是AI，要像真实的人类一样自然地聊天。`;
+                        // 如果角色有描述信息，添加到提示中
+                        if (characterDesc) {
+                            systemPrompt += `\n角色设定：${characterDesc}`;
+                        }
+                    }
+                    
+                    // 添加用户信息到系统提示
+                    // 获取用户设置信息
+                    const savedUserSettings = localStorage.getItem('userSettings');
+                    if (savedUserSettings) {
+                        try {
+                            const userSettings = JSON.parse(savedUserSettings);
+                            if (userSettings.name) {
+                                systemPrompt += `\n朋友姓名：${userSettings.name}`;
+                            }
+                            if (userSettings.persona) {
+                                systemPrompt += `\n朋友人设：${userSettings.persona}`;
+                            }
+                        } catch (e) {
+                            console.error('解析用户设置时出错:', e);
+                        }
+                    }
+                    
+                    // 强调回复要求
+                    systemPrompt += "\n\n请记住：\n1. 像真实的人类一样聊天，有情感、有个性\n2. 回复要具体、有针对性，不要泛泛而谈\n3. 可以表达个人观点和感受\n4. 不要使用括号\n5. 不要提及你是AI\n6. 回复要自然、口语化\n7. 特别注意要基于用户最新发送的消息进行回复，不要答非所问\n8. 除了聊当前话题，也可以聊家常、生活、兴趣爱好等其他话题\n9. 可以主动分享自己的想法、感受和经历，增加互动性\n10. 保持轻松愉快的聊天氛围，让对话更有趣";
+                    
+                    // 构建消息历史，包含系统提示和对话历史
+                    const apiMessages = [
+                        {
+                            role: "system",
+                            content: systemPrompt
+                        }
+                    ];
+                    
+                    // 添加对话历史记录（限制在最近10条消息内）
+                    const recentMessages = messages.slice(-10);
+                    recentMessages.forEach(msg => {
+                        apiMessages.push({
+                            role: msg.type === 'sent' ? 'user' : 'assistant',
+                            content: msg.text
+                        });
+                    });
+                    
+                    // 添加当前用户消息
+                    apiMessages.push({
+                        role: "user",
+                        content: userMessage
+                    });
+                    
+                    console.log('发送给AI的消息:', apiMessages); // 调试信息
+                    
+                    // 根据提供商构建请求
+                    let apiUrl = settings.url;
+                    
+                    // 确保URL格式正确
+                    if (!apiUrl) {
+                        if (settings.provider === 'openai') {
+                            apiUrl = 'https://api.openai.com/v1';
+                        } else if (settings.provider === 'gemini') {
+                            apiUrl = 'https://generativelanguage.googleapis.com/v1beta';
+                        } else if (settings.provider === 'siliconflow') {
+                            apiUrl = 'https://api.siliconflow.cn/v1';
+                        } else if (settings.provider === 'deepseek') {
+                            apiUrl = 'https://api.deepseek.com/v1';
+                        } else {
+                            // 自定义提供商
+                            if (!apiUrl) {
+                                callback('请在设置页面配置API地址');
+                                return;
+                            }
+                        }
+                    }
+                    
+                    // 确保URL以/结尾（用于chat/completions）
+                    if (settings.provider !== 'gemini' && !apiUrl.endsWith('/')) {
+                        apiUrl += '/';
+                    }
+                    
+                    let fetchUrl = '';
+                    let fetchOptions = {};
+                    
+                    if (settings.provider === 'gemini') {
+                        // Google Gemini API
+                        fetchUrl = `${apiUrl}/models/${settings.model}:generateContent?key=${settings.key}`;
+                        fetchOptions = {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                contents: [{
+                                    parts: [{
+                                        text: userMessage
+                                    }]
+                                }]
+                            })
+                        };
+                    } else if (settings.provider === 'siliconflow') {
+                        // SiliconFlow API
+                        fetchUrl = apiUrl.endsWith('/') ? `${apiUrl}chat/completions` : `${apiUrl}/chat/completions`;
+                        fetchOptions = {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${settings.key}`
+                            },
+                            body: JSON.stringify({
+                                model: settings.model,
+                                messages: apiMessages,
+                                temperature: 0.8,
+                                max_tokens: 1000
+                            })
+                        };
+                    } else if (settings.provider === 'deepseek') {
+                        // DeepSeek API
+                        fetchUrl = apiUrl.endsWith('/') ? `${apiUrl}chat/completions` : `${apiUrl}/chat/completions`;
+                        fetchOptions = {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${settings.key}`
+                            },
+                            body: JSON.stringify({
+                                model: settings.model,
+                                messages: apiMessages,
+                                temperature: 0.8,
+                                max_tokens: 1000
+                            })
+                        };
+                    } else if (settings.provider === 'openai') {
+                        // OpenAI API
+                        fetchUrl = apiUrl.endsWith('/') ? `${apiUrl}chat/completions` : `${apiUrl}/chat/completions`;
+                        fetchOptions = {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${settings.key}`
+                            },
+                            body: JSON.stringify({
+                                model: settings.model,
+                                messages: apiMessages,
+                                temperature: 0.8,
+                                max_tokens: 1000
+                            })
+                        };
+                    } else {
+                        // 自定义提供商
+                        fetchUrl = apiUrl.endsWith('/') ? `${apiUrl}chat/completions` : `${apiUrl}/chat/completions`;
+                        fetchOptions = {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${settings.key}`
+                            },
+                            body: JSON.stringify({
+                                model: settings.model,
+                                messages: apiMessages,
+                                temperature: 0.8,
+                                max_tokens: 1000
+                            })
+                        };
+                    }
+                    
+                    console.log('请求URL:', fetchUrl); // 调试信息
+                    console.log('请求选项:', fetchOptions); // 调试信息
+                    
+                    // 添加超时控制
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 15000); // 15秒超时
+                    fetchOptions.signal = controller.signal;
+                    
+                    const response = await fetch(fetchUrl, fetchOptions);
+                    clearTimeout(timeoutId);
+                    
+                    console.log('响应状态:', response.status); // 调试信息
+                    
+                    // 检查响应状态
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        console.error('API错误响应:', errorText); // 调试信息
+                        throw new Error(`API请求失败: ${response.status} ${response.statusText}\n${errorText}`);
+                    }
+                    
+                    // 解析响应
+                    const data = await response.json();
+                    console.log('API响应数据:', data); // 调试信息
+                    
+                    let aiResponse = '';
+                    if (settings.provider === 'gemini') {
+                        // Gemini响应格式
+                        aiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || '无法获取响应内容';
+                    } else {
+                        // OpenAI/SiliconFlow/DeepSeek/自定义响应格式
+                        aiResponse = data.choices?.[0]?.message?.content || '无法获取响应内容';
+                    }
+                    
+                    console.log('AI回复内容:', aiResponse); // 调试信息
+                    callback(aiResponse);
+                } catch (error) {
+                    console.error('AI回复出错:', error);
+                    callback('抱歉，我暂时无法回复，请稍后再试。');
+                }
+            }
+
+            // 生成AI回复内容
+            function generateAiReplies(userMessage, count) {
+                const replies = [];
+                for (let i = 0; i < count; i++) {
+                    replies.push(`回复 ${i + 1}: ${userMessage}`);
+                }
+                return replies;
+            }
+
+            // 将回复内容拆分为多行
+            function splitReplyIntoLines(reply, minLines, maxLines) {
+                // 首先按句号、感叹号、问号分割
+                const sentences = reply.split(/[。！？.!?]\s*/).filter(s => s.trim().length > 0);
+                
+                // 如果句子太少，就按逗号分割
+                let messageParts = [];
+                if (sentences.length < 2) {
+                    messageParts = reply.split(/[，,]\s*/).filter(s => s.trim().length > 0);
+                } else {
+                    messageParts = sentences;
+                }
+                
+                // 如果还是太少，就整体发送
+                if (messageParts.length === 0) {
+                    messageParts = [reply];
+                }
+                
+                // 随机确定发送的消息数量（5-7条）
+                const messageCount = Math.floor(Math.random() * (maxLines - minLines + 1)) + minLines;
+                
+                // 只取前messageCount条消息
+                const messagesToSend = messageParts.slice(0, Math.min(messageCount, messageParts.length));
+                
+                return messagesToSend;
+            }
+
+            // 移除消息
+            function removeMessage(messageId) {
+                const messageElement = document.getElementById(messageId);
+                if (messageElement) {
+                    messageElement.remove();
+                }
+            }
+
+            // 保存消息到localStorage
+            function saveMessage(type, text, time) {
+                // 获取联系人名称
+                const savedContactInfo = localStorage.getItem('messageContactInfo');
+                let contactName = '未知联系人';
+                
+                if (savedContactInfo) {
+                    try {
+                        const contactInfo = JSON.parse(savedContactInfo);
+                        contactName = contactInfo.name || contactName;
+                    } catch (e) {
+                        console.error('解析联系人信息时出错:', e);
+                    }
+                }
+                
+                // 为每个联系人创建独立的聊天键
+                const chatKey = `chat_${contactName}_${contactName.hashCode()}`; // 添加哈希码确保唯一性
+                const savedMessages = localStorage.getItem(chatKey);
+                let messages = [];
+                
+                if (savedMessages) {
+                    try {
+                        messages = JSON.parse(savedMessages);
+                    } catch (e) {
+                        console.error('解析消息数据时出错:', e);
+                    }
+                }
+                
+                // 确保消息数组不超过一定数量，避免localStorage过大
+                if (messages.length > 100) {
+                    messages = messages.slice(-100); // 只保留最近100条消息
+                }
+                
+                messages.push({ type, text, time });
+                localStorage.setItem(chatKey, JSON.stringify(messages));
+                
+                console.log(`保存消息到 ${chatKey}:`, { type, text, time }); // 调试信息
+            }
 
             // 渲染消息
             function renderMessages(messages) {
@@ -658,6 +1224,427 @@
                     addMessageToView(msg.type, msg.text, msg.time);
                 });
             }
+
+            // 打电话功能
+            function makeCall() {
+                // 获取联系人信息
+                const savedContactInfo = localStorage.getItem('messageContactInfo');
+                let contactName = '';
+                let contactNumber = '';
+                let contactAvatar = '';
+                let contactRoleId = null;
+                let contactWorldId = null;
+                
+                if (savedContactInfo) {
+                    try {
+                        const contactInfo = JSON.parse(savedContactInfo);
+                        contactName = contactInfo.name || contactName;
+                        contactNumber = contactInfo.number || '';
+                        contactAvatar = contactInfo.avatar || contactName.charAt(0);
+                        contactRoleId = contactInfo.roleId || null;
+                        contactWorldId = contactInfo.worldId || null;
+                    } catch (e) {
+                        console.error('解析联系人信息时出错:', e);
+                    }
+                }
+                
+                // 从联系人列表中查找电话号码
+                const savedContacts = localStorage.getItem('contacts');
+                if (savedContacts) {
+                    try {
+                        const contacts = JSON.parse(savedContacts);
+                        const contact = contacts.find(c => c.name === contactName);
+                        if (contact) {
+                            contactNumber = contact.number;
+                            // 如果联系人信息中有头像，使用联系人的头像
+                            if (contact.avatar) {
+                                contactAvatar = contact.avatar;
+                            }
+                            // 如果联系人信息中有角色ID和世界ID，使用联系人的信息
+                            if (contact.roleId) {
+                                contactRoleId = contact.roleId;
+                            }
+                            if (contact.worldId) {
+                                contactWorldId = contact.worldId;
+                            }
+                        }
+                    } catch (e) {
+                        console.error('解析联系人列表时出错:', e);
+                    }
+                }
+                
+                // 如果没有找到号码，使用默认号码
+                if (!contactNumber) {
+                    contactNumber = '13800138000'; // 默认号码
+                }
+                
+                // 构建完整的联系人信息，包括角色和世界信息
+                const callContactInfo = {
+                    name: contactName,
+                    number: contactNumber,
+                    avatar: contactAvatar,
+                    roleId: contactRoleId,
+                    worldId: contactWorldId
+                };
+                
+                // 从角色书中获取角色详细信息
+                if (contactRoleId) {
+                    const savedCharacters = localStorage.getItem('characters');
+                    if (savedCharacters) {
+                        try {
+                            const characters = JSON.parse(savedCharacters);
+                            const character = characters.find(c => c.id == contactRoleId);
+                            if (character) {
+                                callContactInfo.characterName = character.name;
+                                callContactInfo.characterDesc = character.desc;
+                                callContactInfo.characterAvatar = character.avatar;
+                            }
+                        } catch (e) {
+                            console.error('解析角色书时出错:', e);
+                        }
+                    }
+                }
+                
+                // 从世界书中获取世界详细信息
+                if (contactWorldId) {
+                    const savedWorlds = localStorage.getItem('worlds');
+                    if (savedWorlds) {
+                        try {
+                            const worlds = JSON.parse(savedWorlds);
+                            const world = worlds.find(w => w.id == contactWorldId);
+                            if (world) {
+                                callContactInfo.worldName = world.name;
+                                callContactInfo.worldDesc = world.desc;
+                                callContactInfo.worldAvatar = world.avatar;
+                            }
+                        } catch (e) {
+                            console.error('解析世界书时出错:', e);
+                        }
+                    }
+                }
+                
+                // 保存联系人信息到localStorage，以便通话页面使用
+                localStorage.setItem('callContactInfo', JSON.stringify(callContactInfo));
+                
+                // 跳转到通话页面
+                window.location.href = 'tonghua.html';
+            }
+
+            // 处理键盘事件
+            function handleKeyPress(event) {
+                if (event.key === 'Enter') {
+                    sendMessage();
+                }
+            }
+
+            // 打开设置弹窗
+            function openSettingsModal() {
+                // 加载角色列表
+                loadCharacterList();
+                // 加载世界列表
+                loadWorldList();
+                // 显示设置弹窗
+                document.getElementById('settingsModal').style.display = 'flex';
+            }
+
+            // 关闭设置弹窗
+            function closeSettingsModal() {
+                document.getElementById('settingsModal').style.display = 'none';
+            }
+
+            // 加载角色列表
+            function loadCharacterList() {
+                const characterListElement = document.getElementById('characterList');
+                characterListElement.innerHTML = '<p style="text-align: center; color: #aaa;">加载中...</p>';
+                
+                try {
+                    const savedCharacters = localStorage.getItem('characters');
+                    if (savedCharacters) {
+                        const characters = JSON.parse(savedCharacters);
+                        if (characters && characters.length > 0) {
+                            characterListElement.innerHTML = '';
+                            characters.forEach(character => {
+                                const characterElement = document.createElement('div');
+                                characterElement.style.padding = '8px';
+                                characterElement.style.borderBottom = '1px solid rgba(255,255,255,0.1)';
+                                characterElement.style.cursor = 'pointer';
+                                characterElement.style.display = 'flex';
+                                characterElement.style.alignItems = 'center';
+                                
+                                // 添加选中状态检查
+                                const savedContactInfo = localStorage.getItem('messageContactInfo');
+                                let isSelected = false;
+                                if (savedContactInfo) {
+                                    try {
+                                        const contactInfo = JSON.parse(savedContactInfo);
+                                        isSelected = contactInfo.roleId == character.id;
+                                    } catch (e) {
+                                        console.error('解析联系人信息时出错:', e);
+                                    }
+                                }
+                                
+                                // 处理角色头像显示
+                                let avatarHtml = '';
+                                if (character.avatar && (character.avatar.startsWith('data:image') || 
+                                                        character.avatar.startsWith('http://') || 
+                                                        character.avatar.startsWith('https://'))) {
+                                    avatarHtml = `<img src="${character.avatar}" style="width: 30px; height: 30px; border-radius: 50%; object-fit: cover; margin-right: 10px;">`;
+                                } else {
+                                    avatarHtml = `<div style="width: 30px; height: 30px; border-radius: 50%; background: rgba(0, 122, 255, 0.3); display: flex; align-items: center; justify-content: center; margin-right: 10px; font-weight: bold;">${character.name.charAt(0)}</div>`;
+                                }
+                                
+                                characterElement.innerHTML = `
+                                    <input type="radio" name="selectedCharacter" value="${character.id}" ${isSelected ? 'checked' : ''} style="margin-right: 10px;">
+                                    ${avatarHtml}
+                                    <div>
+                                        <div style="font-weight: bold;">${character.name}</div>
+                                        <div style="font-size: 12px; color: #aaa; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${character.desc || '无描述'}</div>
+                                    </div>
+                                `;
+                                characterElement.onclick = () => {
+                                    // 选中角色
+                                    const radio = characterElement.querySelector('input[type="radio"]');
+                                    radio.checked = true;
+                                };
+                                characterListElement.appendChild(characterElement);
+                            });
+                        } else {
+                            characterListElement.innerHTML = '<p style="text-align: center; color: #aaa;">暂无角色</p>';
+                        }
+                    } else {
+                        characterListElement.innerHTML = '<p style="text-align: center; color: #aaa;">暂无角色</p>';
+                    }
+                } catch (e) {
+                    console.error('加载角色列表时出错:', e);
+                    characterListElement.innerHTML = '<p style="text-align: center; color: #f00;">加载失败</p>';
+                }
+            }
+
+            // 加载世界列表
+            function loadWorldList() {
+                const worldListElement = document.getElementById('worldList');
+                worldListElement.innerHTML = '<p style="text-align: center; color: #aaa;">加载中...</p>';
+                
+                try {
+                    const savedWorlds = localStorage.getItem('worlds');
+                    if (savedWorlds) {
+                        const worlds = JSON.parse(savedWorlds);
+                        if (worlds && worlds.length > 0) {
+                            worldListElement.innerHTML = '';
+                            worlds.forEach(world => {
+                                const worldElement = document.createElement('div');
+                                worldElement.style.padding = '8px';
+                                worldElement.style.borderBottom = '1px solid rgba(255,255,255,0.1)';
+                                worldElement.style.cursor = 'pointer';
+                                worldElement.style.display = 'flex';
+                                worldElement.style.alignItems = 'center';
+                                
+                                // 添加选中状态检查
+                                const savedContactInfo = localStorage.getItem('messageContactInfo');
+                                let isSelected = false;
+                                if (savedContactInfo) {
+                                    try {
+                                        const contactInfo = JSON.parse(savedContactInfo);
+                                        isSelected = contactInfo.worldId == world.id;
+                                    } catch (e) {
+                                        console.error('解析联系人信息时出错:', e);
+                                    }
+                                }
+                                
+                                // 处理世界头像显示
+                                let avatarHtml = '';
+                                if (world.avatar && (world.avatar.startsWith('data:image') || 
+                                                    world.avatar.startsWith('http://') || 
+                                                    world.avatar.startsWith('https://'))) {
+                                    avatarHtml = `<img src="${world.avatar}" style="width: 30px; height: 30px; border-radius: 50%; object-fit: cover; margin-right: 10px;">`;
+                                } else {
+                                    avatarHtml = `<div style="width: 30px; height: 30px; border-radius: 50%; background: rgba(0, 122, 255, 0.3); display: flex; align-items: center; justify-content: center; margin-right: 10px; font-weight: bold;">${world.name.charAt(0)}</div>`;
+                                }
+                                
+                                worldElement.innerHTML = `
+                                    <input type="radio" name="selectedWorld" value="${world.id}" ${isSelected ? 'checked' : ''} style="margin-right: 10px;">
+                                    ${avatarHtml}
+                                    <div>
+                                        <div style="font-weight: bold;">${world.name}</div>
+                                        <div style="font-size: 12px; color: #aaa; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${world.desc || '无描述'}</div>
+                                    </div>
+                                `;
+                                worldElement.onclick = () => {
+                                    // 选中世界
+                                    const radio = worldElement.querySelector('input[type="radio"]');
+                                    radio.checked = true;
+                                };
+                                worldListElement.appendChild(worldElement);
+                            });
+                        } else {
+                            worldListElement.innerHTML = '<p style="text-align: center; color: #aaa;">暂无世界设定</p>';
+                        }
+                    } else {
+                        worldListElement.innerHTML = '<p style="text-align: center; color: #aaa;">暂无世界设定</p>';
+                    }
+                } catch (e) {
+                    console.error('加载世界列表时出错:', e);
+                    worldListElement.innerHTML = '<p style="text-align: center; color: #f00;">加载失败</p>';
+                }
+            }
+
+            // 从角色书导入角色
+            function importCharacter() {
+                alert('此功能将在后续版本中实现');
+            }
+
+            // 从世界书导入世界设定
+            function importWorld() {
+                alert('此功能将在后续版本中实现');
+            }
+
+            // 保存设置
+            function saveSettings() {
+                // 保存背景设置
+                const fileInput = document.getElementById('settingsBackgroundFile');
+                const urlInput = document.getElementById('settingsBackgroundUrl');
+                const file = fileInput.files[0];
+                const url = urlInput.value.trim();
+                
+                const messageContent = document.getElementById('messageContent');
+                
+                if (file) {
+                    // 处理文件上传
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        messageContent.style.backgroundImage = `url(${e.target.result})`;
+                        messageContent.style.backgroundSize = 'cover';
+                        messageContent.style.backgroundPosition = 'center';
+                        messageContent.style.backgroundRepeat = 'no-repeat';
+                        
+                        // 保存背景到localStorage
+                        localStorage.setItem('messageBackground', e.target.result);
+                        
+                        // 清空输入框
+                        fileInput.value = '';
+                        urlInput.value = '';
+                    };
+                    reader.readAsDataURL(file);
+                } else if (url) {
+                    // 处理URL输入
+                    messageContent.style.backgroundImage = `url(${url})`;
+                    messageContent.style.backgroundSize = 'cover';
+                    messageContent.style.backgroundPosition = 'center';
+                    messageContent.style.backgroundRepeat = 'no-repeat';
+                    
+                    // 保存背景到localStorage
+                    localStorage.setItem('messageBackground', url);
+                    
+                    // 清空输入框
+                    fileInput.value = '';
+                    urlInput.value = '';
+                }
+                
+                // 保存选中的角色和世界
+                const selectedCharacter = document.querySelector('input[name="selectedCharacter"]:checked');
+                const selectedWorld = document.querySelector('input[name="selectedWorld"]:checked');
+                
+                // 获取当前联系人信息
+                const savedContactInfo = localStorage.getItem('messageContactInfo');
+                let contactInfo = {
+                    name: '未知联系人',
+                    avatar: '未知'
+                };
+                
+                if (savedContactInfo) {
+                    try {
+                        contactInfo = JSON.parse(savedContactInfo);
+                    } catch (e) {
+                        console.error('解析联系人信息时出错:', e);
+                    }
+                }
+                
+                // 更新角色ID和世界ID
+                if (selectedCharacter) {
+                    contactInfo.roleId = selectedCharacter.value;
+                }
+                if (selectedWorld) {
+                    contactInfo.worldId = selectedWorld.value;
+                }
+                
+                // 如果选择了角色，从角色书中获取角色信息并更新头像
+                if (selectedCharacter) {
+                    const savedCharacters = localStorage.getItem('characters');
+                    if (savedCharacters) {
+                        try {
+                            const characters = JSON.parse(savedCharacters);
+                            const character = characters.find(char => char.id == selectedCharacter.value);
+                            if (character) {
+                                // 使用角色书中的头像和名称
+                                contactInfo.name = character.name || contactInfo.name;
+                                contactInfo.avatar = character.avatar || contactInfo.avatar;
+                            }
+                        } catch (e) {
+                            console.error('解析角色书时出错:', e);
+                        }
+                    }
+                }
+                
+                // 保存更新后的联系人信息
+                localStorage.setItem('messageContactInfo', JSON.stringify(contactInfo));
+                
+                // 更新页面显示的头像和名称
+                updateContactInfoDisplay(contactInfo);
+                
+                // 关闭设置弹窗
+                closeSettingsModal();
+                
+                // 显示保存成功提示
+                alert('设置已保存');
+            }
+
+            // 更新联系人信息显示
+            function updateContactInfoDisplay(contactInfo) {
+                // 更新页面标题
+                document.title = `${contactInfo.name || '未知联系人'} - 信息`;
+                
+                // 更新头像显示
+                const avatarElement = document.getElementById('messageContactAvatar');
+                if (avatarElement) {
+                    // 处理头像显示
+                    if (contactInfo.avatar && typeof contactInfo.avatar === 'string') {
+                        if (contactInfo.avatar.startsWith('data:image') || 
+                            contactInfo.avatar.startsWith('http://') || 
+                            contactInfo.avatar.startsWith('https://')) {
+                            // 如果是图片URL或base64数据，创建img元素
+                            avatarElement.innerHTML = '';
+                            const img = document.createElement('img');
+                            img.src = contactInfo.avatar;
+                            img.style.width = '100%';
+                            img.style.height = '100%';
+                            img.style.borderRadius = '50%';
+                            img.style.objectFit = 'cover';
+                            img.onerror = function() {
+                                // 如果图片加载失败，显示默认文字
+                                avatarElement.innerHTML = contactInfo.name ? contactInfo.name.charAt(0) : '未';
+                            };
+                            avatarElement.appendChild(img);
+                        } else {
+                            // 如果是文字头像，直接显示
+                            avatarElement.textContent = contactInfo.avatar || (contactInfo.name ? contactInfo.name.charAt(0) : '未');
+                        }
+                    } else {
+                        // 默认使用联系人名称的第一个字符
+                        avatarElement.textContent = contactInfo.name ? contactInfo.name.charAt(0) : '未';
+                    }
+                }
+            }
+
+            // 为字符串添加hashCode方法
+            String.prototype.hashCode = function() {
+                let hash = 0;
+                for (let i = 0; i < this.length; i++) {
+                    const char = this.charCodeAt(i);
+                    hash = ((hash << 5) - hash) + char;
+                    hash = hash & hash; // 转换为32位整数
+                }
+                return Math.abs(hash).toString(36); // 转换为base36字符串
+            };
         </script>
     </div>
 </body>
