@@ -1706,7 +1706,17 @@
             // 监听来自图标管理页面的消息
             window.addEventListener('message', function(event) {
                 if (event.data.type === 'updateIcon') {
-                    updateAppIcon(event.data.iconId, event.data.iconData);
+                    // 特殊处理：如果更新的是名片头像，直接更新头像显示
+                    if (event.data.iconId === 'profile-avatar') {
+                        const profileAvatarElement = document.getElementById('profileAvatar');
+                        if (profileAvatarElement) {
+                            profileAvatarElement.innerHTML = `<img src="${event.data.iconData}" alt="头像" style="width:100%;height:100%;object-fit:cover;object-position:center;border-radius:50%;">`;
+                        }
+                        // 同时保存到localStorage
+                        localStorage.setItem('profileAvatar', event.data.iconData);
+                    } else {
+                        updateAppIcon(event.data.iconId, event.data.iconData);
+                    }
                 } else if (event.data.type === 'restoreIcons') {
                     loadCustomIcons(); // 重新加载所有图标
                 }
