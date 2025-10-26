@@ -581,6 +581,7 @@
         let userPersonaInfo = { nickname: "", persona: "" };
         let contactPersonaInfo = { nickname: "", persona: "" };
         let conversationHistory = []; // 添加对话历史记录
+        let worldInfo = null; // 世界信息
 
         // 更新时间
         function updateTime() {
@@ -825,6 +826,11 @@
                 }
                 if (contactPersonaInfo.persona) {
                     systemPrompt += `\n你的人设：${contactPersonaInfo.persona}`;
+                }
+                
+                // 添加世界信息（如果存在）
+                if (typeof worldInfo !== 'undefined' && worldInfo) {
+                    systemPrompt += `\n世界背景：${worldInfo}`;
                 }
                 
                 console.log('发送给AI的系统提示:', systemPrompt); // 调试信息
@@ -1197,6 +1203,18 @@
                     contactName = contactInfo.name || contactName;
                     contactNumber = contactInfo.number || contactNumber;
                     contactAvatar = contactInfo.avatar || contactAvatar;
+                    
+                    // 获取角色和世界信息
+                    if (contactInfo.characterName) {
+                        contactName = contactInfo.characterName;
+                    }
+                    if (contactInfo.characterDesc) {
+                        contactPersonaInfo.persona = contactInfo.characterDesc;
+                    }
+                    if (contactInfo.worldDesc) {
+                        // 将世界描述添加到系统提示中
+                        worldInfo = contactInfo.worldDesc;
+                    }
                 } catch (e) {
                     console.error('解析联系人信息时出错:', e);
                 }
