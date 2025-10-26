@@ -1175,6 +1175,7 @@
                             <div class="contact-detail-avatar" id="detailAvatar" style="width: 80px; height: 80px; border-radius: 50%; background: rgba(0, 122, 255, 0.3); display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; font-weight: bold; font-size: 24px;"></div>
                             <input type="text" id="detailName" class="file-input" placeholder="昵称" style="width: 100%; margin-bottom: 10px;">
                             <input type="text" id="detailNumber" class="file-input" placeholder="专属号码" style="width: 100%; margin-bottom: 10px;">
+                            <input type="text" id="detailAvatarText" class="file-input" placeholder="头像文字（可选）" style="width: 100%; margin-bottom: 10px;">
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -1483,6 +1484,60 @@
                 }
             });
 
+            // 打开信息页面
+            function openMessages(contactName, contactAvatar) {
+                // 查找联系人的完整信息
+                let fullContactInfo = {
+                    name: contactName,
+                    avatar: contactAvatar || contactName.charAt(0)
+                };
+                
+                // 从信息列表中查找匹配的联系人
+                const matchingMessage = messageList.find(item => item.name === contactName);
+                if (matchingMessage) {
+                    fullContactInfo.avatar = matchingMessage.avatar || fullContactInfo.avatar;
+                    fullContactInfo.preview = matchingMessage.preview;
+                    fullContactInfo.time = matchingMessage.time;
+                    // 如果信息列表中有角色ID，也获取它
+                    if (matchingMessage.roleId) {
+                        fullContactInfo.roleId = matchingMessage.roleId;
+                    }
+                }
+                
+                // 从联系人列表中查找匹配的联系人
+                const matchingContact = contacts.find(contact => contact.name === contactName);
+                if (matchingContact) {
+                    fullContactInfo.avatar = matchingContact.avatar || fullContactInfo.avatar;
+                    fullContactInfo.number = matchingContact.number;
+                    // 如果联系人列表中有角色ID，也获取它
+                    if (matchingContact.roleId) {
+                        fullContactInfo.roleId = matchingContact.roleId;
+                    }
+                }
+                
+                // 确保头像信息正确处理（特别是base64格式的图片）
+                if (fullContactInfo.avatar && typeof fullContactInfo.avatar === 'string') {
+                    // 如果是base64图片数据或其他图片URL，保持原样
+                    if (fullContactInfo.avatar.startsWith('data:image') || 
+                        fullContactInfo.avatar.startsWith('http://') || 
+                        fullContactInfo.avatar.startsWith('https://')) {
+                        // 保持原样
+                    } else {
+                        // 如果是文字头像，确保正确设置
+                        fullContactInfo.avatar = fullContactInfo.avatar || contactName.charAt(0);
+                    }
+                } else {
+                    // 默认使用联系人名称的第一个字符
+                    fullContactInfo.avatar = contactName.charAt(0);
+                }
+                
+                // 将联系人信息保存到localStorage
+                localStorage.setItem('messageContactInfo', JSON.stringify(fullContactInfo));
+                
+                // 跳转到信息页面，不传递URL参数
+                window.location.href = 'faxinxi.html';
+            }
+
             // 打开删除确认弹窗
             function openDeleteConfirmModal() {
                 document.getElementById('deleteConfirmModal').style.display = 'flex';
@@ -1564,6 +1619,7 @@
                                           contact.avatar.startsWith('https://'))) {
                         avatarHtml = `<img src="${contact.avatar}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;" onerror="this.parentElement.innerHTML='${contact.name.charAt(0)}'">`;
                     } else {
+                        // 确保即使avatar为空也显示默认头像
                         avatarHtml = contact.avatar || contact.name.charAt(0);
                     }
                     
@@ -1630,6 +1686,7 @@
                                           message.avatar.startsWith('https://'))) {
                         avatarHtml = `<img src="${message.avatar}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;" onerror="this.parentElement.innerHTML='${message.name.charAt(0)}'">`;
                     } else {
+                        // 确保即使avatar为空也显示默认头像
                         avatarHtml = message.avatar || message.name.charAt(0);
                     }
                     
@@ -1654,14 +1711,38 @@
             }
 
             // 打开信息页面
-            // 打开信息页面
             function openMessages(contactName, contactAvatar) {
-                // 将联系人信息保存到localStorage
-                const contactInfo = {
+                // 查找联系人的完整信息
+                let fullContactInfo = {
                     name: contactName,
                     avatar: contactAvatar || contactName.charAt(0)
                 };
-                localStorage.setItem('messageContactInfo', JSON.stringify(contactInfo));
+                
+                // 从信息列表中查找匹配的联系人
+                const matchingMessage = messageList.find(item => item.name === contactName);
+                if (matchingMessage) {
+                    fullContactInfo.avatar = matchingMessage.avatar || fullContactInfo.avatar;
+                    fullContactInfo.preview = matchingMessage.preview;
+                    fullContactInfo.time = matchingMessage.time;
+                    // 如果信息列表中有角色ID，也获取它
+                    if (matchingMessage.roleId) {
+                        fullContactInfo.roleId = matchingMessage.roleId;
+                    }
+                }
+                
+                // 从联系人列表中查找匹配的联系人
+                const matchingContact = contacts.find(contact => contact.name === contactName);
+                if (matchingContact) {
+                    fullContactInfo.avatar = matchingContact.avatar || fullContactInfo.avatar;
+                    fullContactInfo.number = matchingContact.number;
+                    // 如果联系人列表中有角色ID，也获取它
+                    if (matchingContact.roleId) {
+                        fullContactInfo.roleId = matchingContact.roleId;
+                    }
+                }
+                
+                // 将联系人信息保存到localStorage
+                localStorage.setItem('messageContactInfo', JSON.stringify(fullContactInfo));
                 
                 // 跳转到信息页面，不传递URL参数
                 window.location.href = 'faxinxi.html';
@@ -1762,7 +1843,8 @@
                         name: selectedCharacter.name, 
                         avatar: avatar, 
                         preview: worldInfo ? '来自世界书：' + worldInfo.substring(0, 20) + '...' : '新消息', 
-                        time: '现在' 
+                        time: '现在',
+                        roleId: selectedCharacter.id  // 保存角色ID
                     });
                     localStorage.setItem('messageList', JSON.stringify(messageList));
                 }
@@ -2379,6 +2461,7 @@
                     // 设置昵称和号码
                     document.getElementById('detailName').value = contact.name;
                     document.getElementById('detailNumber').value = contact.number;
+                    document.getElementById('detailAvatarText').value = contact.avatar || contact.name.charAt(0);
                     
                     // 保存当前联系人索引
                     currentContactIndex = index;
@@ -2388,22 +2471,20 @@
                 }
             }
 
-            // 关闭联系人详情弹窗
-            function closeContactDetailModal() {
-                document.getElementById('contactDetailModal').style.display = 'none';
-                currentContactIndex = null;
-            }
-
             // 保存联系人详情
             function saveContactDetail() {
                 if (currentContactIndex !== null) {
                     const newName = document.getElementById('detailName').value.trim();
                     const newNumber = document.getElementById('detailNumber').value.trim();
+                    const newAvatar = document.getElementById('detailAvatarText').value.trim();
                     
                     if (newName && newNumber) {
                         // 更新联系人信息
                         contacts[currentContactIndex].name = newName;
                         contacts[currentContactIndex].number = newNumber;
+                        if (newAvatar) {
+                            contacts[currentContactIndex].avatar = newAvatar;
+                        }
                         
                         // 更新localStorage
                         localStorage.setItem('contacts', JSON.stringify(contacts));
@@ -2412,6 +2493,8 @@
                         const message = messageList.find(m => m.name === newName);
                         if (message) {
                             message.name = newName;
+                            // 同步头像信息
+                            message.avatar = contacts[currentContactIndex].avatar;
                             localStorage.setItem('messageList', JSON.stringify(messageList));
                         }
                         
