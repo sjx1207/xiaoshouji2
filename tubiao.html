@@ -546,6 +546,7 @@
                 { id: 'qianbao', name: '钱包', type: 'main' },
                 { id: 'dianhua', name: '电话', type: 'main' },
                 { id: 'peiban', name: '陪伴', type: 'main' },
+                { id: 'chouka', name: '抽卡', type: 'main' },
                 // 名片头像
                 { id: 'profile-avatar', name: '名片头像', type: 'main' },
                 
@@ -709,6 +710,12 @@
                 // 保存当前编辑的图标引用，防止在异步操作中丢失
                 const editingIcon = currentEditingIcon;
                 
+                // 显示保存中提示
+                const saveBtn = document.querySelector('#iconSelectModal .modal-btn.primary');
+                const originalText = saveBtn.textContent;
+                saveBtn.textContent = '保存中...';
+                saveBtn.disabled = true;
+                
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     try {
@@ -729,10 +736,17 @@
                     } catch (error) {
                         console.error('保存图标时出错:', error);
                         alert('保存图标失败，请重试');
+                    } finally {
+                        // 恢复按钮状态
+                        saveBtn.textContent = originalText;
+                        saveBtn.disabled = false;
                     }
                 };
                 reader.onerror = function() {
                     alert('读取文件时出错，请重试');
+                    // 恢复按钮状态
+                    saveBtn.textContent = originalText;
+                    saveBtn.disabled = false;
                 };
                 reader.readAsDataURL(file);
             }
@@ -741,11 +755,15 @@
             function updateMainScreenIcons(iconId, iconData) {
                 // 发送消息给主屏幕页面（如果它正在运行）
                 if (window.opener && window.opener !== window) {
-                    window.opener.postMessage({
-                        type: 'updateIcon',
-                        iconId: iconId,
-                        iconData: iconData
-                    }, '*');
+                    try {
+                        window.opener.postMessage({
+                            type: 'updateIcon',
+                            iconId: iconId,
+                            iconData: iconData
+                        }, '*');
+                    } catch (e) {
+                        console.error('发送消息到主屏幕时出错:', e);
+                    }
                 }
                 
                 // 特殊处理：如果更新的是名片头像，也更新localStorage中的profileAvatar
@@ -771,6 +789,12 @@
             // 恢复所有图标
             function restoreAllIcons() {
                 try {
+                    // 显示恢复中提示
+                    const restoreBtn = document.querySelector('#restoreConfirmModal .modal-btn.confirm');
+                    const originalText = restoreBtn.textContent;
+                    restoreBtn.textContent = '恢复中...';
+                    restoreBtn.disabled = true;
+                    
                     // 删除所有自定义图标
                     apps.forEach(app => {
                         localStorage.removeItem(`customIcon_${app.id}`);
@@ -790,6 +814,13 @@
                 } catch (error) {
                     console.error('恢复图标时出错:', error);
                     alert('恢复图标失败，请重试');
+                } finally {
+                    // 恢复按钮状态
+                    const restoreBtn = document.querySelector('#restoreConfirmModal .modal-btn.confirm');
+                    if (restoreBtn) {
+                        restoreBtn.textContent = originalText;
+                        restoreBtn.disabled = false;
+                    }
                 }
             }
 
