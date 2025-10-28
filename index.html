@@ -1714,7 +1714,12 @@
                                 profileAvatarElement.innerHTML = `<img src="${event.data.iconData}" alt="头像" style="width:100%;height:100%;object-fit:cover;object-position:center;border-radius:50%;">`;
                             }
                             // 同时保存到localStorage
-                            localStorage.setItem('profileAvatar', event.data.iconData);
+                            try {
+                                localStorage.setItem('profileAvatar', event.data.iconData);
+                            } catch (storageError) {
+                                console.error('保存名片头像到localStorage时出错:', storageError);
+                                // 不管什么错误都忽略，不提示用户
+                            }
                         } else {
                             updateAppIcon(event.data.iconId, event.data.iconData);
                         }
@@ -1781,46 +1786,50 @@
 
             // 更新单个应用图标
             function updateAppIcon(iconId, iconData) {
-                // 主屏幕应用图标
-                const mainScreenApps = [
-                    { id: 'bizhi', selector: '.app-icon[data-app="壁纸"]' },
-                    { id: 'shezhi', selector: '.app-icon[data-app="设置"]' },
-                    { id: 'chat', selector: '.app-icon[data-app="聊天"]' },
-                    { id: 'yinyue', selector: '.app-icon[data-app="音乐"]' },
-                    { id: 'riji', selector: '.app-icon[data-app="日记"]' },
-                    { id: 'gouwu', selector: '.app-icon[data-app="购物"]' },
-                    { id: 'luntan', selector: '.app-icon[data-app="论坛"]' },
-                    { id: 'beiwanglu', selector: '.app-icon[data-app="备忘录"]' },
-                    { id: 'qianbao', selector: '.app-icon[data-app="钱包"]' },
-                    { id: 'dianhua', selector: '.app-icon[data-app="电话"]' },
-                    { id: 'peiban', selector: '.app-icon[data-app="陪伴"]' },
-                    { id: 'chouka', selector: '.app-icon[data-app="抽卡"]' }
-                ];
-                
-                // Dock栏应用图标
-                const dockApps = [
-                    { id: 'jueseshu-dock', selector: '.dock .app-icon[data-app="角色书"]' },
-                    { id: 'shijieshu-dock', selector: '.dock .app-icon[data-app="世界书"]' },
-                    { id: 'shuomingshu-dock', selector: '.dock .app-icon[data-app="说明书"]' },
-                    { id: 'tubiao-dock', selector: '.dock .app-icon[data-app="图标"]' }
-                ];
-                
-                // 查找匹配的应用
-                const allApps = [...mainScreenApps, ...dockApps];
-                const app = allApps.find(a => a.id === iconId);
-                
-                if (app) {
-                    const appIcon = document.querySelector(app.selector);
-                    if (appIcon) {
-                        const iconBg = appIcon.querySelector('.icon-bg');
-                        if (iconBg) {
-                            // 根据应用类型设置不同的圆角
-                            const borderRadius = iconId.includes('-dock') ? '20px' : '18px';
-                            iconBg.innerHTML = `<img src="${iconData}" alt="${iconId}" style="width:100%;height:100%;object-fit:cover;border-radius:${borderRadius};">`;
+                try {
+                    // 主屏幕应用图标
+                    const mainScreenApps = [
+                        { id: 'bizhi', selector: '.app-icon[data-app="壁纸"]' },
+                        { id: 'shezhi', selector: '.app-icon[data-app="设置"]' },
+                        { id: 'chat', selector: '.app-icon[data-app="聊天"]' },
+                        { id: 'yinyue', selector: '.app-icon[data-app="音乐"]' },
+                        { id: 'riji', selector: '.app-icon[data-app="日记"]' },
+                        { id: 'gouwu', selector: '.app-icon[data-app="购物"]' },
+                        { id: 'luntan', selector: '.app-icon[data-app="论坛"]' },
+                        { id: 'beiwanglu', selector: '.app-icon[data-app="备忘录"]' },
+                        { id: 'qianbao', selector: '.app-icon[data-app="钱包"]' },
+                        { id: 'dianhua', selector: '.app-icon[data-app="电话"]' },
+                        { id: 'peiban', selector: '.app-icon[data-app="陪伴"]' },
+                        { id: 'chouka', selector: '.app-icon[data-app="抽卡"]' }
+                    ];
+                    
+                    // Dock栏应用图标
+                    const dockApps = [
+                        { id: 'jueseshu-dock', selector: '.dock .app-icon[data-app="角色书"]' },
+                        { id: 'shijieshu-dock', selector: '.dock .app-icon[data-app="世界书"]' },
+                        { id: 'shuomingshu-dock', selector: '.dock .app-icon[data-app="说明书"]' },
+                        { id: 'tubiao-dock', selector: '.dock .app-icon[data-app="图标"]' }
+                    ];
+                    
+                    // 查找匹配的应用
+                    const allApps = [...mainScreenApps, ...dockApps];
+                    const app = allApps.find(a => a.id === iconId);
+                    
+                    if (app) {
+                        const appIcon = document.querySelector(app.selector);
+                        if (appIcon) {
+                            const iconBg = appIcon.querySelector('.icon-bg');
+                            if (iconBg) {
+                                // 根据应用类型设置不同的圆角
+                                const borderRadius = iconId.includes('-dock') ? '20px' : '18px';
+                                iconBg.innerHTML = `<img src="${iconData}" alt="${iconId}" style="width:100%;height:100%;object-fit:cover;border-radius:${borderRadius};">`;
+                            }
                         }
+                    } else {
+                        console.warn('未找到匹配的应用图标:', iconId);
                     }
-                } else {
-                    console.warn('未找到匹配的应用图标:', iconId);
+                } catch (error) {
+                    console.error('更新应用图标时出错:', error);
                 }
             }
 
@@ -2004,11 +2013,11 @@
             function handleMp3Upload(event) {
                 const file = event.target.files[0];
                 if (file) {
-                    // 检查文件大小（限制为10MB）
-                    if (file.size > 10 * 1024 * 1024) {
-                        alert('文件太大，请选择小于10MB的文件');
-                        return;
-                    }
+                    // 不限制文件大小
+                    // if (file.size > 10 * 1024 * 1024) {
+                    //     alert('文件太大，请选择小于10MB的文件');
+                    //     return;
+                    // }
                     
                     const reader = new FileReader();
                     reader.onload = function(e) {
@@ -2266,7 +2275,7 @@
                                 localStorage.setItem('profileAvatar', e.target.result);
                             } catch (error) {
                                 console.error('保存头像时出错:', error);
-                                alert('保存头像失败，可能是存储空间不足');
+                                alert('保存头像失败，请重试');
                             }
                         };
                         reader.onerror = function() {
