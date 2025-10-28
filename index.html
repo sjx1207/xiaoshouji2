@@ -370,7 +370,7 @@
             grid-template-columns: repeat(4, 1fr);
             grid-template-rows: repeat(5, 1fr);
             gap: 25px;
-            padding: 56px 25px 120px 25px; /* 调整顶部padding，为状态栏留出空间 */
+            padding: 56px 25px 130px 25px; /* 增加底部padding，为Dock栏留出足够空间 */
             align-content: start;
             height: 100%; /* 改为100%高度 */
             position: relative;
@@ -434,7 +434,7 @@
             -webkit-backdrop-filter: blur(20px);
             padding: 15px;
             position: fixed;
-            bottom: 20px;
+            bottom: 25px; /* 调整位置，避免与主屏幕图标重叠 */
             left: 50%;
             transform: translateX(-50%);
             border-radius: 30px;
@@ -1337,7 +1337,7 @@
                     </div>
                     
                     <!-- 聊天应用图标 - 第五行第三列 -->
-                    <div class="app-icon" onclick="window.location.href='chat.html'" data-app="聊天" style="grid-column: 3; grid-row: 5;">
+                    <div class="app-icon" onclick="window.location.href='chat.html'" data-app="聊天" style="grid-column: 3; grid-row: 5; margin-bottom: 10px;">
                         <div class="icon-bg">
                             <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M21 11.5C21.0034 12.8199 20.6951 14.1219 20.1 15.3C19.3948 16.7262 18.3522 17.9555 17.05 18.9C15.7478 19.8445 14.2199 20.4861 12.58 20.77C11.9413 20.8791 11.2916 20.9135 10.64 20.88L7 22L8.12 18.36C7.38368 17.9462 6.71624 17.4224 6.14 16.8C4.72104 15.2441 3.92829 13.2159 4 11.1C4.00344 9.78012 4.31172 8.47814 4.90685 7.30001C5.61203 5.87386 6.65462 4.64455 7.95683 3.69999C9.25903 2.75544 10.7869 2.11382 12.4269 1.82999C14.0669 1.54616 15.7757 1.62764 17.42 2.06999C19.0643 2.51234 20.5975 3.30299 21.9 4.37999C23.2025 5.45699 24.15 7.02999 24.15 8.76999C24.1491 9.55042 24.0492 10.3261 23.85 11.07L24 11L21 11.5Z" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
@@ -1350,7 +1350,7 @@
                     </div>
                     
                     <!-- 音乐应用图标 - 第五行第四列 -->
-                    <div class="app-icon" onclick="window.location.href='yinyue.html'" data-app="音乐" style="grid-column: 4; grid-row: 5;">
+                    <div class="app-icon" onclick="window.location.href='yinyue.html'" data-app="音乐" style="grid-column: 4; grid-row: 5; margin-bottom: 10px;">
                         <div class="icon-bg">
                             <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M12 3V12L19 5V19L12 12V21" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
