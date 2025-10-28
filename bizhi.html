@@ -280,11 +280,11 @@
                 const file = event.target.files[0];
                 console.log('选择的视频文件:', file);
                 if (file) {
-                    // 检查文件大小（限制为1.5MB）
-                    if (file.size > 1.5 * 1024 * 1024) {
-                        alert('视频文件太大，请选择小于1.5MB的文件');
-                        return;
-                    }
+                    // 不限制视频文件大小
+                    // if (file.size > 1.5 * 1024 * 1024) {
+                    //     alert('视频文件太大，请选择小于1.5MB的文件');
+                    //     return;
+                    // }
                     
                     const reader = new FileReader();
                     reader.onload = function(e) {
@@ -311,11 +311,11 @@
             function previewImage(event) {
                 const file = event.target.files[0];
                 if (file) {
-                    // 检查文件大小（限制为1.5MB）
-                    if (file.size > 1.5 * 1024 * 1024) {
-                        alert('图片文件太大，请选择小于1.5MB的文件');
-                        return;
-                    }
+                    // 不限制图片文件大小
+                    // if (file.size > 1.5 * 1024 * 1024) {
+                    //     alert('图片文件太大，请选择小于1.5MB的文件');
+                    //     return;
+                    // }
                     
                     const reader = new FileReader();
                     reader.onload = function(e) {
@@ -433,11 +433,11 @@
                             let quality = 0.8;
                             let compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
                             
-                            // 如果还是太大，继续降低质量
-                            while (compressedDataUrl.length > 1.5 * 1024 * 1024 && quality > 0.1) {
-                                quality -= 0.1;
-                                compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
-                            }
+                            // 不限制图片大小，移除压缩逻辑
+                            // while (compressedDataUrl.length > 1.5 * 1024 * 1024 && quality > 0.1) {
+                            //     quality -= 0.1;
+                            //     compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+                            // }
                             
                             // 保存图片壁纸数据
                             const wallpaperData = {
