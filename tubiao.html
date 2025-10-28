@@ -584,6 +584,7 @@
                 'qianbao': '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 7H21C21.5523 7 22 7.44772 22 8V17C22 17.5523 21.5523 18 21 18H3C2.44772 18 2 17.5523 2 17V8C2 7.44772 2.44772 7 3 7Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 12H4" stroke="white" stroke-width="2" stroke-linecap="round"/><path d="M18 12C18 13.1046 17.1046 14 16 14C14.8954 14 14 13.1046 14 12C14 10.8954 14.8954 10 16 10C17.1046 10 18 10.8954 18 12Z" stroke="white" stroke-width="2"/></svg>',
                 'dianhua': '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 6C3 5.44772 3.44772 5 4 5H20C20.5523 5 21 5.44772 21 6V18C21 18.5523 20.5523 19 20 19H4C3.44772 19 3 18.5523 3 18V6Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 7H16" stroke="white" stroke-width="2" stroke-linecap="round"/><path d="M8 11H16" stroke="white" stroke-width="2" stroke-linecap="round"/><path d="M8 15H13" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>',
                 'peiban': '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 12C14.2091 12 16 10.2091 16 8C16 5.79086 14.2091 4 12 4C9.79086 4 8 5.79086 8 8C8 10.2091 9.79086 12 12 12Z" stroke="white" stroke-width="2"/><path d="M6 20C6 17.7909 7.79086 16 10 16H14C16.2091 16 18 17.7909 18 20V20C18 21.1046 17.1046 22 16 22H8C6.89543 22 6 21.1046 6 20V20Z" stroke="white" stroke-width="2"/></svg>',
+                'chouka': '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M19 9L12 2L5 9M19 9V21C19 21.5304 18.7893 22.0391 18.4142 22.4142C18.0391 22.7893 17.5304 23 17 23H7C6.46957 23 5.96086 22.7893 5.58579 22.4142C5.21071 22.0391 5 21.5304 5 21V9M19 9H5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 23V15C9 14.4696 9.21071 13.9609 9.58579 13.5858C9.96086 13.2107 10.4696 13 11 13H13C13.5304 13 14.0391 13.2107 14.4142 13.5858C14.7893 13.9609 15 14.4696 15 15V23" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
                 // 名片头像默认图标
                 'profile-avatar': '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="9" stroke="white" stroke-width="2"/><circle cx="12" cy="10" r="3" stroke="white" stroke-width="2"/><path d="M7 18C7 18 8 16 12 16C16 16 17 18 17 18" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>'
             };
@@ -694,7 +695,7 @@
                 }
             }
 
-            // 保存自定义图标
+            // 保存自定义图标 - 修复版本
             function saveCustomIcon() {
                 const file = document.getElementById('iconUpload').files[0];
                 if (!file) {
@@ -719,7 +720,7 @@
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     try {
-                        // 直接保存，不限制大小
+                        // 直接保存图标数据，不限制大小
                         const iconData = e.target.result;
                         
                         // 保存到localStorage
@@ -738,7 +739,6 @@
                         showSuccessMessage(`"${editingIcon.name}"图标已更新`);
                     } catch (error) {
                         console.error('保存图标时出错:', error);
-                        // 不管什么错误都显示简单的重试提示
                         alert('保存图标失败，请重试');
                     } finally {
                         // 恢复按钮状态
@@ -777,6 +777,7 @@
                         localStorage.setItem('profileAvatar', iconData);
                     } catch (e) {
                         console.error('保存名片头像到localStorage时出错:', e);
+                        // 忽略错误，不提示用户
                     }
                 }
             }
@@ -833,9 +834,14 @@
             function restoreMainScreenIcons() {
                 // 发送消息给主屏幕页面（如果它正在运行）
                 if (window.opener && window.opener !== window) {
-                    window.opener.postMessage({
-                        type: 'restoreIcons'
-                    }, '*');
+                    try {
+                        window.opener.postMessage({
+                            type: 'restoreIcons'
+                            // 不需要传递额外数据
+                        }, '*');
+                    } catch (e) {
+                        console.error('发送恢复图标消息时出错:', e);
+                    }
                 }
             }
 
