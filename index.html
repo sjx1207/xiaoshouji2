@@ -1718,7 +1718,7 @@
                                 localStorage.setItem('profileAvatar', event.data.iconData);
                             } catch (storageError) {
                                 console.error('保存名片头像到localStorage时出错:', storageError);
-                                // 不管什么错误都忽略，不提示用户
+                                // 忽略错误，不提示用户
                             }
                         } else {
                             updateAppIcon(event.data.iconId, event.data.iconData);
