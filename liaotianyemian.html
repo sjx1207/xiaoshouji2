@@ -251,7 +251,7 @@
             left: 50%;
             transform: translateX(-50%);
             width: calc(90% - 120px); /* 为外部按钮留出空间 */
-            max-width: 410px; /* 调整最大宽度 */
+            max-width: 450px; /* 调整最大宽度 */
             background: rgba(255, 255, 255, 0.15);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
@@ -389,7 +389,7 @@
         </div>
         
         <!-- 底部加号按钮（移到输入框外面，但保持样式和位置） -->
-        <div class="plus-btn" onclick="showPlusMenu()" style="position: fixed; bottom: 30px; left: calc(5% + 30px); z-index: 1001;">
+        <div class="plus-btn" onclick="showPlusMenu()" style="position: fixed; bottom: 30px; left: calc(5% + 10px); z-index: 1001;">
             <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M12 5V19" stroke="white" stroke-width="2" stroke-linecap="round"/>
                 <path d="M5 12H19" stroke="white" stroke-width="2" stroke-linecap="round"/>
@@ -397,14 +397,14 @@
         </div>
         
         <!-- AI回复按钮（移到输入框外面） -->
-        <div class="ai-btn" onclick="sendAIRequest()" style="position: fixed; bottom: 30px; right: calc(5% + 50px); z-index: 1001;">
+        <div class="ai-btn" onclick="sendAIRequest()" style="position: fixed; bottom: 30px; right: calc(5% + 30px); z-index: 1001;">
             <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M12 2L15.09 8.26L22 9L17 14L18.18 21L12 17.77L5.82 21L7 14L2 9L8.91 8.26L12 2Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
         </div>
         
         <!-- 发送按钮（移到输入框外面） -->
-        <div class="send-btn" onclick="sendMessage()" style="position: fixed; bottom: 30px; right: calc(5% + 10px); z-index: 1001;">
+        <div class="send-btn" onclick="sendMessage()" style="position: fixed; bottom: 30px; right: calc(5% - 10px); z-index: 1001;">
             <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M22 2L11 13" stroke="white" stroke-width="2" stroke-linecap="round"/>
                 <path d="M22 2L15 22L11 13L2 9L22 2Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -653,5 +653,6 @@
     </div>
 </body>
 </html>
+
 
 
