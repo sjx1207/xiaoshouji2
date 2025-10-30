@@ -739,7 +739,12 @@
                         showSuccessMessage(`"${editingIcon.name}"图标已更新`);
                     } catch (error) {
                         console.error('保存图标时出错:', error);
-                        alert('保存图标失败，请重试');
+                        // 检查是否是存储空间不足错误
+                        if (error.name === 'QuotaExceededError' || error.code === 22) {
+                            alert('存储空间不足，请选择较小的图片或清理存储空间');
+                        } else {
+                            alert('保存图标失败，请重试');
+                        }
                     } finally {
                         // 恢复按钮状态
                         saveBtn.textContent = originalText;
