@@ -2456,6 +2456,241 @@
                 }
             }
 
+            // 更换头像
+            function changeProfileAvatar() {
+                // 创建文件输入元素
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = 'image/*';
+                input.onchange = function(event) {
+                    const file = event.target.files[0];
+                    if (file) {
+                        // 创建FormData对象用于上传到postimages.org
+                        const formData = new FormData();
+                        formData.append('upload', file);
+                        
+                        // 显示上传中提示
+                        showPageAlert('正在上传头像...');
+                        
+                        // 上传图片到postimages.org
+                        fetch('https://postimages.org/json/1', {
+                            method: 'POST',
+                            body: formData
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.url) {
+                                // 上传成功，保存图片URL而不是base64数据
+                                try {
+                                    // 更新头像显示，确保正确比例
+                                    document.getElementById('profileAvatar').innerHTML = `<img src="${data.url}" alt="头像" style="width:100%;height:100%;object-fit:cover;object-position:center;border-radius:50%;">`;
+                                    // 保存URL到本地存储
+                                    localStorage.setItem('profileAvatar', data.url);
+                                    showPageAlert('头像已更新');
+                                } catch (error) {
+                                    console.error('保存头像URL时出错:', error);
+                                    alert('保存头像失败，请重试');
+                                }
+                            } else {
+                                throw new Error('上传失败');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('上传头像到postimages.org时出错:', error);
+                            alert('上传头像失败，请检查网络连接后重试');
+                        });
+                    }
+                };
+                input.click();
+            }
+            function uploadRomanticAvatarLeft() {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = 'image/*';
+                input.onchange = function(event) {
+                    const file = event.target.files[0];
+                    if (file) {
+                        // 创建FormData对象用于上传到postimages.org
+                        const formData = new FormData();
+                        formData.append('upload', file);
+                        
+                        // 显示上传中提示
+                        showPageAlert('正在上传左侧头像...');
+                        
+                        // 上传图片到postimages.org
+                        fetch('https://postimages.org/json/1', {
+                            method: 'POST',
+                            body: formData
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.url) {
+                                // 上传成功，保存图片URL而不是base64数据
+                                try {
+                                    // 更新头像显示，确保正确比例
+                                    const container = document.getElementById('romanticAvatarLeftContainer');
+                                    if (container) {
+                                        container.innerHTML = `<img src="${data.url}" alt="左侧头像" style="width:100%;height:100%;object-fit:cover;object-position:center;border-radius:50%;">`;
+                                        // 保存URL到本地存储
+                                        localStorage.setItem('romanticAvatarLeft', data.url);
+                                        console.log('左侧头像已保存');
+                                        showPageAlert('左侧头像已更新');
+                                    }
+                                } catch (error) {
+                                    console.error('保存头像URL时出错:', error);
+                                    alert('保存头像失败，请重试');
+                                }
+                            } else {
+                                throw new Error('上传失败');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('上传头像到postimages.org时出错:', error);
+                            alert('上传头像失败，请检查网络连接后重试');
+                        });
+                    }
+                };
+                input.click();
+            }
+            function uploadRomanticAvatarRight() {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = 'image/*';
+                input.onchange = function(event) {
+                    const file = event.target.files[0];
+                    if (file) {
+                        // 创建FormData对象用于上传到postimages.org
+                        const formData = new FormData();
+                        formData.append('upload', file);
+                        
+                        // 显示上传中提示
+                        showPageAlert('正在上传右侧头像...');
+                        
+                        // 上传图片到postimages.org
+                        fetch('https://postimages.org/json/1', {
+                            method: 'POST',
+                            body: formData
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.url) {
+                                // 上传成功，保存图片URL而不是base64数据
+                                try {
+                                    // 更新头像显示，确保正确比例
+                                    const container = document.getElementById('romanticAvatarRightContainer');
+                                    if (container) {
+                                        container.innerHTML = `<img src="${data.url}" alt="右侧头像" style="width:100%;height:100%;object-fit:cover;object-position:center;border-radius:50%;">`;
+                                        // 保存URL到本地存储
+                                        localStorage.setItem('romanticAvatarRight', data.url);
+                                        console.log('右侧头像已保存');
+                                        showPageAlert('右侧头像已更新');
+                                    }
+                                } catch (error) {
+                                    console.error('保存头像URL时出错:', error);
+                                    alert('保存头像失败，请重试');
+                                }
+                            } else {
+                                throw new Error('上传失败');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('上传头像到postimages.org时出错:', error);
+                            alert('上传头像失败，请检查网络连接后重试');
+                        });
+                    }
+                };
+                input.click();
+            }
+            // 添加更换语音头像的函数
+            function changeVoiceAvatar() {
+                // 创建文件输入元素
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = 'image/*';
+                input.onchange = function(event) {
+                    const file = event.target.files[0];
+                    if (file) {
+                        // 创建FormData对象用于上传到postimages.org
+                        const formData = new FormData();
+                        formData.append('upload', file);
+                        
+                        // 显示上传中提示
+                        showPageAlert('正在上传语音头像...');
+                        
+                        // 上传图片到postimages.org
+                        fetch('https://postimages.org/json/1', {
+                            method: 'POST',
+                            body: formData
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.url) {
+                                // 上传成功，保存图片URL而不是base64数据
+                                try {
+                                    // 更新语音头像显示
+                                    const avatarImg = document.getElementById('voiceAvatarImg');
+                                    const avatarPlaceholder = document.getElementById('voiceAvatarPlaceholder');
+                                    avatarImg.src = data.url;
+                                    avatarImg.style.display = 'block';
+                                    avatarPlaceholder.style.display = 'none';
+                                    // 保存URL到本地存储
+                                    localStorage.setItem('voiceAvatar', data.url);
+                                    showPageAlert('语音头像已更新');
+                                } catch (error) {
+                                    console.error('保存语音头像URL时出错:', error);
+                                    alert('保存语音头像失败，请重试');
+                                }
+                            } else {
+                                throw new Error('上传失败');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('上传语音头像到postimages.org时出错:', error);
+                            alert('上传语音头像失败，请检查网络连接后重试');
+                        });
+                    }
+                };
+                input.click();
+            }
+            function showPageAlert(message) {
+                const alertContainer = document.getElementById('pageAlertContainer');
+                const alertMessage = document.getElementById('pageAlertMessage');
+                alertMessage.textContent = message;
+                alertContainer.style.display = 'block';
+                setTimeout(() => {
+                    alertContainer.style.display = 'none';
+                }, 3000);
+            }
+            function loadSettings() {
+                const settings = JSON.parse(localStorage.getItem('settings')) || {};
+                document.getElementById('voiceName').value = settings.voiceName || 'default';
+                document.getElementById('voiceSpeed').value = settings.voiceSpeed || 1;
+                document.getElementById('voicePitch').value = settings.voicePitch || 1;
+                document.getElementById('voiceVolume').value = settings.voiceVolume || 1;
+                document.getElementById('voiceAvatarImg').src = localStorage.getItem('voiceAvatar') || '';
+                document.getElementById('voiceAvatarPlaceholder').style.display = localStorage.getItem('voiceAvatar') ? 'none' : 'block';
+                document.getElementById('romanticAvatarLeftContainer').innerHTML = localStorage.getItem('romanticAvatarLeft') ? `<img src="${localStorage.getItem('romanticAvatarLeft')}" alt="左侧头像" style="width:100%;height:100%;object-fit:cover;object-position:center;border-radius:50%;">` : '';
+                document.getElementById('romanticAvatarRightContainer').innerHTML = localStorage.getItem('romanticAvatarRight') ? `<img src="${localStorage.getItem('romanticAvatarRight')}" alt="右侧头像" style="width:100%;height:100%;object-fit:cover;object-position:center;border-radius:50%;">` : '';
+            }
+            function saveSettings() {
+                const settings = {
+                    voiceName: document.getElementById('voiceName').value,
+                    voiceSpeed: parseFloat(document.getElementById('voiceSpeed').value),
+                    voicePitch: parseFloat(document.getElementById('voicePitch').value),
+                    voiceVolume: parseFloat(document.getElementById('voiceVolume').value)
+                };
+                localStorage.setItem('settings', JSON.stringify(settings));
+                showPageAlert('设置已保存');
+            }
+
+            // 加载保存的头像
+            function loadProfileAvatar() {
+                const savedAvatar = localStorage.getItem('profileAvatar');
+                if (savedAvatar) {
+                    document.getElementById('profileAvatar').innerHTML = `<img src="${savedAvatar}" alt="头像" style="width:100%;height:100%;object-fit:cover;object-position:center;border-radius:50%;">`;
+                }
+            }
+
             // 打开天气选择弹窗
             function openWeatherModal() {
                 document.getElementById('weatherModal').classList.add('active');
