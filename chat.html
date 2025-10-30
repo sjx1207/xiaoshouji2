@@ -95,22 +95,6 @@
             z-index: 999;
         }
 
-        /* 头部导航栏 */
-        .header {
-            display: flex;
-            align-items: center;
-            padding: 0 15px;
-            height: 50px;
-            background-color: rgba(0, 0, 0, 0.3);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            position: fixed;
-            top: 44px;
-            left: 0;
-            right: 0;
-            z-index: 999;
-        }
-
         /* 上导航栏 */
         .top-nav {
             display: flex;
@@ -139,6 +123,30 @@
             color: white;
         }
 
+        /* 头部导航栏 */
+        .header {
+            display: flex;
+            align-items: center;
+            padding: 0 15px;
+            height: 50px;
+            background-color: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            position: fixed;
+            top: 44px;
+            left: 0;
+            right: 0;
+            z-index: 999;
+        }
+
+        .header-title {
+            flex: 1;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        /* 返回按钮样式 */
         .back-btn {
             width: 30px;
             height: 30px;
@@ -157,11 +165,24 @@
             fill: white;
         }
 
-        .header-title {
-            flex: 1;
-            text-align: center;
-            font-size: 18px;
-            font-weight: bold;
+        /* 星星按钮样式 */
+        .star-btn {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin-right: 10px;
+        }
+
+        .star-btn svg {
+            width: 18px;
+            height: 18px;
+            fill: white;
         }
 
         .add-btn {
@@ -695,6 +716,11 @@
                 </svg>
             </div>
             <div class="header-title">聊天</div>
+            <div class="star-btn" onclick="showBackgroundModal()">
+                <svg viewBox="0 0 24 24">
+                    <path d="M12 17.27L18.18 21L16.54 13.97L22 9.24L14.81 8.63L12 2L9.19 8.63L2 9.24L7.46 13.97L5.82 21L12 17.27Z"/>
+                </svg>
+            </div>
             <div class="add-btn" onclick="showAddContactModal()">
                 <svg viewBox="0 0 24 24">
                     <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
@@ -786,6 +812,30 @@
                 </div>
                 <div class="modal-actions">
                     <button class="cancel-btn" onclick="closeCharacterSelector()">取消</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 背景设置模态框 -->
+        <div class="modal" id="backgroundModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="modal-title">设置聊天背景</div>
+                    <button class="close-btn" onclick="closeBackgroundModal()">&times;</button>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">选择背景图片</label>
+                    <div class="avatar-upload">
+                        <div class="avatar-preview" id="backgroundPreview">
+                            <span>🖼️</span>
+                        </div>
+                        <button class="upload-btn" onclick="document.getElementById('backgroundUpload').click()">选择图片</button>
+                        <input type="file" class="file-input" id="backgroundUpload" accept="image/*" onchange="previewBackground(event)">
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button class="cancel-btn" onclick="closeBackgroundModal()">取消</button>
+                    <button class="save-btn" onclick="saveBackground()">保存</button>
                 </div>
             </div>
         </div>
@@ -1093,12 +1143,15 @@
                     
                     // 处理头像显示
                     let avatarContent = '';
-                    if (contact.avatar.startsWith('data:image')) {
+                    if (contact.avatar && contact.avatar.startsWith && contact.avatar.startsWith('data:image')) {
                         // 如果是上传的图片数据
                         avatarContent = `<img src="${contact.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
-                    } else {
+                    } else if (contact.avatar) {
                         // 如果是默认头像符号
                         avatarContent = contact.avatar;
+                    } else {
+                        // 如果没有任何头像数据，使用默认头像
+                        avatarContent = '👤';
                     }
                     
                     chatItem.innerHTML = `
@@ -1468,6 +1521,97 @@
                 // 保持底部导航栏的'消息'标签始终为激活状态
                 // 不修改底部导航栏的任何状态
             }
+
+            // 显示背景设置模态框
+            function showBackgroundModal() {
+                document.getElementById('backgroundModal').style.display = 'flex';
+            }
+
+            // 关闭背景设置模态框
+            function closeBackgroundModal() {
+                document.getElementById('backgroundModal').style.display = 'none';
+                // 清空预览
+                document.getElementById('backgroundPreview').innerHTML = '<span>🖼️</span>';
+            }
+
+            // 预览背景图片
+            function previewBackground(event) {
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const preview = document.getElementById('backgroundPreview');
+                        preview.innerHTML = `<img src="${e.target.result}" alt="背景预览" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+                    }
+                    reader.readAsDataURL(file);
+                }
+            }
+
+            // 保存背景设置
+            function saveBackground() {
+                const preview = document.getElementById('backgroundPreview');
+                const img = preview.querySelector('img');
+                
+                if (!img) {
+                    showAlert('请先选择背景图片');
+                    return;
+                }
+                
+                // 获取ImgBB API密钥
+                const imgbbApiKey = localStorage.getItem('imgbbApiKey');
+                if (!imgbbApiKey) {
+                    showAlert('请先在设置页面配置ImgBB API密钥');
+                    closeBackgroundModal();
+                    return;
+                }
+                
+                // 显示加载提示
+                showAlert('正在上传背景图片...');
+                
+                // 上传到ImgBB
+                const formData = new FormData();
+                formData.append('image', img.src.split(',')[1]); // 去掉data:image前缀
+                
+                fetch(`https://api.imgbb.com/1/upload?key=${imgbbApiKey}`, {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 200) {
+                        // 保存背景图片URL到localStorage
+                        localStorage.setItem('chatBackground', data.data.url);
+                        
+                        // 应用背景
+                        applyChatBackground();
+                        
+                        showAlert('背景设置成功！');
+                        closeBackgroundModal();
+                    } else {
+                        showAlert('背景上传失败：' + (data.error?.message || '未知错误'));
+                    }
+                })
+                .catch(error => {
+                    console.error('上传失败:', error);
+                    showAlert('背景上传失败，请检查网络连接');
+                });
+            }
+
+            // 应用聊天背景
+            function applyChatBackground() {
+                const backgroundUrl = localStorage.getItem('chatBackground');
+                if (backgroundUrl) {
+                    document.body.style.backgroundImage = `url(${backgroundUrl})`;
+                    document.body.style.backgroundSize = 'cover';
+                    document.body.style.backgroundPosition = 'center';
+                    document.body.style.backgroundRepeat = 'no-repeat';
+                }
+            }
+
+            // 页面加载时应用背景
+            window.addEventListener('load', function() {
+                applyChatBackground();
+            });
         </script>
     </div>
 </body>
