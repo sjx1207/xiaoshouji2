@@ -324,6 +324,7 @@
         .send-btn {
             background: #007AFF;
         }
+
     </style>
 </head>
 <body>
@@ -384,12 +385,6 @@
 
         <!-- 底部输入区域 -->
         <div class="input-area">
-            <div class="plus-btn">
-                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12 5V19" stroke="white" stroke-width="2" stroke-linecap="round"/>
-                    <path d="M5 12H19" stroke="white" stroke-width="2" stroke-linecap="round"/>
-                </svg>
-            </div>
             <input type="text" class="input-box" placeholder="输入消息...">
             <div class="action-buttons">
                 <div class="ai-btn">
@@ -405,12 +400,24 @@
                 </div>
             </div>
         </div>
-
+        
+        <!-- 底部加号按钮（移到输入框外面，但保持样式和位置） -->
+        <div class="plus-btn" onclick="showPlusMenu()" style="position: fixed; bottom: 30px; left: calc(5% + 190px); z-index: 1001;">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 5V19" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                <path d="M5 12H19" stroke="white" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+        </div>
         <script>
             // 显示菜单
             function showMenu() {
                 // 跳转到聊天设置页面
                 window.location.href = '聊天设置.html';
+            }
+
+            // 显示加号菜单
+            function showPlusMenu() {
+                alert('加号按钮功能待实现');
             }
 
             // 更新时间
