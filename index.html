@@ -370,7 +370,7 @@
             grid-template-columns: repeat(4, 1fr);
             grid-template-rows: repeat(5, 1fr);
             gap: 25px;
-            padding: 56px 25px 130px 25px; /* 增加底部padding，为Dock栏留出足够空间 */
+            padding: 56px 25px 150px 25px; /* 增加底部padding，为Dock栏留出足够空间 */
             align-content: start;
             height: 100%; /* 改为100%高度 */
             position: relative;
@@ -663,7 +663,7 @@
         /* 音乐播放器小组件 */
         .music-player {
             position: absolute;
-            top: 320px;  /* 还原原来的位置 */
+            top: 340px;  /* 往下移动20px */
             left: 25px;
             width: calc(100% - 50px);
             background: rgba(255, 255, 255, 0.01);
@@ -1316,7 +1316,7 @@
                 <!-- 主屏幕内容 -->
                 <div class="home-screen" id="homeScreen">
                     <!-- 壁纸应用图标 - 第四行第三列 -->
-                    <div class="app-icon" onclick="window.location.href='bizhi.html'" data-app="壁纸" style="grid-column: 3; grid-row: 4;">
+                    <div class="app-icon" onclick="window.location.href='bizhi.html'" data-app="壁纸" style="grid-column: 3; grid-row: 4; margin-top: 20px;">
                         <div class="icon-bg">
                             <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M4 16L9 11L13 15L20 8" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -1327,7 +1327,7 @@
                     </div>
                     
                     <!-- 设置应用图标 - 第四行第四列 -->
-                    <div class="app-icon" onclick="window.location.href='shezhi.html'" data-app="设置" style="grid-column: 4; grid-row: 4;">
+                    <div class="app-icon" onclick="window.location.href='shezhi.html'" data-app="设置" style="grid-column: 4; grid-row: 4; margin-top: 20px;">
                         <div class="icon-bg">
                             <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M21 15C21 15.5304 20.7893 16.0391 20.4142 16.4142C20.0391 16.7893 19.5304 17 19 17H7L3 21V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H19C19.5304 3 20.0391 3.21071 20.4142 3.58579C20.7893 3.96086 21 4.46957 21 5V15Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -1337,7 +1337,7 @@
                     </div>
                     
                     <!-- 聊天应用图标 - 第五行第三列 -->
-                    <div class="app-icon" onclick="window.location.href='chat.html'" data-app="聊天" style="grid-column: 3; grid-row: 5; margin-bottom: 10px;">
+                    <div class="app-icon" onclick="window.location.href='chat.html'" data-app="聊天" style="grid-column: 3; grid-row: 5; margin-top: 20px;">
                         <div class="icon-bg">
                             <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M21 11.5C21.0034 12.8199 20.6951 14.1219 20.1 15.3C19.3948 16.7262 18.3522 17.9555 17.05 18.9C15.7478 19.8445 14.2199 20.4861 12.58 20.77C11.9413 20.8791 11.2916 20.9135 10.64 20.88L7 22L8.12 18.36C7.38368 17.9462 6.71624 17.4224 6.14 16.8C4.72104 15.2441 3.92829 13.2159 4 11.1C4.00344 9.78012 4.31172 8.47814 4.90685 7.30001C5.61203 5.87386 6.65462 4.64455 7.95683 3.69999C9.25903 2.75544 10.7869 2.11382 12.4269 1.82999C14.0669 1.54616 15.7757 1.62764 17.42 2.06999C19.0643 2.51234 20.5975 3.30299 21.9 4.37999C23.2025 5.45699 24.15 7.02999 24.15 8.76999C24.1491 9.55042 24.0492 10.3261 23.85 11.07L24 11L21 11.5Z" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
@@ -1350,14 +1350,13 @@
                     </div>
                     
                     <!-- 音乐应用图标 - 第五行第四列 -->
-                    <div class="app-icon" onclick="window.location.href='yinyue.html'" data-app="音乐" style="grid-column: 4; grid-row: 5; margin-bottom: 10px;">
+                    <div class="app-icon" onclick="window.location.href='yinyue.html'" data-app="音乐" style="grid-column: 4; grid-row: 5; margin-top: 20px;">
                         <div class="icon-bg">
                             <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M12 3V12L19 5V19L12 12V21" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                             </svg>
                         </div>
                         <span>音乐</span>
-                    </div>
                     </div>
                 </div>
 
@@ -3478,3 +3477,4 @@
     </div>
 </body>
 </html>
+
