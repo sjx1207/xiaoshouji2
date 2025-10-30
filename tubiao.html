@@ -699,6 +699,9 @@
             // 上传图片到 imgbb
             function uploadToImgur(file) {
                 return new Promise((resolve, reject) => {
+                    // 获取用户配置的ImgBB API密钥，如果没有则使用默认密钥
+                    const imgbbApiKey = localStorage.getItem('imgbbApiKey') || 'e575f2643476020fc17a4f4ee408d079';
+                    
                     // 创建 FormData 对象
                     const formData = new FormData();
                     formData.append('image', file);
@@ -710,7 +713,7 @@
                     saveBtn.disabled = true;
                     
                     // 发送到 imgbb API
-                    fetch('https://api.imgbb.com/1/upload?key=e575f2643476020fc17a4f4ee408d079', {
+                    fetch(`https://api.imgbb.com/1/upload?key=${imgbbApiKey}`, {
                         method: 'POST',
                         body: formData
                     })
@@ -755,7 +758,7 @@
                 // 保存当前编辑的图标引用，防止在异步操作中丢失
                 const editingIcon = currentEditingIcon;
                 
-                // 上传到 Imgur
+                // 上传到 imgbb
                 uploadToImgur(file)
                     .then(imageUrl => {
                         // 保存图片 URL 到 localStorage
