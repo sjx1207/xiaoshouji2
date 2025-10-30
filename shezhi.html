@@ -691,6 +691,27 @@
                     <div class="btn btn-primary" onclick="saveWeatherApiSettings()">保存设置</div>
                 </div>
             </div>
+            
+            <!-- ImgBB图床设置 -->
+            <div class="setting-item">
+                <div class="setting-title">ImgBB图床设置</div>
+                <div class="setting-description">配置ImgBB API密钥以启用图片上传功能</div>
+                
+                <div class="input-group">
+                    <label class="input-label">ImgBB API密钥</label>
+                    <input type="password" class="input-field" id="imgbb-api-key" placeholder="请输入ImgBB API密钥">
+                </div>
+                
+                <div class="setting-description">
+                    <p>注册地址: <a href="https://imgbb.com/" target="_blank" style="color: #007AFF;">https://imgbb.com/</a></p>
+                    <p>每个用户可免费获取一定额度的API调用次数</p>
+                </div>
+                
+                <div class="button-group">
+                    <div class="btn btn-secondary" onclick="testImgbbApi()">测试连接</div>
+                    <div class="btn btn-primary" onclick="saveImgbbApiSettings()">保存设置</div>
+                </div>
+            </div>
         </div>
 
         <!-- 自定义弹窗 -->
@@ -1083,6 +1104,8 @@
                 loadApiKey();
                 // 加载天气API密钥
                 loadWeatherApiKey();
+                // 加载ImgBB API密钥
+                loadImgbbApiKey();
                 // 加载AI设置
                 loadAISettings();
             };
@@ -1220,6 +1243,74 @@
                     document.getElementById('weather-api-key').value = savedApiKey;
                 }
             }
+            
+            // 测试ImgBB API连接
+            function testImgbbApi() {
+                const apiKey = document.getElementById('imgbb-api-key').value;
+                
+                if (!apiKey) {
+                    showModal('错误', '请输入ImgBB API密钥');
+                    return;
+                }
+                
+                // 显示加载指示器
+                showLoading('正在测试ImgBB API连接...');
+                
+                // 创建一个简单的测试图片（1x1像素的透明PNG）
+                const testImageData = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==';
+                const formData = new FormData();
+                formData.append('image', testImageData);
+                
+                // 发送到 ImgBB API
+                fetch(`https://api.imgbb.com/1/upload?key=${apiKey}`, {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`API调用失败: ${response.status} ${response.statusText}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.status === 200) {
+                        showModal('测试成功', 'ImgBB API连接正常');
+                    } else {
+                        throw new Error(data.error?.message || 'API返回错误');
+                    }
+                })
+                .catch(error => {
+                    console.error('ImgBB API测试失败:', error);
+                    showModal('测试失败', `ImgBB API连接失败: ${error.message}`);
+                })
+                .finally(() => {
+                    // 隐藏加载指示器
+                    hideLoading();
+                });
+            }
+            
+            // 保存ImgBB API设置
+            function saveImgbbApiSettings() {
+                const apiKey = document.getElementById('imgbb-api-key').value;
+                
+                if (!apiKey) {
+                    showModal('错误', '请输入ImgBB API密钥');
+                    return;
+                }
+                
+                // 保存到localStorage
+                localStorage.setItem('imgbbApiKey', apiKey);
+                
+                showModal('保存成功', 'ImgBB API密钥已保存');
+            }
+            
+            // 加载已保存的ImgBB API密钥
+            function loadImgbbApiKey() {
+                const savedApiKey = localStorage.getItem('imgbbApiKey');
+                if (savedApiKey) {
+                    document.getElementById('imgbb-api-key').value = savedApiKey;
+                }
+            }
         
             // 点击模态框外部关闭模态框
             window.onclick = function(event) {
@@ -1310,6 +1401,242 @@
 
                     // 根据提供商构建请求
                     let apiUrl = settings.url;
+                    
+                    // 确保URL格式正确
+                    if (!apiUrl) {
+                        if (settings.provider === 'openai') {
+                            apiUrl = 'https://api.openai.com/v1';
+                        } else if (settings.provider === 'gemini') {
+                            apiUrl = 'https://generativelanguage.googleapis.com/v1beta';
+                        } else if (settings.provider === 'siliconflow') {
+                            apiUrl = 'https://api.siliconflow.cn/v1';
+                        } else if (settings.provider === 'deepseek') {
+                            apiUrl = 'https://api.deepseek.com/v1'; // 修复DeepSeek API URL
+                        } else {
+                            // 自定义提供商
+                            if (!apiUrl) {
+                                throw new Error('请配置API地址');
+                            }
+                        }
+                    }
+                    
+                    // 确保URL以/结尾（用于chat/completions）
+                    if (settings.provider !== 'gemini' && !apiUrl.endsWith('/')) {
+                        apiUrl += '/';
+                    }
+
+                    let fetchUrl = '';
+                    let fetchOptions = {};
+                    let aiResponse = '';
+
+                    // 构建消息历史，要求更自然的回复
+                    const messages = [
+                        {
+                            role: "user",
+                            content: prompt
+                        }
+                    ];
+
+                    if (settings.provider === 'gemini') {
+                        // Google Gemini API
+                        fetchUrl = `${apiUrl.replace('/v1/', '/v1beta/').replace('/v1', '/v1beta')}models/${settings.model}:generateContent?key=${settings.key}`;
+                        fetchOptions = {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                contents: [{
+                                    parts: [{
+                                        text: prompt
+                                    }]
+                                }]
+                        })
+                    };
+                } else if (settings.provider === 'siliconflow') {
+                    // SiliconFlow API
+                    fetchUrl = apiUrl.endsWith('/') ? `${apiUrl}chat/completions` : `${apiUrl}/chat/completions`;
+                    fetchOptions = {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${settings.key}`
+                        },
+                        body: JSON.stringify({
+                            model: settings.model,
+                            messages: messages,
+                            temperature: 0.7,
+                            max_tokens: 1000
+                        })
+                    };
+                } else if (settings.provider === 'deepseek') {
+                    // DeepSeek API
+                    fetchUrl = apiUrl.endsWith('/') ? `${apiUrl}chat/completions` : `${apiUrl}/chat/completions`;
+                    fetchOptions = {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${settings.key}`
+                        },
+                        body: JSON.stringify({
+                            model: settings.model,
+                            messages: messages,
+                            temperature: 0.7,
+                            max_tokens: 1000
+                        })
+                    };
+                } else if (settings.provider === 'openai') {
+                    // OpenAI API
+                    fetchUrl = apiUrl.endsWith('/') ? `${apiUrl}chat/completions` : `${apiUrl}/chat/completions`;
+                    fetchOptions = {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${settings.key}`
+                        },
+                        body: JSON.stringify({
+                            model: settings.model,
+                            messages: messages,
+                            temperature: 0.7,
+                            max_tokens: 1000
+                        })
+                    };
+                } else {
+                    // 自定义提供商
+                    fetchUrl = apiUrl.endsWith('/') ? `${apiUrl}chat/completions` : `${apiUrl}/chat/completions`;
+                    fetchOptions = {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${settings.key}`
+                        },
+                        body: JSON.stringify({
+                            model: settings.model,
+                            messages: messages,
+                            temperature: 0.7,
+                            max_tokens: 1000
+                        })
+                    };
+                }
+
+                // 添加超时控制
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 15000); // 15秒超时
+                fetchOptions.signal = controller.signal;
+
+                const response = await fetch(fetchUrl, fetchOptions);
+                clearTimeout(timeoutId);
+
+                // 检查响应状态
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`API请求失败: ${response.status} ${response.statusText}\n请求URL: ${fetchUrl}\n${errorText}`);
+                }
+
+                // 解析响应
+                const data = await response.json();
+                
+                if (settings.provider === 'gemini') {
+                    // Gemini响应格式
+                    aiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || '无法获取响应内容';
+                } else {
+                    // OpenAI/SiliconFlow/DeepSeek/自定义响应格式
+                    aiResponse = data.choices?.[0]?.message?.content || '无法获取响应内容';
+                }
+                
+                responseArea.innerHTML = `<pre>${aiResponse}</pre>`;
+            } catch (error) {
+                if (error.name === 'AbortError') {
+                    responseArea.innerHTML = `<pre style="color: #ff6b6b;">错误: 请求超时，请检查网络连接或代理设置</pre>`;
+                } else {
+                    responseArea.innerHTML = `<pre style="color: #ff6b6b;">错误: ${error.message}</pre>`;
+                }
+            } finally {
+                loading.style.display = 'none';
+            }
+        }
+
+        // 保存AI设置
+        function saveAISettings() {
+            const provider = document.getElementById('model-select').value;
+            const key = document.getElementById('api-key').value;
+            const url = document.getElementById('api-url').value;
+            const model = document.getElementById('specific-model-select').value;
+
+            // 验证必要字段
+            if (!key) {
+                showModal('错误', '请输入API密钥');
+                return;
+            }
+
+            if (!model) {
+                showModal('错误', '请输入模型名称');
+                return;
+            }
+
+            // 保存到localStorage
+            localStorage.setItem('aiSettings', JSON.stringify({
+                provider,
+                url,
+                key,
+                model,
+                enabled: true
+            }));
+
+            showModal('保存成功', '设置已保存！');
+        }
+
+        // 测试连接 - 实现真实的API调用
+        async function testConnection() {
+            const prompt = "你好，这是一个测试消息";
+            const loading = document.getElementById('loading');
+            const responseArea = document.getElementById('response-area');
+
+            if (!prompt.trim()) {
+                showModal('错误', '请输入测试提示词');
+                return;
+            }
+
+            loading.style.display = 'block';
+            responseArea.innerHTML = '<pre>正在发送请求...</pre>';
+
+            try {
+                // 获取API配置
+                const savedSettings = localStorage.getItem('aiSettings');
+                let settings = {
+                    provider: 'openai',
+                    url: 'https://api.openai.com/v1',
+                    key: '',
+                    model: 'gpt-3.5-turbo',
+                    enabled: true
+                };
+                    
+                if (savedSettings) {
+                    try {
+                        settings = JSON.parse(savedSettings);
+                    } catch (e) {
+                        console.error('Failed to parse saved settings', e);
+                    }
+                }
+
+                // 如果AI连接未启用，显示提示
+                if (!settings.enabled) {
+                    responseArea.innerHTML = '<pre style="color: #ff6b6b;">AI连接未启用，请在设置中启用后再测试</pre>';
+                    loading.style.display = 'none';
+                    return;
+                }
+
+                // 检查必要配置
+                if (!settings.key) {
+                    throw new Error('请配置API密钥');
+                }
+
+                if (!settings.model) {
+                    throw new Error('请配置模型名称');
+                }
+
+                // 根据提供商构建请求
+                let apiUrl = settings.url;
                     
                     // 确保URL格式正确
                     if (!apiUrl) {
