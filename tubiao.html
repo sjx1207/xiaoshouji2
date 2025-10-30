@@ -679,8 +679,8 @@
                     reader.onload = function(e) {
                         try {
                             // 直接显示预览，不限制大小
-                            document.getElementById('iconPreview').innerHTML = `<img src="${e.target.result}" alt="预览图标" style="width:100%;height:100%;object-fit:cover;border-radius:10px;">`;
-                            document.getElementById('iconPreview').style.display = 'block';
+                            document.getElementById('previewEffect').innerHTML = `<img src="${e.target.result}" alt="预览图标">`;
+                            document.getElementById('previewEffect').style.display = 'block';
                         } catch (error) {
                             console.error('预览图标时出错:', error);
                             alert('预览图标失败，请重试');
@@ -696,7 +696,7 @@
                 }
             }
 
-            // 保存自定义图标 - 修复版本
+            // 保存自定义图标 - 改进版本
             function saveCustomIcon() {
                 const file = document.getElementById('iconUpload').files[0];
                 if (!file) {
@@ -718,50 +718,53 @@
                 saveBtn.textContent = '保存中...';
                 saveBtn.disabled = true;
                 
-                // 创建FormData对象用于上传到postimages.org
-                const formData = new FormData();
-                formData.append('upload', file);
-                
-                // 上传图片到postimages.org
-                fetch('https://postimages.org/json/1', {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.url) {
-                        // 上传成功，保存图片URL而不是base64数据
-                        try {
-                            localStorage.setItem(`customIcon_${editingIcon.id}`, data.url);
-                            
-                            // 关闭弹窗
-                            closeIconSelectModal();
-                            
-                            // 重新渲染图标列表
-                            renderAppIcons();
-                            
-                            // 通知主屏幕更新图标
-                            updateMainScreenIcons(editingIcon.id, data.url);
-                            
-                            // 显示成功提示
-                            showSuccessMessage(`"${editingIcon.name}"图标已更新`);
-                        } catch (error) {
-                            console.error('保存图标URL时出错:', error);
-                            alert('保存图标失败，请重试');
+                // 首先尝试读取文件为 base64 并直接保存到 localStorage
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        // 检查文件大小是否超过 localStorage 限制（约 5MB）
+                        const imageData = e.target.result;
+                        if (imageData.length > 5 * 1024 * 1024) {
+                            alert('图片过大，请选择小于 5MB 的图片');
+                            resetSaveButton(saveBtn, originalText);
+                            return;
                         }
-                    } else {
-                        throw new Error('上传失败');
+                        
+                        // 直接保存到 localStorage
+                        localStorage.setItem(`customIcon_${editingIcon.id}`, imageData);
+                        
+                        // 关闭弹窗
+                        closeIconSelectModal();
+                        
+                        // 重新渲染图标列表
+                        renderAppIcons();
+                        
+                        // 通知主屏幕更新图标
+                        updateMainScreenIcons(editingIcon.id, imageData);
+                        
+                        // 显示成功提示
+                        showSuccessMessage(`"${editingIcon.name}"图标已更新`);
+                    } catch (error) {
+                        console.error('保存图标时出错:', error);
+                        alert('保存图标失败，可能是存储空间不足，请清理浏览器缓存后重试');
+                    } finally {
+                        resetSaveButton(saveBtn, originalText);
                     }
-                })
-                .catch(error => {
-                    console.error('上传图片到postimages.org时出错:', error);
-                    alert('上传图片失败，请检查网络连接后重试');
-                })
-                .finally(() => {
-                    // 恢复按钮状态
-                    saveBtn.textContent = originalText;
-                    saveBtn.disabled = false;
-                });
+                };
+                
+                reader.onerror = function(error) {
+                    console.error('读取文件时出错:', error);
+                    alert('读取文件时出错，请重试');
+                    resetSaveButton(saveBtn, originalText);
+                };
+                
+                reader.readAsDataURL(file);
+            }
+            
+            // 重置保存按钮状态
+            function resetSaveButton(button, originalText) {
+                button.textContent = originalText;
+                button.disabled = false;
             }
 
             // 通知主屏幕更新图标
