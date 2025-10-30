@@ -1718,7 +1718,12 @@
                                 localStorage.setItem('profileAvatar', event.data.iconData);
                             } catch (storageError) {
                                 console.error('保存名片头像到localStorage时出错:', storageError);
-                                // 忽略错误，不提示用户
+                                // 检查是否是存储空间不足错误
+                                if (storageError.name === 'QuotaExceededError' || storageError.code === 22) {
+                                    alert('存储空间不足，无法保存头像。请清理存储空间后重试。');
+                                } else {
+                                    alert('保存头像时出错，请重试。');
+                                }
                             }
                         } else {
                             updateAppIcon(event.data.iconId, event.data.iconData);
@@ -1750,14 +1755,24 @@
                 ];
                 
                 mainScreenApps.forEach(app => {
-                    const customIcon = localStorage.getItem(`customIcon_${app.id}`);
-                    if (customIcon) {
-                        const appIcon = document.querySelector(app.selector);
-                        if (appIcon) {
-                            const iconBg = appIcon.querySelector('.icon-bg');
-                            if (iconBg) {
-                                iconBg.innerHTML = `<img src="${customIcon}" alt="${app.id}" style="width:100%;height:100%;object-fit:cover;border-radius:18px;">`;
+                    try {
+                        const customIcon = localStorage.getItem(`customIcon_${app.id}`);
+                        if (customIcon) {
+                            const appIcon = document.querySelector(app.selector);
+                            if (appIcon) {
+                                const iconBg = appIcon.querySelector('.icon-bg');
+                                if (iconBg) {
+                                    iconBg.innerHTML = `<img src="${customIcon}" alt="${app.id}" style="width:100%;height:100%;object-fit:cover;border-radius:18px;">`;
+                                }
                             }
+                        }
+                    } catch (error) {
+                        console.error(`加载主屏幕图标 ${app.id} 时出错:`, error);
+                        // 清理有问题的图标数据
+                        try {
+                            localStorage.removeItem(`customIcon_${app.id}`);
+                        } catch (removeError) {
+                            console.error(`清理主屏幕图标 ${app.id} 时出错:`, removeError);
                         }
                     }
                 });
@@ -1771,14 +1786,24 @@
                 ];
                 
                 dockApps.forEach(app => {
-                    const customIcon = localStorage.getItem(`customIcon_${app.id}`);
-                    if (customIcon) {
-                        const appIcon = document.querySelector(app.selector);
-                        if (appIcon) {
-                            const iconBg = appIcon.querySelector('.icon-bg');
-                            if (iconBg) {
-                                iconBg.innerHTML = `<img src="${customIcon}" alt="${app.id}" style="width:100%;height:100%;object-fit:cover;border-radius:20px;">`;
+                    try {
+                        const customIcon = localStorage.getItem(`customIcon_${app.id}`);
+                        if (customIcon) {
+                            const appIcon = document.querySelector(app.selector);
+                            if (appIcon) {
+                                const iconBg = appIcon.querySelector('.icon-bg');
+                                if (iconBg) {
+                                    iconBg.innerHTML = `<img src="${customIcon}" alt="${app.id}" style="width:100%;height:100%;object-fit:cover;border-radius:20px;">`;
+                                }
                             }
+                        }
+                    } catch (error) {
+                        console.error(`加载Dock栏图标 ${app.id} 时出错:`, error);
+                        // 清理有问题的图标数据
+                        try {
+                            localStorage.removeItem(`customIcon_${app.id}`);
+                        } catch (removeError) {
+                            console.error(`清理Dock栏图标 ${app.id} 时出错:`, removeError);
                         }
                     }
                 });
@@ -1830,6 +1855,12 @@
                     }
                 } catch (error) {
                     console.error('更新应用图标时出错:', error);
+                    // 检查是否是存储空间不足错误
+                    if (error.name === 'QuotaExceededError' || error.code === 22) {
+                        alert('存储空间不足，无法更新图标。请清理存储空间后重试。');
+                    } else {
+                        alert('更新图标时出错，请重试。');
+                    }
                 }
             }
 
@@ -2275,7 +2306,12 @@
                                 localStorage.setItem('profileAvatar', e.target.result);
                             } catch (error) {
                                 console.error('保存头像时出错:', error);
-                                alert('保存头像失败，请重试');
+                                // 检查是否是存储空间不足错误
+                                if (error.name === 'QuotaExceededError' || error.code === 22) {
+                                    alert('存储空间不足，无法保存头像。请清理存储空间后重试。');
+                                } else {
+                                    alert('保存头像失败，请重试');
+                                }
                             }
                         };
                         reader.onerror = function() {
@@ -2828,6 +2864,47 @@
                 }
             }
             
+            // 更换头像
+            function changeAvatar() {
+                // 创建文件输入元素
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = 'image/*';
+                input.onchange = function(event) {
+                    const file = event.target.files[0];
+                    if (file) {
+                        // 检查文件大小（无限制）
+                        // if (file.size > 5 * 1024 * 1024) {
+                        //     alert('图片文件太大，请选择小于5MB的图片');
+                        //     return;
+                        // }
+                        
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            try {
+                                // 更新头像显示，确保正确比例
+                                document.getElementById('profileAvatar').innerHTML = `<img src="${e.target.result}" alt="头像" style="width:100%;height:100%;object-fit:cover;object-position:center;border-radius:50%;">`;
+                                // 保存到本地存储
+                                localStorage.setItem('profileAvatar', e.target.result);
+                            } catch (error) {
+                                console.error('保存头像时出错:', error);
+                                // 检查是否是存储空间不足错误
+                                if (error.name === 'QuotaExceededError' || error.code === 22) {
+                                    alert('存储空间不足，无法保存头像。请清理存储空间后重试。');
+                                } else {
+                                    alert('保存头像失败，请重试');
+                                }
+                            }
+                        };
+                        reader.onerror = function() {
+                            alert('读取图片文件时出错，请重试');
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                };
+                input.click();
+            }
+
             // 添加更换头像的函数
             function changeAvatar(side) {
                 // 创建文件输入元素
@@ -2857,8 +2934,18 @@
                                     avatarContainer.innerHTML = '';
                                     avatarContainer.appendChild(avatarImg);
                                     // 保存到本地存储
-                                    localStorage.setItem('romanticAvatarLeft', e.target.result);
-                                    console.log('左侧头像已保存');
+                                    try {
+                                        localStorage.setItem('romanticAvatarLeft', e.target.result);
+                                        console.log('左侧头像已保存');
+                                    } catch (error) {
+                                        console.error('保存左侧头像时出错:', error);
+                                        // 检查是否是存储空间不足错误
+                                        if (error.name === 'QuotaExceededError' || error.code === 22) {
+                                            alert('存储空间不足，无法保存左侧头像。请清理存储空间后重试。');
+                                        } else {
+                                            alert('保存左侧头像失败，请重试');
+                                        }
+                                    }
                                 } else {
                                     console.error('未找到左侧头像容器');
                                 }
@@ -2868,12 +2955,25 @@
                                     avatarContainer.innerHTML = '';
                                     avatarContainer.appendChild(avatarImg);
                                     // 保存到本地存储
-                                    localStorage.setItem('romanticAvatarRight', e.target.result);
-                                    console.log('右侧头像已保存');
+                                    try {
+                                        localStorage.setItem('romanticAvatarRight', e.target.result);
+                                        console.log('右侧头像已保存');
+                                    } catch (error) {
+                                        console.error('保存右侧头像时出错:', error);
+                                        // 检查是否是存储空间不足错误
+                                        if (error.name === 'QuotaExceededError' || error.code === 22) {
+                                            alert('存储空间不足，无法保存右侧头像。请清理存储空间后重试。');
+                                        } else {
+                                            alert('保存右侧头像失败，请重试');
+                                        }
+                                    }
                                 } else {
                                     console.error('未找到右侧头像容器');
                                 }
                             }
+                        };
+                        reader.onerror = function() {
+                            alert('读取图片文件时出错，请重试');
                         };
                         reader.readAsDataURL(file);
                     }
@@ -2899,7 +2999,20 @@
                             avatarImg.style.display = 'block';
                             avatarPlaceholder.style.display = 'none';
                             // 保存到本地存储
-                            localStorage.setItem('voiceAvatar', e.target.result);
+                            try {
+                                localStorage.setItem('voiceAvatar', e.target.result);
+                            } catch (error) {
+                                console.error('保存语音头像时出错:', error);
+                                // 检查是否是存储空间不足错误
+                                if (error.name === 'QuotaExceededError' || error.code === 22) {
+                                    alert('存储空间不足，无法保存语音头像。请清理存储空间后重试。');
+                                } else {
+                                    alert('保存语音头像失败，请重试');
+                                }
+                            }
+                        };
+                        reader.onerror = function() {
+                            alert('读取图片文件时出错，请重试');
                         };
                         reader.readAsDataURL(file);
                     }
