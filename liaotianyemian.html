@@ -336,6 +336,12 @@
             background: transparent;
             border-radius: 20px;
             padding: 15px;
+            /* 添加以下属性以确保滑动正常工作 */
+            pointer-events: none; /* 默认不响应事件 */
+        }
+
+        .plus-menu:target, .plus-menu[style*="display: block"] {
+            pointer-events: auto; /* 当显示时响应事件 */
         }
 
         .menu-content {
@@ -349,6 +355,7 @@
             /* 添加以下属性以确保滑动正常工作 */
             touch-action: pan-x; /* 允许水平滑动 */
             -webkit-touch-callout: none; /* 禁止iOS上的长按弹窗 */
+            pointer-events: auto; /* 始终响应事件 */
         }
 
         .menu-content::-webkit-scrollbar {
@@ -370,6 +377,7 @@
             user-select: none;
             /* 添加触摸相关样式 */
             touch-action: manipulation; /* 优化触摸操作 */
+            pointer-events: auto; /* 响应事件 */
         }
 
         .menu-icon {
@@ -585,23 +593,6 @@
             </div>
         </div>
         <script>
-            // 触摸事件处理变量
-            let touchStartX = 0;
-            let touchEndX = 0;
-
-            // 处理触摸开始事件
-            function handleTouchStart(event) {
-                touchStartX = event.touches[0].clientX;
-            }
-
-            // 处理触摸移动事件
-            function handleTouchMove(event) {
-                if (!touchStartX) return;
-                touchEndX = event.touches[0].clientX;
-                // 阻止默认的滚动行为，但允许水平滚动
-                event.preventDefault();
-            }
-
             // 显示菜单
             function showMenu() {
                 // 跳转到聊天设置页面
