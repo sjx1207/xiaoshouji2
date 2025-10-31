@@ -392,51 +392,22 @@
             padding: 15px;
             z-index: 1003;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-            transform: translateY(20px);
             opacity: 0;
-            transition: opacity 0.2s ease, transform 0.2s ease;
-        }
-
-        /* 电脑端样式 */
-        @media (min-width: 769px) {
-            .message-context-menu {
-                position: absolute;
-                min-width: 200px;
-                border-radius: 15px;
-                padding: 15px;
-            }
-        }
-
-        /* 手机端样式 */
-        @media (max-width: 768px) {
-            .message-context-menu {
-                left: 10px;
-                right: 10px;
-                bottom: 10px;
-                top: auto;
-                width: auto;
-                border-radius: 15px 15px 0 0;
-                padding: 20px;
-            }
+            transition: opacity 0.2s ease;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            min-width: 200px;
         }
 
         .message-context-menu.show {
             opacity: 1;
-            transform: translateY(0);
         }
 
         .menu-options {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             gap: 10px;
-        }
-
-        /* 手机端网格调整 */
-        @media (max-width: 768px) {
-            .menu-options {
-                grid-template-columns: repeat(4, 1fr);
-                gap: 12px;
-            }
         }
 
         .menu-option {
@@ -456,13 +427,6 @@
             color: white;
             font-size: 12px;
             margin-top: 5px;
-        }
-
-        /* 手机端字体调整 */
-        @media (max-width: 768px) {
-            .menu-option span {
-                font-size: 11px;
-            }
         }
 
         .overlay {
@@ -669,81 +633,10 @@
         </div>
         
         <!-- 消息操作功能面板 -->
-        <div class="message-context-menu" id="messageContextMenu" style="display: none; position: absolute; background: rgba(30, 30, 30, 0.95); border-radius: 15px; padding: 15px; z-index: 1003; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); min-width: 200px;">
-            <div class="menu-options" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;">
-                <!-- 第一行：编辑、收藏、撤回、多选 -->
-                <div class="menu-option" onclick="editMessage()" style="display: flex; flex-direction: column; align-items: center; padding: 10px; border-radius: 10px; cursor: pointer;">
-                    <svg viewBox="0 0 24 24" width="20" height="20" fill="white">
-                        <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
-                    </svg>
-                    <span style="color: white; font-size: 12px; margin-top: 5px;">编辑</span>
-                </div>
-                
-                <div class="menu-option" onclick="favoriteMessage()" style="display: flex; flex-direction: column; align-items: center; padding: 10px; border-radius: 10px; cursor: pointer;">
-                    <svg viewBox="0 0 24 24" width="20" height="20" fill="white">
-                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-                    </svg>
-                    <span style="color: white; font-size: 12px; margin-top: 5px;">收藏</span>
-                </div>
-                
-                <div class="menu-option" onclick="retractMessage()" style="display: flex; flex-direction: column; align-items: center; padding: 10px; border-radius: 10px; cursor: pointer;">
-                    <svg viewBox="0 0 24 24" width="20" height="20" fill="white">
-                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.94-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
-                    </svg>
-                    <span style="color: white; font-size: 12px; margin-top: 5px;">撤回</span>
-                </div>
-                
-                <div class="menu-option" onclick="selectMultipleMessages()" style="display: flex; flex-direction: column; align-items: center; padding: 10px; border-radius: 10px; cursor: pointer;">
-                    <svg viewBox="0 0 24 24" width="20" height="20" fill="white">
-                        <path d="M14 10H2v2h12v-2zm0-4H2v2h12V6zm4 8v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zM2 16h8v-2H2v2z"/>
-                    </svg>
-                    <span style="color: white; font-size: 12px; margin-top: 5px;">多选</span>
-                </div>
-                
-                <!-- 第二行：引用、删除、转发 -->
-                <div class="menu-option" onclick="quoteMessage()" style="display: flex; flex-direction: column; align-items: center; padding: 10px; border-radius: 10px; cursor: pointer;">
-                    <svg viewBox="0 0 24 24" width="20" height="20" fill="white">
-                        <path d="M7 10.5V13h1v3H7v-2.5l-2-2v5.5h1v1h4v-1H9v-3h1v-3.5l2 2v5.5h1v1h-4v1h6v-1h-1v-5.5l-2-2V13h3v-2.5l-2-2V7h3V6H9v1h3v1.5l-2 2zM3 3v8l4-4-4-4zm12 0l-4 4 4 4V3z"/>
-                    </svg>
-                    <span style="color: white; font-size: 12px; margin-top: 5px;">引用</span>
-                </div>
-                
-                <div class="menu-option" onclick="deleteMessage()" style="display: flex; flex-direction: column; align-items: center; padding: 10px; border-radius: 10px; cursor: pointer;">
-                    <svg viewBox="0 0 24 24" width="20" height="20" fill="white">
-                        <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
-                    </svg>
-                    <span style="color: white; font-size: 12px; margin-top: 5px;">删除</span>
-                </div>
-                
-                <div class="menu-option" onclick="forwardMessage()" style="display: flex; flex-direction: column; align-items: center; padding: 10px; border-radius: 10px; cursor: pointer;">
-                    <svg viewBox="0 0 24 24" width="20" height="20" fill="white">
-                        <path d="M20 7l-4-4-4 4 1.41 1.41L15 6.83V14h2V6.83l1.59 1.58L20 7zm-8 10l-4-4-4 4 1.41 1.41L7 16.83V24h2v-7.17l1.59 1.58L12 17z"/>
-                    </svg>
-                    <span style="color: white; font-size: 12px; margin-top: 5px;">转发</span>
-                </div>
-                
-                <!-- 空白占位 -->
-                <div></div>
-            </div>
-        </div>
-        
-        <!-- 消息输入框 -->
-        <div class="message-input-container" style="display: flex; align-items: center; padding: 10px; background: rgba(30, 30, 30, 0.95); border-top: 1px solid rgba(255, 255, 255, 0.1);">
-            <div class="message-input" contenteditable="true" style="flex: 1; padding: 10px; border-radius: 20px; background: rgba(255, 255, 255, 0.15); color: white; font-size: 14px; outline: none;"></div>
-            <div class="send-button" onclick="sendMessage()" style="width: 40px; height: 40px; border-radius: 50%; background: rgba(255, 255, 255, 0.15); display: flex; align-items: center; justify-content: center; margin-left: 10px;">
-                <svg viewBox="0 0 24 24" width="24" height="24" fill="white">
-                    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
-                </svg>
-            </div>
-        </div>
-                    </div>
-                    <span style="color: white; font-size: 12px;">取消</span>
-                </div>
-            </div>
-        </div>
+        <!-- 已移除固定的面板元素，改为动态创建 -->
         
         <!-- 遮罩层 -->
-        <div class="overlay" id="contextMenuOverlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 1002;" onclick="hideMessageContextMenu()"></div>
+        <!-- 已移除固定的遮罩层元素，改为动态创建 -->
         <script>
             // 显示菜单
             function showMenu() {
@@ -920,6 +813,12 @@
                 });
             });
 
+            // 打电话功能
+            function makeCall() {
+                hidePlusMenu();
+                alert('打电话功能待实现');
+            }
+
             // 更新时间
             function updateTime() {
                 const now = new Date();
@@ -927,31 +826,260 @@
                 document.getElementById('current-time').textContent = timeString;
             }
 
-            // 每秒更新一次时间
-            setInterval(updateTime, 1000);
-            updateTime(); // 初始化时间
-
-            // 页面加载时初始化联系人信息和聊天记录
-            window.onload = function() {
-                loadContactInfo();
-                updateTime();
-                loadUserInfo();
-                updateExistingMessages(); // 更新已存在的消息头像
-                
-                // 加载当前联系人的聊天记录
-                const contactInfo = JSON.parse(localStorage.getItem('currentChatFriend')) || { id: 0 };
-                loadMessagesFromLocalStorage(contactInfo.id);
-                
-                // 应用保存的聊天详情背景（专门用于liaotianyemian页面）
-                const savedBackground = localStorage.getItem('chatDetailBackground');
-                if (savedBackground) {
-                    document.body.style.backgroundImage = `url(${savedBackground})`;
-                    document.body.style.backgroundSize = 'cover';
-                    document.body.style.backgroundPosition = 'center';
-                    document.body.style.backgroundRepeat = 'no-repeat';
+            // 页面加载完成后添加点击事件监听器
+            document.addEventListener('DOMContentLoaded', function() {
+                const callButton = document.getElementById('call-button');
+                if (callButton) {
+                    callButton.addEventListener('click', makeCall);
                 }
-            };
+                
+                const plusButton = document.getElementById('plus-button');
+                if (plusButton) {
+                    plusButton.addEventListener('click', showPlusMenu);
+                }
+                
+                const plusMenu = document.getElementById('plus-menu');
+                if (plusMenu) {
+                    plusMenu.addEventListener('click', function(event) {
+                        event.stopPropagation();
+                    });
+                }
+                
+                document.addEventListener('click', hidePlusMenu);
+            });
 
+            // 为单个消息元素添加事件监听器
+            function addMessageEventListeners(messageElement) {
+                // 移除之前可能添加的事件监听器，避免重复绑定
+                messageElement.removeEventListener('contextmenu', handleMessageContextMenu);
+                messageElement.removeEventListener('click', handleMessageClick);
+                messageElement.removeEventListener('touchstart', handleMessageTouchStart);
+                messageElement.removeEventListener('touchend', handleMessageTouchEnd);
+                messageElement.removeEventListener('touchmove', handleMessageTouchMove);
+                
+                // 右键点击触发上下文菜单（电脑端）
+                messageElement.addEventListener('contextmenu', handleMessageContextMenu);
+                
+                // 左键点击触发上下文菜单（手机端和电脑端测试）
+                messageElement.addEventListener('click', handleMessageClick);
+                
+                // 触摸事件（移动端）
+                messageElement.addEventListener('touchstart', handleMessageTouchStart);
+                messageElement.addEventListener('touchend', handleMessageTouchEnd);
+                messageElement.addEventListener('touchmove', handleMessageTouchMove);
+            }
+
+            // 发送消息功能
+            function sendMessage() {
+                const input = document.querySelector('.input-box');
+                const message = input.value.trim();
+                
+                if (message) {
+                    // 获取当前联系人信息
+                    const contactInfo = JSON.parse(localStorage.getItem('currentChatFriend')) || { id: 0, name: '未知联系人', avatar: '👤' };
+                    
+                    // 创建消息元素
+                    const messageElement = document.createElement('div');
+                    messageElement.className = 'message sent';
+                    
+                    const time = new Date();
+                    const timeString = `${time.getHours().toString().padStart(2, '0')}:${time.getMinutes().toString().padStart(2, '0')}`;
+                    
+                    // 获取用户自己的头像（每次都从localStorage获取最新信息）
+                    const userInfo = JSON.parse(localStorage.getItem('userInfo')) || { avatar: '👤' };
+                    let userAvatarContent = userInfo.avatar;
+                    if (userAvatarContent && userAvatarContent.startsWith && userAvatarContent.startsWith('data:image')) {
+                        // 如果是上传的图片数据
+                        userAvatarContent = `<img src="${userAvatarContent}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+                    } else if (userAvatarContent) {
+                        // 如果是默认头像符号
+                        userAvatarContent = userAvatarContent;
+                    } else {
+                        // 如果没有任何头像数据，使用默认头像
+                        userAvatarContent = '👤';
+                    }
+                    
+                    messageElement.innerHTML = `
+                        <div class="message-content-container">
+                            <div class="message-bubble">
+                                <div class="message-text">${message}</div>
+                            </div>
+                            <div class="message-time">${timeString}</div>
+                        </div>
+                        <div class="message-avatar">${userAvatarContent}</div>
+                    `;
+                    
+                    // 添加到聊天内容
+                    document.querySelector('.chat-content').appendChild(messageElement);
+                    
+                    // 为新消息添加事件监听器
+                    addMessageEventListeners(messageElement);
+                    
+                    // 清空输入框
+                    input.value = '';
+                    
+                    // 滚动到底部
+                    document.querySelector('.chat-content').scrollTop = document.querySelector('.chat-content').scrollHeight;
+                    
+                    // 保存消息到localStorage（为每个联系人独立保存）
+                    saveMessageToLocalStorage(contactInfo.id, {
+                        type: 'sent',
+                        text: message,
+                        time: timeString,
+                        avatar: userAvatarContent
+                    });
+                    
+                    // 更新聊天列表中的最后消息
+                    updateLastMessageInChatList(contactInfo.id, message, timeString);
+                }
+            }
+
+            // 接收消息功能
+            function receiveMessage(text) {
+                // 获取当前联系人信息
+                const contactInfo = JSON.parse(localStorage.getItem('currentChatFriend')) || { id: 0, name: '未知联系人', avatar: '👤' };
+                
+                const messageElement = document.createElement('div');
+                messageElement.className = 'message received';
+                
+                const time = new Date();
+                const timeString = `${time.getHours().toString().padStart(2, '0')}:${time.getMinutes().toString().padStart(2, '0')}`;
+                
+                // 获取联系人的头像（每次都从localStorage获取最新信息）
+                let contactAvatarContent = contactInfo.avatar;
+                if (contactAvatarContent && contactAvatarContent.startsWith && contactAvatarContent.startsWith('data:image')) {
+                    // 如果是上传的图片数据
+                    contactAvatarContent = `<img src="${contactAvatarContent}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+                } else if (contactAvatarContent) {
+                    // 如果是默认头像符号
+                    contactAvatarContent = contactAvatarContent;
+                } else {
+                    // 如果没有任何头像数据，使用默认头像
+                    contactAvatarContent = '👤';
+                }
+                
+                messageElement.innerHTML = `
+                    <div class="message-avatar">${contactAvatarContent}</div>
+                    <div class="message-content-container">
+                        <div class="message-bubble">
+                            <div class="message-text">${text}</div>
+                        </div>
+                        <div class="message-time">${timeString}</div>
+                    </div>
+                `;
+                
+                // 添加到聊天内容
+                document.querySelector('.chat-content').appendChild(messageElement);
+                
+                // 为新消息添加事件监听器
+                addMessageEventListeners(messageElement);
+                
+                // 滚动到底部
+                document.querySelector('.chat-content').scrollTop = document.querySelector('.chat-content').scrollHeight;
+                
+                // 保存消息到localStorage（为每个联系人独立保存）
+                saveMessageToLocalStorage(contactInfo.id, {
+                    type: 'received',
+                    text: text,
+                    time: timeString,
+                    avatar: contactAvatarContent
+                });
+                
+                // 更新聊天列表中的最后消息
+                updateLastMessageInChatList(contactInfo.id, text, timeString);
+            }
+
+            // 保存消息到localStorage（为每个联系人独立保存）
+            function saveMessageToLocalStorage(contactId, message) {
+                // 获取该联系人的消息历史
+                const chatKey = `chat_${contactId}_messages`;
+                let messages = JSON.parse(localStorage.getItem(chatKey) || '[]');
+                
+                // 添加新消息
+                messages.push(message);
+                
+                // 限制消息数量，只保存最新的100条消息
+                if (messages.length > 100) {
+                    messages = messages.slice(-100);
+                }
+                
+                // 保存到localStorage
+                localStorage.setItem(chatKey, JSON.stringify(messages));
+            }
+
+            // 从localStorage加载消息（为每个联系人独立加载）
+            function loadMessagesFromLocalStorage(contactId) {
+                try {
+                    const chatKey = `chat_${contactId}_messages`;
+                    const messages = JSON.parse(localStorage.getItem(chatKey) || '[]');
+                    
+                    // 清空当前聊天内容
+                    const chatContent = document.querySelector('.chat-content');
+                    if (chatContent) {
+                        chatContent.innerHTML = '';
+                        
+                        // 添加所有消息到聊天内容
+                        messages.forEach(message => {
+                            const messageElement = document.createElement('div');
+                            messageElement.className = `message ${message.type}`;
+                            
+                            if (message.type === 'sent') {
+                                messageElement.innerHTML = `
+                                    <div class="message-content-container">
+                                        <div class="message-bubble">
+                                            <div class="message-text">${message.text}</div>
+                                        </div>
+                                        <div class="message-time">${message.time}</div>
+                                    </div>
+                                    <div class="message-avatar">${message.avatar}</div>
+                                `;
+                            } else {
+                                messageElement.innerHTML = `
+                                    <div class="message-avatar">${message.avatar}</div>
+                                    <div class="message-content-container">
+                                        <div class="message-bubble">
+                                            <div class="message-text">${message.text}</div>
+                                        </div>
+                                        <div class="message-time">${message.time}</div>
+                                    </div>
+                                `;
+                            }
+                            
+                            chatContent.appendChild(messageElement);
+                            
+                            // 为历史消息添加事件监听器
+                            addMessageEventListeners(messageElement);
+                        });
+                        
+                        // 滚动到底部
+                        chatContent.scrollTop = chatContent.scrollHeight;
+                    }
+                } catch (error) {
+                    console.error('加载聊天记录时出错:', error);
+                    // 如果解析失败，清空聊天内容
+                    const chatContent = document.querySelector('.chat-content');
+                    if (chatContent) {
+                        chatContent.innerHTML = '';
+                    }
+                }
+            }
+
+            // 更新聊天列表中的最后消息
+            function updateLastMessageInChatList(contactId, message, time) {
+                // 从localStorage获取现有联系人
+                let contacts = JSON.parse(localStorage.getItem('chatContacts') || '[]');
+                
+                // 找到对应的联系人并更新最后消息
+                const contactIndex = contacts.findIndex(contact => contact.id == contactId);
+                if (contactIndex !== -1) {
+                    contacts[contactIndex].lastMessage = message;
+                    contacts[contactIndex].time = time;
+                    
+                    // 保存到localStorage
+                    localStorage.setItem('chatContacts', JSON.stringify(contacts));
+                }
+            }
+            
             // 加载联系人信息
             function loadContactInfo() {
                 // 从localStorage获取当前聊天的联系人信息
@@ -1035,221 +1163,103 @@
                     }
                 });
             }
-
-            // 返回消息列表
-            function goBack() {
-                window.location.href = 'chat.html';
-            }
-
-            // 发送消息功能
-            function sendMessage() {
-                const input = document.querySelector('.input-box');
-                const message = input.value.trim();
-                
-                if (message) {
-                    // 获取当前联系人信息
-                    const contactInfo = JSON.parse(localStorage.getItem('currentChatFriend')) || { id: 0, name: '未知联系人', avatar: '👤' };
-                    
-                    // 创建消息元素
-                    const messageElement = document.createElement('div');
-                    messageElement.className = 'message sent';
-                    
-                    const time = new Date();
-                    const timeString = `${time.getHours().toString().padStart(2, '0')}:${time.getMinutes().toString().padStart(2, '0')}`;
-                    
-                    // 获取用户自己的头像（每次都从localStorage获取最新信息）
-                    const userInfo = JSON.parse(localStorage.getItem('userInfo')) || { avatar: '👤' };
-                    let userAvatarContent = userInfo.avatar;
-                    if (userAvatarContent && userAvatarContent.startsWith && userAvatarContent.startsWith('data:image')) {
-                        // 如果是上传的图片数据
-                        userAvatarContent = `<img src="${userAvatarContent}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
-                    } else if (userAvatarContent) {
-                        // 如果是默认头像符号
-                        userAvatarContent = userAvatarContent;
-                    } else {
-                        // 如果没有任何头像数据，使用默认头像
-                        userAvatarContent = '👤';
-                    }
-                    
-                    messageElement.innerHTML = `
-                        <div class="message-content-container">
-                            <div class="message-bubble">
-                                <div class="message-text">${message}</div>
-                            </div>
-                            <div class="message-time">${timeString}</div>
-                        </div>
-                        <div class="message-avatar">${userAvatarContent}</div>
-                    `;
-                    
-                    // 添加到聊天内容
-                    document.querySelector('.chat-content').appendChild(messageElement);
-                    
-                    // 清空输入框
-                    input.value = '';
-                    
-                    // 滚动到底部
-                    document.querySelector('.chat-content').scrollTop = document.querySelector('.chat-content').scrollHeight;
-                    
-                    // 保存消息到localStorage（为每个联系人独立保存）
-                    saveMessageToLocalStorage(contactInfo.id, {
-                        type: 'sent',
-                        text: message,
-                        time: timeString,
-                        avatar: userAvatarContent
-                    });
-                    
-                    // 更新聊天列表中的最后消息
-                    updateLastMessageInChatList(contactInfo.id, message, timeString);
-                }
-            }
-
-            // 接收消息功能
-            function receiveMessage(text) {
-                // 获取当前联系人信息
-                const contactInfo = JSON.parse(localStorage.getItem('currentChatFriend')) || { id: 0, name: '未知联系人', avatar: '👤' };
-                
-                const messageElement = document.createElement('div');
-                messageElement.className = 'message received';
-                
-                const time = new Date();
-                const timeString = `${time.getHours().toString().padStart(2, '0')}:${time.getMinutes().toString().padStart(2, '0')}`;
-                
-                // 获取联系人的头像（每次都从localStorage获取最新信息）
-                let contactAvatarContent = contactInfo.avatar;
-                if (contactAvatarContent && contactAvatarContent.startsWith && contactAvatarContent.startsWith('data:image')) {
-                    // 如果是上传的图片数据
-                    contactAvatarContent = `<img src="${contactAvatarContent}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
-                } else if (contactAvatarContent) {
-                    // 如果是默认头像符号
-                    contactAvatarContent = contactAvatarContent;
-                } else {
-                    // 如果没有任何头像数据，使用默认头像
-                    contactAvatarContent = '👤';
-                }
-                
-                messageElement.innerHTML = `
-                    <div class="message-avatar">${contactAvatarContent}</div>
-                    <div class="message-content-container">
-                        <div class="message-bubble">
-                            <div class="message-text">${text}</div>
-                        </div>
-                        <div class="message-time">${timeString}</div>
-                    </div>
-                `;
-                
-                // 添加到聊天内容
-                document.querySelector('.chat-content').appendChild(messageElement);
-                
-                // 滚动到底部
-                document.querySelector('.chat-content').scrollTop = document.querySelector('.chat-content').scrollHeight;
-                
-                // 保存消息到localStorage（为每个联系人独立保存）
-                saveMessageToLocalStorage(contactInfo.id, {
-                    type: 'received',
-                    text: text,
-                    time: timeString,
-                    avatar: contactAvatarContent
-                });
-                
-                // 更新聊天列表中的最后消息
-                updateLastMessageInChatList(contactInfo.id, text, timeString);
-            }
-
-            // 保存消息到localStorage（为每个联系人独立保存）
-            function saveMessageToLocalStorage(contactId, message) {
-                // 获取该联系人的消息历史
-                const chatKey = `chat_${contactId}_messages`;
-                let messages = JSON.parse(localStorage.getItem(chatKey) || '[]');
-                
-                // 添加新消息
-                messages.push(message);
-                
-                // 限制消息数量，只保存最新的100条消息
-                if (messages.length > 100) {
-                    messages = messages.slice(-100);
-                }
-                
-                // 保存到localStorage
-                localStorage.setItem(chatKey, JSON.stringify(messages));
-            }
-
-            // 从localStorage加载消息（为每个联系人独立加载）
-            function loadMessagesFromLocalStorage(contactId) {
-                try {
-                    const chatKey = `chat_${contactId}_messages`;
-                    const messages = JSON.parse(localStorage.getItem(chatKey) || '[]');
-                    
-                    // 清空当前聊天内容
-                    const chatContent = document.querySelector('.chat-content');
-                    if (chatContent) {
-                        chatContent.innerHTML = '';
-                        
-                        // 添加所有消息到聊天内容
-                        messages.forEach(message => {
-                            const messageElement = document.createElement('div');
-                            messageElement.className = `message ${message.type}`;
-                            
-                            if (message.type === 'sent') {
-                                messageElement.innerHTML = `
-                                    <div class="message-content-container">
-                                        <div class="message-bubble">
-                                            <div class="message-text">${message.text}</div>
-                                        </div>
-                                        <div class="message-time">${message.time}</div>
-                                    </div>
-                                    <div class="message-avatar">${message.avatar}</div>
-                                `;
-                            } else {
-                                messageElement.innerHTML = `
-                                    <div class="message-avatar">${message.avatar}</div>
-                                    <div class="message-content-container">
-                                        <div class="message-bubble">
-                                            <div class="message-text">${message.text}</div>
-                                        </div>
-                                        <div class="message-time">${message.time}</div>
-                                    </div>
-                                `;
-                            }
-                            
-                            chatContent.appendChild(messageElement);
-                        });
-                        
-                        // 滚动到底部
-                        chatContent.scrollTop = chatContent.scrollHeight;
-                    }
-                } catch (error) {
-                    console.error('加载聊天记录时出错:', error);
-                    // 如果解析失败，清空聊天内容
-                    const chatContent = document.querySelector('.chat-content');
-                    if (chatContent) {
-                        chatContent.innerHTML = '';
-                    }
-                }
-            }
-
-            // 更新聊天列表中的最后消息
-            function updateLastMessageInChatList(contactId, message, time) {
-                // 从localStorage获取现有联系人
-                let contacts = JSON.parse(localStorage.getItem('chatContacts') || '[]');
-                
-                // 找到对应的联系人并更新最后消息
-                const contactIndex = contacts.findIndex(contact => contact.id == contactId);
-                if (contactIndex !== -1) {
-                    contacts[contactIndex].lastMessage = message;
-                    contacts[contactIndex].time = time;
-                    
-                    // 保存到localStorage
-                    localStorage.setItem('chatContacts', JSON.stringify(contacts));
-                }
-            }
             
             // 当前选中的消息元素
             let selectedMessage = null;
 
+
+            
+            // 复制消息内容
+            function copyMessageContent() {
+                if (selectedMessage) {
+                    const messageContent = selectedMessage.querySelector('.message-content').innerText;
+                    navigator.clipboard.writeText(messageContent).then(() => {
+                        alert('消息已复制到剪贴板');
+                    }).catch(err => {
+                        console.error('无法复制消息: ', err);
+                    });
+                }
+            }
+            
+            // 删除消息
+            function deleteMessage() {
+                if (selectedMessage) {
+                    const chatContent = document.querySelector('.chat-content');
+                    chatContent.removeChild(selectedMessage);
+                    selectedMessage = null;
+                }
+            }
+            
+            // 显示聊天界面
+            function showChatInterface(contactId) {
+                const chatInterface = document.getElementById('chatInterface');
+                const chatContent = document.querySelector('.chat-content');
+                const chatHeader = document.querySelector('.chat-header');
+                const chatFooter = document.querySelector('.chat-footer');
+                const chatContacts = document.getElementById('chatContacts');
+                const chatContactsOverlay = document.getElementById('chatContactsOverlay');
+                
+                // 隐藏联系人列表
+                chatContacts.style.display = 'none';
+                chatContactsOverlay.style.display = 'none';
+                
+                // 显示聊天界面
+                chatInterface.style.display = 'flex';
+                chatContent.style.display = 'block';
+                chatHeader.style.display = 'block';
+                chatFooter.style.display = 'block';
+                
+                // 加载聊天记录
+                loadChatHistory(contactId);
+            }
+            
+            // 隐藏聊天界面
+            function hideChatInterface() {
+                const chatInterface = document.getElementById('chatInterface');
+                const chatContent = document.querySelector('.chat-content');
+                const chatHeader = document.querySelector('.chat-header');
+                const chatFooter = document.querySelector('.chat-footer');
+                const chatContacts = document.getElementById('chatContacts');
+                const chatContactsOverlay = document.getElementById('chatContactsOverlay');
+                
+                // 显示联系人列表
+                chatContacts.style.display = 'block';
+                chatContactsOverlay.style.display = 'block';
+                
+                // 隐藏聊天界面
+                chatInterface.style.display = 'none';
+                chatContent.style.display = 'none';
+                chatHeader.style.display = 'none';
+                chatFooter.style.display = 'none';
+            }
+            
+            // 加载聊天记录
+            function loadChatHistory(contactId) {
+                const chatContent = document.querySelector('.chat-content');
+                chatContent.innerHTML = ''; // 清空聊天内容
+                
+                // 从localStorage获取聊天记录
+                let chatHistory = JSON.parse(localStorage.getItem('chatHistory') || '{}');
+                if (chatHistory[contactId]) {
+                    chatHistory[contactId].forEach(message => {
+                        const messageElement = document.createElement('div');
+                        messageElement.classList.add('message');
+                        messageElement.classList.add(message.sender === 'user' ? 'user-message' : 'assistant-message');
+                        messageElement.innerHTML = `
+                            <div class="message-content">${message.content}</div>
+                            <div class="message-time">${message.time}</div>
+                        `;
+                        chatContent.appendChild(messageElement);
+                        
+                        // 为历史消息添加事件监听器
+                        addMessageEventListeners(messageElement);
+                    });
+                }
+            }
+
             // 显示消息操作功能面板
             function showMessageContextMenu(messageElement, event) {
                 selectedMessage = messageElement;
-                const contextMenu = document.getElementById('messageContextMenu');
                 
                 // 阻止默认行为
                 event.preventDefault();
@@ -1258,57 +1268,218 @@
                 // 隐藏之前可能显示的面板
                 hideMessageContextMenu();
                 
-                // 计算面板位置
-                const rect = messageElement.getBoundingClientRect();
-                const chatContent = document.querySelector('.chat-content');
-                const chatRect = chatContent.getBoundingClientRect();
+                // 创建菜单弹窗
+                const menu = document.createElement('div');
+                menu.className = 'message-context-menu';
+                menu.style.cssText = `
+                    position: fixed;
+                    background: rgba(30, 30, 30, 0.95);
+                    border-radius: 15px;
+                    padding: 15px;
+                    z-index: 1003;
+                    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+                    min-width: 200px;
+                    display: none;
+                `;
                 
-                // 在手机端，面板显示在屏幕底部
-                if (window.innerWidth <= 768) {
-                    contextMenu.style.left = '10px';
-                    contextMenu.style.right = '10px';
-                    contextMenu.style.bottom = '10px';
-                    contextMenu.style.top = 'auto';
-                    contextMenu.style.width = 'auto';
-                } else {
-                    // 在电脑端，面板显示在消息上方
-                    contextMenu.style.left = (rect.left + rect.width / 2 - contextMenu.offsetWidth / 2) + 'px';
-                    contextMenu.style.top = (rect.top - contextMenu.offsetHeight - 10) + 'px';
-                    contextMenu.style.bottom = 'auto';
-                    contextMenu.style.width = 'auto';
-                    
-                    // 确保面板不会超出聊天区域边界
-                    const menuRect = contextMenu.getBoundingClientRect();
-                    if (menuRect.left < chatRect.left) {
-                        contextMenu.style.left = chatRect.left + 'px';
-                    }
-                    if (menuRect.right > chatRect.right) {
-                        contextMenu.style.left = (chatRect.right - menuRect.width) + 'px';
-                    }
-                    if (menuRect.top < chatRect.top) {
-                        contextMenu.style.top = (rect.bottom + 10) + 'px';
-                    }
+                // 创建遮罩层
+                const overlay = document.createElement('div');
+                overlay.className = 'overlay';
+                overlay.style.cssText = `
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(0, 0, 0, 0.5);
+                    z-index: 1002;
+                    display: none;
+                `;
+                
+                // 创建菜单选项
+                menu.innerHTML = `
+                    <div class="menu-options" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;">
+                        <!-- 第一行：编辑、收藏、撤回、多选 -->
+                        <div class="menu-option" data-action="edit" style="display: flex; flex-direction: column; align-items: center; padding: 10px; border-radius: 10px; cursor: pointer;">
+                            <svg viewBox="0 0 24 24" width="20" height="20" fill="white">
+                                <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                            </svg>
+                            <span style="color: white; font-size: 12px; margin-top: 5px;">编辑</span>
+                        </div>
+                        
+                        <div class="menu-option" data-action="favorite" style="display: flex; flex-direction: column; align-items: center; padding: 10px; border-radius: 10px; cursor: pointer;">
+                            <svg viewBox="0 0 24 24" width="20" height="20" fill="white">
+                                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                            </svg>
+                            <span style="color: white; font-size: 12px; margin-top: 5px;">收藏</span>
+                        </div>
+                        
+                        <div class="menu-option" data-action="retract" style="display: flex; flex-direction: column; align-items: center; padding: 10px; border-radius: 10px; cursor: pointer;">
+                            <svg viewBox="0 0 24 24" width="20" height="20" fill="white">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.94-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+                            </svg>
+                            <span style="color: white; font-size: 12px; margin-top: 5px;">撤回</span>
+                        </div>
+                        
+                        <div class="menu-option" data-action="select" style="display: flex; flex-direction: column; align-items: center; padding: 10px; border-radius: 10px; cursor: pointer;">
+                            <svg viewBox="0 0 24 24" width="20" height="20" fill="white">
+                                <path d="M14 10H2v2h12v-2zm0-4H2v2h12V6zm4 8v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zM2 16h8v-2H2v2z"/>
+                            </svg>
+                            <span style="color: white; font-size: 12px; margin-top: 5px;">多选</span>
+                        </div>
+                        
+                        <!-- 第二行：引用、删除、转发 -->
+                        <div class="menu-option" data-action="quote" style="display: flex; flex-direction: column; align-items: center; padding: 10px; border-radius: 10px; cursor: pointer;">
+                            <svg viewBox="0 0 24 24" width="20" height="20" fill="white">
+                                <path d="M7 10.5V13h1v3H7v-2.5l-2-2v5.5h1v1h4v-1H9v-3h1v-3.5l2 2v5.5h1v1h-4v1h6v-1h-1v-5.5l-2-2V13h3v-2.5l-2-2V7h3V6H9v1h3v1.5l-2 2zM3 3v8l4-4-4-4zm12 0l-4 4 4 4V3z"/>
+                            </svg>
+                            <span style="color: white; font-size: 12px; margin-top: 5px;">引用</span>
+                        </div>
+                        
+                        <div class="menu-option" data-action="delete" style="display: flex; flex-direction: column; align-items: center; padding: 10px; border-radius: 10px; cursor: pointer;">
+                            <svg viewBox="0 0 24 24" width="20" height="20" fill="white">
+                                <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                            </svg>
+                            <span style="color: white; font-size: 12px; margin-top: 5px;">删除</span>
+                        </div>
+                        
+                        <div class="menu-option" data-action="forward" style="display: flex; flex-direction: column; align-items: center; padding: 10px; border-radius: 10px; cursor: pointer;">
+                            <svg viewBox="0 0 24 24" width="20" height="20" fill="white">
+                                <path d="M20 7l-4-4-4 4 1.41 1.41L15 6.83V14h2V6.83l1.59 1.58L20 7zm-8 10l-4-4-4 4 1.41 1.41L7 16.83V24h2v-7.17l1.59 1.58L12 17z"/>
+                            </svg>
+                            <span style="color: white; font-size: 12px; margin-top: 5px;">转发</span>
+                        </div>
+                        
+                        <!-- 空白占位 -->
+                        <div></div>
+                    </div>
+                `;
+                
+                // 添加到页面
+                document.body.appendChild(menu);
+                document.body.appendChild(overlay);
+                
+                // 计算菜单位置
+                const rect = messageElement.getBoundingClientRect();
+                const menuWidth = 200;
+                const menuHeight = 200;
+                const viewportWidth = window.innerWidth;
+                const viewportHeight = window.innerHeight;
+                
+                // 计算菜单位置，确保不会超出视窗边界
+                let left = event.clientX;
+                let top = event.clientY;
+                
+                // 如果菜单会超出右边界，则向左显示
+                if (left + menuWidth > viewportWidth) {
+                    left = viewportWidth - menuWidth - 10;
                 }
                 
-                // 显示功能面板
-                contextMenu.style.display = 'block';
+                // 如果菜单会超出下边界，则向上显示
+                if (top + menuHeight > viewportHeight) {
+                    top = viewportHeight - menuHeight - 10;
+                }
+                
+                // 设置菜单位置
+                menu.style.left = left + 'px';
+                menu.style.top = top + 'px';
+                
+                // 显示功能面板和遮罩层
+                menu.style.display = 'block';
+                overlay.style.display = 'block';
+                
+                // 添加淡入效果
                 setTimeout(() => {
-                    contextMenu.classList.add('show');
+                    menu.style.opacity = '1';
+                    menu.style.transform = 'scale(1)';
+                    overlay.style.opacity = '1';
                 }, 10);
+                
+                // 为功能按钮添加点击事件监听器
+                const menuOptions = menu.querySelectorAll('.menu-option');
+                menuOptions.forEach(option => {
+                    option.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        const action = this.getAttribute('data-action');
+                        switch(action) {
+                            case 'edit':
+                                editMessage();
+                                break;
+                            case 'favorite':
+                                favoriteMessage();
+                                break;
+                            case 'retract':
+                                retractMessage();
+                                break;
+                            case 'select':
+                                selectMultipleMessages();
+                                // 注意：多选模式下不隐藏菜单
+                                return;
+                            case 'quote':
+                                quoteMessage();
+                                break;
+                            case 'delete':
+                                deleteMessage();
+                                break;
+                            case 'forward':
+                                forwardMessage();
+                                break;
+                        }
+                        // 隐藏菜单（除非是多选模式）
+                        hideMessageContextMenu();
+                    });
+                });
+                
+                // 点击遮罩层或其他地方关闭菜单
+                const closeMenu = (e) => {
+                    if (!menu.contains(e.target) && e.target !== overlay) {
+                        hideMessageContextMenu();
+                        document.removeEventListener('click', closeMenu);
+                    }
+                };
+                
+                // 点击遮罩层关闭菜单
+                const hideMenu = (e) => {
+                    e.stopPropagation();
+                    hideMessageContextMenu();
+                    overlay.removeEventListener('click', hideMenu);
+                };
+                
+                // 为遮罩层添加点击事件监听器
+                overlay.addEventListener('click', hideMenu);
+                
+                setTimeout(() => {
+                    document.addEventListener('click', closeMenu);
+                }, 10);
+                
+                // 保存引用以便后续隐藏
+                window.currentContextMenu = menu;
+                window.currentContextOverlay = overlay;
             }
 
             // 隐藏消息操作功能面板
             function hideMessageContextMenu() {
-                const contextMenu = document.getElementById('messageContextMenu');
-                const overlay = document.getElementById('contextMenuOverlay');
+                const menu = window.currentContextMenu;
+                const overlay = window.currentContextOverlay;
                 
-                // 隐藏功能面板
-                contextMenu.classList.remove('show');
-                // 延迟隐藏元素，确保动画完成
-                setTimeout(() => {
-                    contextMenu.style.display = 'none';
-                    overlay.style.display = 'none';
-                }, 300);
+                if (menu && overlay) {
+                    // 添加淡出效果
+                    menu.style.opacity = '0';
+                    menu.style.transform = 'scale(0.95)';
+                    overlay.style.opacity = '0';
+                    
+                    // 延迟隐藏元素，确保动画完成
+                    setTimeout(() => {
+                        if (menu.parentNode) {
+                            menu.parentNode.removeChild(menu);
+                        }
+                        if (overlay.parentNode) {
+                            overlay.parentNode.removeChild(overlay);
+                        }
+                        window.currentContextMenu = null;
+                        window.currentContextOverlay = null;
+                    }, 300);
+                }
                 
                 // 清除选中的消息
                 selectedMessage = null;
@@ -1328,7 +1499,6 @@
                                 const now = new Date();
                                 timeElement.textContent = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
                             }
-                            alert('消息已编辑');
                         }
                     }
                 }
@@ -1362,7 +1532,6 @@
                                         </div>
                                     </div>
                                 `;
-                                alert('消息已撤回');
                             }
                         }
                     } else {
@@ -1376,7 +1545,8 @@
             function selectMultipleMessages() {
                 alert('多选功能已激活，请点击其他消息进行选择');
                 // 这里可以实现多选逻辑
-                hideMessageContextMenu();
+                // 注意：多选模式下不隐藏菜单
+                // hideMessageContextMenu();
             }
 
             // 引用消息
@@ -1387,7 +1557,6 @@
                         const input = document.querySelector('.input-box');
                         input.value = `「${messageText.textContent}」\n`;
                         input.focus();
-                        alert('消息已引用到输入框');
                     }
                 }
                 hideMessageContextMenu();
@@ -1398,7 +1567,6 @@
                 if (selectedMessage) {
                     if (confirm('确定要删除这条消息吗？')) {
                         selectedMessage.remove();
-                        alert('消息已删除');
                     }
                 }
                 hideMessageContextMenu();
@@ -1416,54 +1584,152 @@
                 hideMessageContextMenu();
             }
 
+            // 为单个消息元素添加事件监听器
+            function addMessageEventListeners(messageElement) {
+                // 移除之前可能添加的事件监听器，避免重复绑定
+                messageElement.removeEventListener('contextmenu', handleMessageContextMenu);
+                messageElement.removeEventListener('click', handleMessageClick);
+                messageElement.removeEventListener('touchstart', handleMessageTouchStart);
+                messageElement.removeEventListener('touchend', handleMessageTouchEnd);
+                messageElement.removeEventListener('touchmove', handleMessageTouchMove);
+                
+                // 右键点击触发上下文菜单（电脑端）
+                messageElement.addEventListener('contextmenu', handleMessageContextMenu);
+                
+                // 左键点击触发上下文菜单（手机端和电脑端测试）
+                messageElement.addEventListener('click', handleMessageClick);
+                
+                // 触摸事件（移动端）
+                messageElement.addEventListener('touchstart', handleMessageTouchStart);
+                messageElement.addEventListener('touchend', handleMessageTouchEnd);
+                messageElement.addEventListener('touchmove', handleMessageTouchMove);
+            }
+
             // 为消息添加点击事件监听器
             function addMessageClickListeners() {
                 const messages = document.querySelectorAll('.message');
                 messages.forEach(message => {
-                    // 右键点击触发上下文菜单（电脑端）
-                    message.addEventListener('contextmenu', function(e) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        showMessageContextMenu(this, e);
-                    });
-                    
-                    // 左键点击触发上下文菜单（手机端和电脑端测试）
-                    message.addEventListener('click', function(e) {
-                        // 在手机端直接显示菜单，电脑端需要Ctrl键
-                        if (window.innerWidth <= 768 || e.ctrlKey) {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            showMessageContextMenu(this, e);
-                        }
-                    });
-                    
-                    // 触摸事件（移动端）
-                    let pressTimer;
-                    message.addEventListener('touchstart', function(e) {
-                        pressTimer = setTimeout(() => {
-                            showMessageContextMenu(this, e);
-                        }, 300); // 触摸300毫秒触发
-                    });
-                    
-                    message.addEventListener('touchend', function() {
-                        clearTimeout(pressTimer);
-                    });
-                    
-                    message.addEventListener('touchmove', function() {
-                        clearTimeout(pressTimer);
-                    });
+                    // 为每个消息元素添加事件监听器
+                    addMessageEventListeners(message);
                 });
             }
+            
+            // 处理右键菜单事件
+            function handleMessageContextMenu(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                showMessageContextMenu(this, e);
+            }
+            
+            // 处理点击事件
+            function handleMessageClick(e) {
+                // 在手机端直接显示菜单，电脑端需要Ctrl键
+                if (window.innerWidth <= 768 || e.ctrlKey) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    showMessageContextMenu(this, e);
+                }
+            }
+            
+            // 处理触摸开始事件
+            let pressTimer;
+            function handleMessageTouchStart(e) {
+                // 阻止默认的滚动行为
+                // e.preventDefault(); // 不阻止默认行为，以免影响滚动
+                e.stopPropagation();
+                const messageElement = this;
+                pressTimer = setTimeout(() => {
+                    showMessageContextMenu(messageElement, e);
+                }, 500); // 触摸500毫秒触发
+            }
+            
+            // 处理触摸结束事件
+            function handleMessageTouchEnd(e) {
+                e.stopPropagation();
+                // 清除定时器，防止误触发
+                clearTimeout(pressTimer);
+            }
+            
+            // 处理触摸移动事件
+            function handleMessageTouchMove(e) {
+                e.stopPropagation();
+                // 如果用户开始滑动，清除定时器
+                clearTimeout(pressTimer);
+            }
 
-            // 页面加载完成后添加消息点击事件监听器
+            // 页面加载完成后添加点击事件监听器
             document.addEventListener('DOMContentLoaded', function() {
+                // 为消息添加点击事件监听器
                 addMessageClickListeners();
+                
+                // 为功能按钮添加点击事件监听器
+                const menuOptions = document.querySelectorAll('.menu-option');
+                menuOptions.forEach(option => {
+                    option.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        const action = this.getAttribute('data-action');
+                        switch(action) {
+                            case 'edit':
+                                editMessage();
+                                break;
+                            case 'favorite':
+                                favoriteMessage();
+                                break;
+                            case 'retract':
+                                retractMessage();
+                                break;
+                            case 'select':
+                                selectMultipleMessages();
+                                // 注意：多选模式下不隐藏菜单
+                                return;
+                            case 'quote':
+                                quoteMessage();
+                                break;
+                            case 'delete':
+                                deleteMessage();
+                                break;
+                            case 'forward':
+                                forwardMessage();
+                                break;
+                        }
+                        // 隐藏菜单（除非是多选模式）
+                        hideMessageContextMenu();
+                    });
+                });
+                
+                // 点击页面其他区域隐藏加号功能面板
+                document.addEventListener('click', function(event) {
+                    const plusMenu = document.getElementById('plusMenu');
+                    const plusBtn = document.querySelector('.plus-btn');
+                    
+                    // 如果点击的不是功能面板也不是加号按钮，则隐藏功能面板
+                    if (plusMenu && plusMenu.style.display === 'block' && 
+                        !plusMenu.contains(event.target) && 
+                        plusBtn && !plusBtn.contains(event.target)) {
+                        hidePlusMenu();
+                    }
+                });
             });
 
-            // 也确保在窗口加载时添加监听器
-            window.addEventListener('load', function() {
-                addMessageClickListeners();
-            });
+            // 点击页面其他地方隐藏菜单
+            // 已在 showMessageContextMenu 函数中处理
+            
+            // 触摸事件处理，防止在面板显示时意外隐藏
+            document.addEventListener('touchstart', function(e) {
+                // 检查是否刚刚显示了功能面板
+                if (document.body.hasAttribute('data-context-menu-showing')) {
+                    // 如果刚刚显示了功能面板，则不隐藏
+                    return;
+                }
+                
+                // 检查触摸的元素是否在消息上下文菜单内或功能按钮内
+                if (!e.target.closest('.message-context-menu') && 
+                    !e.target.closest('.menu-option') && 
+                    !e.target.closest('#messageContextMenu') &&
+                    !e.target.closest('#contextMenuOverlay')) {
+                    hideMessageContextMenu();
+                }
+            }, { passive: true }); // 使用passive选项避免阻止滚动
 
             // AI回复功能
             document.querySelector('.ai-btn').addEventListener('click', function() {
@@ -1483,7 +1749,35 @@
                     receiveMessage("你好！我是AI助手，有什么可以帮助你的吗？");
                 }
             });
+            
+            // 页面加载时初始化联系人信息和聊天记录
+            window.onload = function() {
+                loadContactInfo();
+                updateTime();
+                loadUserInfo();
+                updateExistingMessages(); // 更新已存在的消息头像
+                
+                // 加载当前联系人的聊天记录
+                const contactInfo = JSON.parse(localStorage.getItem('currentChatFriend')) || { id: 0 };
+                loadMessagesFromLocalStorage(contactInfo.id);
+                
+                // 应用保存的聊天详情背景（专门用于liaotianyemian页面）
+                const savedBackground = localStorage.getItem('chatDetailBackground');
+                if (savedBackground) {
+                    document.body.style.backgroundImage = `url(${savedBackground})`;
+                    document.body.style.backgroundSize = 'cover';
+                    document.body.style.backgroundPosition = 'center';
+                    document.body.style.backgroundRepeat = 'no-repeat';
+                }
+                
+                // 确保所有消息都有事件监听器
+                setTimeout(() => {
+                    addMessageClickListeners();
+                }, 100);
+            };
         </script>
     </div>
 </body>
+</html>
+
 </html>
