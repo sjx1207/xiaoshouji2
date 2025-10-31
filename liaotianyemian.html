@@ -386,16 +386,38 @@
         /* 消息操作功能面板 */
         .message-context-menu {
             display: none;
-            position: absolute;
+            position: fixed;
             background: rgba(30, 30, 30, 0.95);
             border-radius: 15px;
             padding: 15px;
             z-index: 1003;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-            min-width: 200px;
-            transform: translateY(-10px);
+            transform: translateY(20px);
             opacity: 0;
             transition: opacity 0.2s ease, transform 0.2s ease;
+        }
+
+        /* 电脑端样式 */
+        @media (min-width: 769px) {
+            .message-context-menu {
+                position: absolute;
+                min-width: 200px;
+                border-radius: 15px;
+                padding: 15px;
+            }
+        }
+
+        /* 手机端样式 */
+        @media (max-width: 768px) {
+            .message-context-menu {
+                left: 10px;
+                right: 10px;
+                bottom: 10px;
+                top: auto;
+                width: auto;
+                border-radius: 15px 15px 0 0;
+                padding: 20px;
+            }
         }
 
         .message-context-menu.show {
@@ -407,6 +429,14 @@
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             gap: 10px;
+        }
+
+        /* 手机端网格调整 */
+        @media (max-width: 768px) {
+            .menu-options {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 12px;
+            }
         }
 
         .menu-option {
@@ -426,6 +456,13 @@
             color: white;
             font-size: 12px;
             margin-top: 5px;
+        }
+
+        /* 手机端字体调整 */
+        @media (max-width: 768px) {
+            .menu-option span {
+                font-size: 11px;
+            }
         }
 
         .overlay {
@@ -1210,25 +1247,54 @@
             let selectedMessage = null;
 
             // 显示消息操作功能面板
-            function showMessageContextMenu(messageElement) {
+            function showMessageContextMenu(messageElement, event) {
                 selectedMessage = messageElement;
                 const contextMenu = document.getElementById('messageContextMenu');
-                const overlay = document.getElementById('contextMenuOverlay');
                 
-                // 显示遮罩层
-                overlay.style.display = 'block';
+                // 阻止默认行为
+                event.preventDefault();
+                event.stopPropagation();
+                
+                // 隐藏之前可能显示的面板
+                hideMessageContextMenu();
+                
+                // 计算面板位置
+                const rect = messageElement.getBoundingClientRect();
+                const chatContent = document.querySelector('.chat-content');
+                const chatRect = chatContent.getBoundingClientRect();
+                
+                // 在手机端，面板显示在屏幕底部
+                if (window.innerWidth <= 768) {
+                    contextMenu.style.left = '10px';
+                    contextMenu.style.right = '10px';
+                    contextMenu.style.bottom = '10px';
+                    contextMenu.style.top = 'auto';
+                    contextMenu.style.width = 'auto';
+                } else {
+                    // 在电脑端，面板显示在消息上方
+                    contextMenu.style.left = (rect.left + rect.width / 2 - contextMenu.offsetWidth / 2) + 'px';
+                    contextMenu.style.top = (rect.top - contextMenu.offsetHeight - 10) + 'px';
+                    contextMenu.style.bottom = 'auto';
+                    contextMenu.style.width = 'auto';
+                    
+                    // 确保面板不会超出聊天区域边界
+                    const menuRect = contextMenu.getBoundingClientRect();
+                    if (menuRect.left < chatRect.left) {
+                        contextMenu.style.left = chatRect.left + 'px';
+                    }
+                    if (menuRect.right > chatRect.right) {
+                        contextMenu.style.left = (chatRect.right - menuRect.width) + 'px';
+                    }
+                    if (menuRect.top < chatRect.top) {
+                        contextMenu.style.top = (rect.bottom + 10) + 'px';
+                    }
+                }
                 
                 // 显示功能面板
                 contextMenu.style.display = 'block';
-                // 触发显示动画
                 setTimeout(() => {
                     contextMenu.classList.add('show');
                 }, 10);
-                
-                // 防止事件冒泡
-                contextMenu.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                });
             }
 
             // 隐藏消息操作功能面板
@@ -1354,29 +1420,29 @@
             function addMessageClickListeners() {
                 const messages = document.querySelectorAll('.message');
                 messages.forEach(message => {
-                    // 右键点击触发上下文菜单
+                    // 右键点击触发上下文菜单（电脑端）
                     message.addEventListener('contextmenu', function(e) {
                         e.preventDefault();
                         e.stopPropagation();
-                        showMessageContextMenu(this);
+                        showMessageContextMenu(this, e);
                     });
                     
-                    // 左键点击也可以触发（用于测试）
+                    // 左键点击触发上下文菜单（手机端和电脑端测试）
                     message.addEventListener('click', function(e) {
-                        // 检查是否是Ctrl键点击，如果是则触发上下文菜单
-                        if (e.ctrlKey) {
+                        // 在手机端直接显示菜单，电脑端需要Ctrl键
+                        if (window.innerWidth <= 768 || e.ctrlKey) {
                             e.preventDefault();
                             e.stopPropagation();
-                            showMessageContextMenu(this);
+                            showMessageContextMenu(this, e);
                         }
                     });
                     
-                    // 触摸长按事件（移动端）
+                    // 触摸事件（移动端）
                     let pressTimer;
                     message.addEventListener('touchstart', function(e) {
                         pressTimer = setTimeout(() => {
-                            showMessageContextMenu(this);
-                        }, 500); // 长按500毫秒触发
+                            showMessageContextMenu(this, e);
+                        }, 300); // 触摸300毫秒触发
                     });
                     
                     message.addEventListener('touchend', function() {
