@@ -336,12 +336,6 @@
             background: transparent;
             border-radius: 20px;
             padding: 15px;
-            /* 添加以下属性以确保滑动正常工作 */
-            pointer-events: none; /* 默认不响应事件 */
-        }
-
-        .plus-menu:target, .plus-menu[style*="display: block"] {
-            pointer-events: auto; /* 当显示时响应事件 */
         }
 
         .menu-content {
@@ -349,17 +343,11 @@
             overflow-x: auto;
             gap: 15px;
             padding: 5px;
-            -webkit-overflow-scrolling: touch; /* 为iOS设备启用平滑滚动 */
-            scrollbar-width: none; /* Firefox隐藏滚动条 */
-            -ms-overflow-style: none; /* IE/Edge隐藏滚动条 */
-            /* 添加以下属性以确保滑动正常工作 */
-            touch-action: pan-x; /* 允许水平滑动 */
-            -webkit-touch-callout: none; /* 禁止iOS上的长按弹窗 */
-            pointer-events: auto; /* 始终响应事件 */
+            -webkit-overflow-scrolling: touch;
         }
 
         .menu-content::-webkit-scrollbar {
-            display: none; /* Chrome/Safari隐藏滚动条 */
+            display: none;
         }
 
         .menu-item {
@@ -370,14 +358,7 @@
             background: rgba(255, 255, 255, 0.15);
             border-radius: 20px;
             padding: 8px;
-            flex-shrink: 0; /* 防止按钮在滚动时被压缩 */
-            -webkit-user-select: none; /* 禁止文本选择 */
-            -moz-user-select: none;
-            -ms-user-select: none;
-            user-select: none;
-            /* 添加触摸相关样式 */
-            touch-action: manipulation; /* 优化触摸操作 */
-            pointer-events: auto; /* 响应事件 */
+            flex-shrink: 0;
         }
 
         .menu-icon {
