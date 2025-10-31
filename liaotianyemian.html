@@ -343,10 +343,12 @@
             gap: 15px;
             padding: 5px;
             -webkit-overflow-scrolling: touch; /* 为iOS设备启用平滑滚动 */
+            scrollbar-width: none; /* Firefox隐藏滚动条 */
+            -ms-overflow-style: none; /* IE/Edge隐藏滚动条 */
         }
 
         .menu-content::-webkit-scrollbar {
-            display: none; /* 隐藏滚动条 */
+            display: none; /* Chrome/Safari隐藏滚动条 */
         }
 
         .menu-item {
@@ -358,6 +360,11 @@
             border-radius: 20px;
             padding: 8px;
             flex-shrink: 0; /* 防止按钮在滚动时被压缩 */
+            -webkit-touch-callout: none; /* 禁止iOS上的长按弹窗 */
+            -webkit-user-select: none; /* 禁止文本选择 */
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
         }
 
         .menu-icon {
@@ -468,7 +475,7 @@
         
         <!-- 加号按钮功能面板 -->
         <div class="plus-menu" id="plusMenu" style="display: none; position: fixed; bottom: 80px; left: calc(5% - 20px); z-index: 1002; background: transparent; border-radius: 20px; padding: 15px;">
-            <div class="menu-content" style="display: flex; overflow-x: auto; gap: 15px; padding: 5px;">
+            <div class="menu-content" style="display: flex; overflow-x: auto; gap: 15px; padding: 5px; -webkit-overflow-scrolling: touch;" ontouchstart="handleTouchStart(event)" ontouchmove="handleTouchMove(event)">
                 <!-- Photo功能按钮 -->
                 <div class="menu-item" onclick="selectPhoto()" style="display: flex; align-items: center; cursor: pointer; min-width: 100px; background: rgba(255, 255, 255, 0.15); border-radius: 20px; padding: 8px;">
                     <div class="menu-icon" style="width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 12px;">
@@ -573,6 +580,23 @@
             </div>
         </div>
         <script>
+            // 触摸事件处理变量
+            let touchStartX = 0;
+            let touchEndX = 0;
+
+            // 处理触摸开始事件
+            function handleTouchStart(event) {
+                touchStartX = event.touches[0].clientX;
+            }
+
+            // 处理触摸移动事件
+            function handleTouchMove(event) {
+                if (!touchStartX) return;
+                touchEndX = event.touches[0].clientX;
+                // 阻止默认的滚动行为，但允许水平滚动
+                event.preventDefault();
+            }
+
             // 显示菜单
             function showMenu() {
                 // 跳转到聊天设置页面
