@@ -291,7 +291,7 @@
         }
 
         /* 聊天项内容 */
-        .avatar {
+        .chat-item .avatar {
             width: 50px;
             height: 50px;
             border-radius: 50%;
@@ -302,9 +302,11 @@
             margin-right: 15px;
             font-size: 20px;
             overflow: hidden;
+            position: static;
+            z-index: auto;
         }
 
-        .avatar img {
+        .chat-item .avatar img {
             width: 100%;
             height: 100%;
             object-fit: cover;
@@ -431,7 +433,7 @@
             margin-right: 10px;
         }
 
-        .friend-avatar {
+        .friend-item .friend-avatar {
             width: 50px;
             height: 50px;
             border-radius: 50%;
@@ -442,9 +444,11 @@
             margin-right: 15px;
             font-size: 20px;
             overflow: hidden;
+            position: static;
+            z-index: auto;
         }
 
-        .friend-avatar img {
+        .friend-item .friend-avatar img {
             width: 100%;
             height: 100%;
             object-fit: cover;
@@ -1031,6 +1035,41 @@
                 }, 300);
             }
 
+            // 上传头像到ImgBB
+            function uploadAvatarToImgBB(file, callback) {
+                // 获取ImgBB API密钥
+                const imgbbApiKey = localStorage.getItem('imgbbApiKey');
+                if (!imgbbApiKey) {
+                    showAlert('请先在设置页面配置ImgBB API密钥');
+                    callback(null);
+                    return;
+                }
+
+                // 创建FormData对象
+                const formData = new FormData();
+                formData.append('image', file);
+
+                // 上传到ImgBB
+                fetch(`https://api.imgbb.com/1/upload?key=${imgbbApiKey}`, {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 200) {
+                        callback(data.data.url);
+                    } else {
+                        showAlert('头像上传失败：' + (data.error?.message || '未知错误'));
+                        callback(null);
+                    }
+                })
+                .catch(error => {
+                    console.error('上传失败:', error);
+                    showAlert('头像上传失败，请检查网络连接');
+                    callback(null);
+                });
+            }
+
             // 预览头像
             function previewAvatar(event) {
                 const file = event.target.files[0];
@@ -1043,6 +1082,15 @@
                         preview.innerHTML = `<img src="${e.target.result}" alt="头像预览" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
                     }
                     reader.readAsDataURL(file);
+
+                    // 上传到ImgBB
+                    uploadAvatarToImgBB(file, function(url) {
+                        if (url) {
+                            // 更新预览为ImgBB URL
+                            const preview = document.getElementById('avatarPreview');
+                            preview.innerHTML = `<img src="${url}" alt="头像预览" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+                        }
+                    });
                 }
             }
 
@@ -1129,6 +1177,24 @@
                 }
             }
 
+            // 格式化头像显示
+            function formatAvatar(avatar) {
+                if (!avatar) return '👤';
+                
+                // 如果是图片数据URL
+                if (typeof avatar === 'string' && avatar.startsWith('data:image')) {
+                    return `<img src="${avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;position:static;z-index:auto;">`;
+                } 
+                // 如果是网络图片URL
+                else if (typeof avatar === 'string' && (avatar.startsWith('http://') || avatar.startsWith('https://'))) {
+                    return `<img src="${avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;position:static;z-index:auto;">`;
+                } 
+                // 如果是默认头像符号或其他字符
+                else {
+                    return avatar;
+                }
+            }
+
             // 显示自定义提示模态框
             function showAlert(message) {
                 document.getElementById('alertMessage').textContent = message;
@@ -1162,20 +1228,7 @@
                     }
                     
                     // 处理头像显示
-                    let avatarContent = '';
-                    if (contact.avatar && contact.avatar.startsWith && contact.avatar.startsWith('data:image')) {
-                        // 如果是上传的图片数据
-                        avatarContent = `<img src="${contact.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
-                    } else if (contact.avatar && (contact.avatar.startsWith('http://') || contact.avatar.startsWith('https://'))) {
-                        // 如果是网络图片URL
-                        avatarContent = `<img src="${contact.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
-                    } else if (contact.avatar) {
-                        // 如果是默认头像符号
-                        avatarContent = contact.avatar;
-                    } else {
-                        // 如果没有任何头像数据，使用默认头像
-                        avatarContent = '👤';
-                    }
+                    let avatarContent = formatAvatar(contact.avatar);
                     
                     chatItem.innerHTML = `
                         <div class="chat-item-content" onclick="openChat(${contact.id})">
@@ -1405,20 +1458,7 @@
                     friendItem.dataset.id = friend.id;
                     
                     // 处理头像显示
-                    let avatarContent = '';
-                    if (friend.avatar && friend.avatar.startsWith('data:image')) {
-                        // 如果是上传的图片数据，使用object-fit:cover确保图片完全填满头像框
-                        avatarContent = `<img src="${friend.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
-                    } else if (friend.avatar && (friend.avatar.startsWith('http://') || friend.avatar.startsWith('https://'))) {
-                        // 如果是网络图片URL
-                        avatarContent = `<img src="${friend.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
-                    } else if (friend.avatar) {
-                        // 如果是默认头像符号或其他字符
-                        avatarContent = friend.avatar;
-                    } else {
-                        // 如果没有任何头像数据，使用默认头像
-                        avatarContent = '👤';
-                    }
+                    let avatarContent = formatAvatar(friend.avatar);
                     
                     friendItem.innerHTML = `
                         <div class="friend-item-content" onclick="openChat(${friend.id})">
