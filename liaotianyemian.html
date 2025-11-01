@@ -139,6 +139,7 @@
             align-items: center;
             justify-content: center;
             margin-right: 10px;
+            overflow: hidden;
         }
 
         .contact-avatar img {
@@ -198,6 +199,14 @@
             justify-content: center;
             font-size: 18px;
             flex-shrink: 0;
+            overflow: hidden;
+        }
+
+        .message-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
         }
 
         .message.received .message-avatar {
@@ -337,6 +346,14 @@
             background: transparent;
             border-radius: 20px;
             padding: 15px;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+        
+        .plus-menu.show {
+            opacity: 1;
+            transform: translateY(0);
         }
 
         .menu-content {
@@ -638,8 +655,23 @@
         <!-- 遮罩层 -->
         <!-- 已移除固定的遮罩层元素，改为动态创建 -->
         <script>
+            // 返回上一页
+            function goBack() {
+                window.history.back();
+            }
+            
             // 显示菜单
             function showMenu() {
+                // 获取当前聊天对象的头像
+                const contactInfo = JSON.parse(localStorage.getItem('currentChatFriend')) || {};
+                const contactAvatar = contactInfo.avatar || '👤';
+                
+                // 将头像信息保存到localStorage，供聊天设置页面使用
+                localStorage.setItem('chatContactAvatar', JSON.stringify({
+                    avatar: contactAvatar,
+                    name: contactInfo.name || '未知联系人'
+                }));
+                
                 // 跳转到聊天设置页面
                 window.location.href = '聊天设置.html';
             }
@@ -647,16 +679,57 @@
             // 显示加号菜单
             function showPlusMenu() {
                 const menu = document.getElementById('plusMenu');
+                const chatContent = document.querySelector('.chat-content');
+                
                 if (menu.style.display === 'none' || menu.style.display === '') {
                     menu.style.display = 'block';
+                    
+                    // 使用CSS类触发动画
+                    setTimeout(() => {
+                        menu.classList.add('show');
+                    }, 10);
+                    
+                    // 调整聊天内容区域的底部边距，为面板留出空间
+                    const panelHeight = 200; // 面板的大致高度
+                    const originalPadding = parseInt(getComputedStyle(chatContent).paddingBottom) || 80;
+                    chatContent.style.paddingBottom = (originalPadding + panelHeight - 120) + 'px';
+                    
+                    // 平滑滚动到底部，确保输入区域可见
+                    setTimeout(() => {
+                        chatContent.scrollTo({
+                            top: chatContent.scrollHeight,
+                            behavior: 'smooth'
+                        });
+                    }, 100);
                 } else {
-                    menu.style.display = 'none';
+                    // 移除CSS类触发动画
+                    menu.classList.remove('show');
+                    
+                    // 延迟隐藏面板，等待动画完成
+                    setTimeout(() => {
+                        menu.style.display = 'none';
+                    }, 300);
+                    
+                    // 恢复聊天内容区域的底部边距
+                    chatContent.style.paddingBottom = '';
                 }
             }
 
             // 隐藏加号菜单
             function hidePlusMenu() {
-                document.getElementById('plusMenu').style.display = 'none';
+                const menu = document.getElementById('plusMenu');
+                const chatContent = document.querySelector('.chat-content');
+                
+                // 移除CSS类触发动画
+                menu.classList.remove('show');
+                
+                // 延迟隐藏面板，等待动画完成
+                setTimeout(() => {
+                    menu.style.display = 'none';
+                }, 300);
+                
+                // 恢复聊天内容区域的底部边距
+                chatContent.style.paddingBottom = '';
             }
 
             // 选择照片功能
@@ -797,56 +870,12 @@
                 alert('打电话功能待实现');
             }
 
-            // 页面加载完成后添加点击事件监听器
-            document.addEventListener('DOMContentLoaded', function() {
-                // 点击页面其他区域隐藏功能面板
-                document.addEventListener('click', function(event) {
-                    const plusMenu = document.getElementById('plusMenu');
-                    const plusBtn = document.querySelector('.plus-btn');
-                    
-                    // 如果点击的不是功能面板也不是加号按钮，则隐藏功能面板
-                    if (plusMenu.style.display === 'block' && 
-                        !plusMenu.contains(event.target) && 
-                        !plusBtn.contains(event.target)) {
-                        hidePlusMenu();
-                    }
-                });
-            });
-
-            // 打电话功能
-            function makeCall() {
-                hidePlusMenu();
-                alert('打电话功能待实现');
-            }
-
             // 更新时间
             function updateTime() {
                 const now = new Date();
                 const timeString = now.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
                 document.getElementById('current-time').textContent = timeString;
             }
-
-            // 页面加载完成后添加点击事件监听器
-            document.addEventListener('DOMContentLoaded', function() {
-                const callButton = document.getElementById('call-button');
-                if (callButton) {
-                    callButton.addEventListener('click', makeCall);
-                }
-                
-                const plusButton = document.getElementById('plus-button');
-                if (plusButton) {
-                    plusButton.addEventListener('click', showPlusMenu);
-                }
-                
-                const plusMenu = document.getElementById('plus-menu');
-                if (plusMenu) {
-                    plusMenu.addEventListener('click', function(event) {
-                        event.stopPropagation();
-                    });
-                }
-                
-                document.addEventListener('click', hidePlusMenu);
-            });
 
             // 为单个消息元素添加事件监听器
             function addMessageEventListeners(messageElement) {
@@ -875,6 +904,20 @@
                 const message = input.value.trim();
                 
                 if (message) {
+                    // 检查是否启用线下模式
+                    const offlineModeEnabled = localStorage.getItem('offlineModeEnabled') === 'true';
+                    
+                    // 如果启用线下模式，添加叙事部分
+                    let finalMessage = message;
+                    if (offlineModeEnabled) {
+                        // 获取人设信息
+                        const characterSettings = JSON.parse(localStorage.getItem('characterSettings') || '{}');
+                        const characterName = characterSettings.title || '角色';
+                        
+                        // 添加叙事前缀
+                        finalMessage = `[${characterName}的故事] ${message}`;
+                    }
+                    
                     // 获取当前联系人信息
                     const contactInfo = JSON.parse(localStorage.getItem('currentChatFriend')) || { id: 0, name: '未知联系人', avatar: '👤' };
                     
@@ -902,7 +945,7 @@
                     messageElement.innerHTML = `
                         <div class="message-content-container">
                             <div class="message-bubble">
-                                <div class="message-text">${message}</div>
+                                <div class="message-text">${finalMessage}</div>
                             </div>
                             <div class="message-time">${timeString}</div>
                         </div>
@@ -924,18 +967,32 @@
                     // 保存消息到localStorage（为每个联系人独立保存）
                     saveMessageToLocalStorage(contactInfo.id, {
                         type: 'sent',
-                        text: message,
+                        text: finalMessage,
                         time: timeString,
                         avatar: userAvatarContent
                     });
                     
                     // 更新聊天列表中的最后消息
-                    updateLastMessageInChatList(contactInfo.id, message, timeString);
+                    updateLastMessageInChatList(contactInfo.id, finalMessage, timeString);
                 }
             }
 
             // 接收消息功能
             function receiveMessage(text) {
+                // 检查是否启用线下模式
+                const offlineModeEnabled = localStorage.getItem('offlineModeEnabled') === 'true';
+                
+                // 如果启用线下模式，添加叙事部分
+                let finalMessage = text;
+                if (offlineModeEnabled) {
+                    // 获取人设信息
+                    const characterSettings = JSON.parse(localStorage.getItem('characterSettings') || '{}');
+                    const characterName = characterSettings.title || '角色';
+                    
+                    // 添加叙事前缀
+                    finalMessage = `[${characterName}的故事] ${text}`;
+                }
+                
                 // 获取当前联系人信息
                 const contactInfo = JSON.parse(localStorage.getItem('currentChatFriend')) || { id: 0, name: '未知联系人', avatar: '👤' };
                 
@@ -962,7 +1019,7 @@
                     <div class="message-avatar">${contactAvatarContent}</div>
                     <div class="message-content-container">
                         <div class="message-bubble">
-                            <div class="message-text">${text}</div>
+                            <div class="message-text">${finalMessage}</div>
                         </div>
                         <div class="message-time">${timeString}</div>
                     </div>
@@ -980,13 +1037,13 @@
                 // 保存消息到localStorage（为每个联系人独立保存）
                 saveMessageToLocalStorage(contactInfo.id, {
                     type: 'received',
-                    text: text,
+                    text: finalMessage,
                     time: timeString,
                     avatar: contactAvatarContent
                 });
                 
                 // 更新聊天列表中的最后消息
-                updateLastMessageInChatList(contactInfo.id, text, timeString);
+                updateLastMessageInChatList(contactInfo.id, finalMessage, timeString);
             }
 
             // 保存消息到localStorage（为每个联系人独立保存）
@@ -1096,6 +1153,9 @@
                 if (contactInfo.avatar && contactInfo.avatar.startsWith && contactInfo.avatar.startsWith('data:image')) {
                     // 如果是上传的图片数据
                     avatarElement.innerHTML = `<img src="${contactInfo.avatar}" alt="${contactInfo.name}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+                } else if (contactInfo.avatar && (contactInfo.avatar.startsWith('http://') || contactInfo.avatar.startsWith('https://'))) {
+                    // 如果是网络图片URL
+                    avatarElement.innerHTML = `<img src="${contactInfo.avatar}" alt="${contactInfo.name}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
                 } else if (contactInfo.avatar) {
                     // 如果是默认头像符号
                     avatarElement.innerHTML = contactInfo.avatar;
@@ -1126,6 +1186,9 @@
                 if (userAvatarContent && userAvatarContent.startsWith && userAvatarContent.startsWith('data:image')) {
                     // 如果是上传的图片数据
                     userAvatarContent = `<img src="${userAvatarContent}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+                } else if (userAvatarContent && (userAvatarContent.startsWith('http://') || userAvatarContent.startsWith('https://'))) {
+                    // 如果是网络图片URL
+                    userAvatarContent = `<img src="${userAvatarContent}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
                 } else if (userAvatarContent) {
                     // 如果是默认头像符号
                     userAvatarContent = userAvatarContent;
@@ -1148,6 +1211,9 @@
                 if (contactAvatarContent && contactAvatarContent.startsWith && contactAvatarContent.startsWith('data:image')) {
                     // 如果是上传的图片数据
                     contactAvatarContent = `<img src="${contactAvatarContent}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+                } else if (contactAvatarContent && (contactAvatarContent.startsWith('http://') || contactAvatarContent.startsWith('https://'))) {
+                    // 如果是网络图片URL
+                    contactAvatarContent = `<img src="${contactAvatarContent}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
                 } else if (contactAvatarContent) {
                     // 如果是默认头像符号
                     contactAvatarContent = contactAvatarContent;
@@ -1167,7 +1233,75 @@
             // 当前选中的消息元素
             let selectedMessage = null;
 
+            // 监听头像更新事件
+            window.addEventListener('avatarUpdated', function(event) {
+                const { contactName, avatar } = event.detail;
+                const currentContact = JSON.parse(localStorage.getItem('currentChatFriend')) || {};
+                
+                // 如果是当前聊天的联系人，更新头像
+                if (currentContact.name === contactName) {
+                    updateContactAvatar(avatar);
+                    updateMessageAvatars(avatar);
+                }
+            });
+            
+            // 检查localStorage中的头像更新通知
+            function checkAvatarUpdateNotification() {
+                const notification = localStorage.getItem('avatarUpdateNotification');
+                if (notification) {
+                    try {
+                        const { contactName, avatar, timestamp } = JSON.parse(notification);
+                        
+                        // 检查通知是否过期（5秒内有效）
+                        if (Date.now() - timestamp < 5000) {
+                            const currentContact = JSON.parse(localStorage.getItem('currentChatFriend')) || {};
+                            
+                            // 如果是当前聊天的联系人，更新头像
+                            if (currentContact.name === contactName) {
+                                updateContactAvatar(avatar);
+                                updateMessageAvatars(avatar);
+                            }
+                        }
+                        
+                        // 清除通知
+                        localStorage.removeItem('avatarUpdateNotification');
+                    } catch (e) {
+                        console.error('解析头像更新通知失败:', e);
+                    }
+                }
+            }
 
+            // 更新联系人头像
+            function updateContactAvatar(avatar) {
+                const avatarElement = document.querySelector('.contact-avatar');
+                if (avatarElement) {
+                    if (typeof avatar === 'string' && avatar.startsWith('data:image')) {
+                        avatarElement.innerHTML = `<img src="${avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+                    } else if (typeof avatar === 'string' && (avatar.startsWith('http://') || avatar.startsWith('https://'))) {
+                        avatarElement.innerHTML = `<img src="${avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+                    } else {
+                        avatarElement.innerHTML = avatar;
+                    }
+                }
+            }
+
+            // 更新消息头像
+            function updateMessageAvatars(avatar) {
+                // 更新已存在的接收消息头像
+                const receivedMessages = document.querySelectorAll('.message.received');
+                receivedMessages.forEach(message => {
+                    const avatarElement = message.querySelector('.message-avatar');
+                    if (avatarElement) {
+                        if (typeof avatar === 'string' && avatar.startsWith('data:image')) {
+                            avatarElement.innerHTML = `<img src="${avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+                        } else if (typeof avatar === 'string' && (avatar.startsWith('http://') || avatar.startsWith('https://'))) {
+                            avatarElement.innerHTML = `<img src="${avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+                        } else {
+                            avatarElement.innerHTML = avatar;
+                        }
+                    }
+                });
+            }
             
             // 复制消息内容
             function copyMessageContent() {
@@ -1706,7 +1840,17 @@
                     if (plusMenu && plusMenu.style.display === 'block' && 
                         !plusMenu.contains(event.target) && 
                         plusBtn && !plusBtn.contains(event.target)) {
-                        hidePlusMenu();
+                        // 移除CSS类触发动画
+                        plusMenu.classList.remove('show');
+                        
+                        // 延迟隐藏面板，等待动画完成
+                        setTimeout(() => {
+                            plusMenu.style.display = 'none';
+                        }, 300);
+                        
+                        // 恢复聊天内容区域的底部边距
+                        const chatContent = document.querySelector('.chat-content');
+                        chatContent.style.paddingBottom = '';
                     }
                 });
             });
@@ -1733,20 +1877,16 @@
 
             // AI回复功能
             document.querySelector('.ai-btn').addEventListener('click', function() {
-                const input = document.querySelector('.input-box');
-                const message = input.value.trim();
+                // 检查用户是否已经发送了消息
+                const chatContent = document.querySelector('.chat-content');
+                const userMessages = chatContent.querySelectorAll('.message.sent');
                 
-                if (message) {
-                    // 发送消息
-                    sendMessage();
-                    
-                    // 模拟AI回复
-                    setTimeout(() => {
-                        receiveMessage("这是AI智能回复的内容");
-                    }, 2000);
-                } else {
-                    // 如果没有输入内容，直接触发AI回复
+                if (userMessages.length > 0) {
+                    // 用户已经发送了消息，可以进行AI回复
                     receiveMessage("你好！我是AI助手，有什么可以帮助你的吗？");
+                } else {
+                    // 用户还没有发送消息，提示用户先发送消息
+                    alert("请先发送一条消息，然后点击AI回复按钮");
                 }
             });
             
@@ -1778,6 +1918,4 @@
         </script>
     </div>
 </body>
-</html>
-
 </html>
