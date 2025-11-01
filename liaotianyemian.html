@@ -822,7 +822,7 @@
                 const userInfo = JSON.parse(localStorage.getItem('userInfo')) || { avatar: '👤' };
                 let userAvatarContent = userInfo.avatar;
                 if (userAvatarContent && userAvatarContent.startsWith && userAvatarContent.startsWith('data:image')) {
-                    userAvatarContent = `<img src="${userAvatarContent}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+                    userAvatarContent = `<img src="${userAvatarContent}" style="width:100%;height:100%;object-fit:cover;">`;
                 } else if (userAvatarContent) {
                     userAvatarContent = userAvatarContent;
                 } else {
@@ -930,17 +930,11 @@
                     
                     // 获取用户自己的头像（每次都从localStorage获取最新信息）
                     const userInfo = JSON.parse(localStorage.getItem('userInfo')) || { avatar: '👤' };
-                    let userAvatarContent = userInfo.avatar;
-                    if (userAvatarContent && userAvatarContent.startsWith && userAvatarContent.startsWith('data:image')) {
-                        // 如果是上传的图片数据
-                        userAvatarContent = `<img src="${userAvatarContent}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
-                    } else if (userAvatarContent) {
-                        // 如果是默认头像符号
-                        userAvatarContent = userAvatarContent;
-                    } else {
-                        // 如果没有任何头像数据，使用默认头像
-                        userAvatarContent = '👤';
-                    }
+                    // 检查是否有人设头像
+                    const userCharacterSettings = JSON.parse(localStorage.getItem('characterSettings') || '{}');
+                    let userAvatarContent = userCharacterSettings.avatar || userInfo.avatar;
+                    // 格式化用户头像
+                    userAvatarContent = formatAvatar(userAvatarContent);
                     
                     messageElement.innerHTML = `
                         <div class="message-content-container">
@@ -968,8 +962,7 @@
                     saveMessageToLocalStorage(contactInfo.id, {
                         type: 'sent',
                         text: finalMessage,
-                        time: timeString,
-                        avatar: userAvatarContent
+                        time: timeString
                     });
                     
                     // 更新聊天列表中的最后消息
@@ -1003,17 +996,11 @@
                 const timeString = `${time.getHours().toString().padStart(2, '0')}:${time.getMinutes().toString().padStart(2, '0')}`;
                 
                 // 获取联系人的头像（每次都从localStorage获取最新信息）
-                let contactAvatarContent = contactInfo.avatar;
-                if (contactAvatarContent && contactAvatarContent.startsWith && contactAvatarContent.startsWith('data:image')) {
-                    // 如果是上传的图片数据
-                    contactAvatarContent = `<img src="${contactAvatarContent}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
-                } else if (contactAvatarContent) {
-                    // 如果是默认头像符号
-                    contactAvatarContent = contactAvatarContent;
-                } else {
-                    // 如果没有任何头像数据，使用默认头像
-                    contactAvatarContent = '👤';
-                }
+                // 首先检查是否有聊天设置中的人设头像
+                const characterSettings = JSON.parse(localStorage.getItem(`characterSettings_${contactInfo.id}`) || '{}');
+                let contactAvatarContent = characterSettings.avatar || contactInfo.avatar;
+                // 格式化联系人头像
+                contactAvatarContent = formatAvatar(contactAvatarContent);
                 
                 messageElement.innerHTML = `
                     <div class="message-avatar">${contactAvatarContent}</div>
@@ -1038,8 +1025,7 @@
                 saveMessageToLocalStorage(contactInfo.id, {
                     type: 'received',
                     text: finalMessage,
-                    time: timeString,
-                    avatar: contactAvatarContent
+                    time: timeString
                 });
                 
                 // 更新聊天列表中的最后消息
@@ -1080,7 +1066,14 @@
                             const messageElement = document.createElement('div');
                             messageElement.className = `message ${message.type}`;
                             
+                            // 获取当前头像
+                            let currentAvatar = '';
                             if (message.type === 'sent') {
+                                // 发送消息使用用户当前头像
+                                const userInfo = JSON.parse(localStorage.getItem('userInfo')) || { avatar: '👤' };
+                                const userCharacterSettings = JSON.parse(localStorage.getItem('characterSettings') || '{}');
+                                currentAvatar = formatAvatar(userCharacterSettings.avatar || userInfo.avatar);
+                                
                                 messageElement.innerHTML = `
                                     <div class="message-content-container">
                                         <div class="message-bubble">
@@ -1088,11 +1081,16 @@
                                         </div>
                                         <div class="message-time">${message.time}</div>
                                     </div>
-                                    <div class="message-avatar">${message.avatar}</div>
+                                    <div class="message-avatar">${currentAvatar}</div>
                                 `;
                             } else {
+                                // 接收消息使用联系人当前头像
+                                const contactInfo = JSON.parse(localStorage.getItem('currentChatFriend')) || { avatar: '👤' };
+                                const characterSettings = JSON.parse(localStorage.getItem(`characterSettings_${contactInfo.id}`) || '{}');
+                                currentAvatar = formatAvatar(characterSettings.avatar || contactInfo.avatar);
+                                
                                 messageElement.innerHTML = `
-                                    <div class="message-avatar">${message.avatar}</div>
+                                    <div class="message-avatar">${currentAvatar}</div>
                                     <div class="message-content-container">
                                         <div class="message-bubble">
                                             <div class="message-text">${message.text}</div>
@@ -1150,19 +1148,7 @@
                 
                 // 更新头像
                 const avatarElement = document.querySelector('.contact-avatar');
-                if (contactInfo.avatar && contactInfo.avatar.startsWith && contactInfo.avatar.startsWith('data:image')) {
-                    // 如果是上传的图片数据
-                    avatarElement.innerHTML = `<img src="${contactInfo.avatar}" alt="${contactInfo.name}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
-                } else if (contactInfo.avatar && (contactInfo.avatar.startsWith('http://') || contactInfo.avatar.startsWith('https://'))) {
-                    // 如果是网络图片URL
-                    avatarElement.innerHTML = `<img src="${contactInfo.avatar}" alt="${contactInfo.name}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
-                } else if (contactInfo.avatar) {
-                    // 如果是默认头像符号
-                    avatarElement.innerHTML = contactInfo.avatar;
-                } else {
-                    // 如果没有任何头像数据，使用默认头像
-                    avatarElement.innerHTML = '👤';
-                }
+                avatarElement.innerHTML = formatAvatar(contactInfo.avatar);
             }
 
             // 加载用户自己的信息
@@ -1179,24 +1165,30 @@
 
             // 更新已存在的消息头像
             function updateExistingMessages() {
-                // 更新已存在的发送消息头像
-                const sentMessages = document.querySelectorAll('.message.sent');
+                // 获取头部联系人头像
+                const contactAvatarElement = document.querySelector('.contact-avatar');
+                let contactAvatarContent = contactAvatarElement ? contactAvatarElement.innerHTML : '👤';
+                
+                // 获取用户自己的头像
+                const userAvatarElement = document.querySelector('.contact-avatar'); // 这里应该获取用户自己的头像，但我们先用联系人头像作为示例
+                let userAvatarContent = '👤'; // 默认用户头像
+                
+                // 从localStorage获取用户信息
                 const userInfo = JSON.parse(localStorage.getItem('userInfo')) || { avatar: '👤' };
-                let userAvatarContent = userInfo.avatar;
-                if (userAvatarContent && userAvatarContent.startsWith && userAvatarContent.startsWith('data:image')) {
-                    // 如果是上传的图片数据
-                    userAvatarContent = `<img src="${userAvatarContent}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
-                } else if (userAvatarContent && (userAvatarContent.startsWith('http://') || userAvatarContent.startsWith('https://'))) {
-                    // 如果是网络图片URL
-                    userAvatarContent = `<img src="${userAvatarContent}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
-                } else if (userAvatarContent) {
-                    // 如果是默认头像符号
-                    userAvatarContent = userAvatarContent;
-                } else {
-                    // 如果没有任何头像数据，使用默认头像
-                    userAvatarContent = '👤';
+                userAvatarContent = userInfo.avatar || '👤';
+                
+                // 检查是否有人设头像
+                const currentContact = JSON.parse(localStorage.getItem('currentChatFriend')) || {};
+                const userCharacterSettings = JSON.parse(localStorage.getItem('characterSettings') || '{}');
+                if (userCharacterSettings.avatar) {
+                    userAvatarContent = userCharacterSettings.avatar;
                 }
                 
+                // 格式化用户头像
+                userAvatarContent = formatAvatar(userAvatarContent);
+                
+                // 更新已存在的发送消息头像（使用用户自己的头像）
+                const sentMessages = document.querySelectorAll('.message.sent');
                 sentMessages.forEach(message => {
                     const avatarElement = message.querySelector('.message-avatar');
                     if (avatarElement) {
@@ -1204,24 +1196,8 @@
                     }
                 });
                 
-                // 更新已存在的接收消息头像
+                // 更新已存在的接收消息头像（使用与头部相同的头像）
                 const receivedMessages = document.querySelectorAll('.message.received');
-                const contactInfo = JSON.parse(localStorage.getItem('currentChatFriend')) || { avatar: '👤' };
-                let contactAvatarContent = contactInfo.avatar;
-                if (contactAvatarContent && contactAvatarContent.startsWith && contactAvatarContent.startsWith('data:image')) {
-                    // 如果是上传的图片数据
-                    contactAvatarContent = `<img src="${contactAvatarContent}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
-                } else if (contactAvatarContent && (contactAvatarContent.startsWith('http://') || contactAvatarContent.startsWith('https://'))) {
-                    // 如果是网络图片URL
-                    contactAvatarContent = `<img src="${contactAvatarContent}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
-                } else if (contactAvatarContent) {
-                    // 如果是默认头像符号
-                    contactAvatarContent = contactAvatarContent;
-                } else {
-                    // 如果没有任何头像数据，使用默认头像
-                    contactAvatarContent = '👤';
-                }
-                
                 receivedMessages.forEach(message => {
                     const avatarElement = message.querySelector('.message-avatar');
                     if (avatarElement) {
@@ -1269,6 +1245,34 @@
                         console.error('解析头像更新通知失败:', e);
                     }
                 }
+                
+                // 检查消息头像更新通知
+                checkMessageAvatarUpdateNotification();
+            }
+
+            // 检查localStorage中的消息头像更新通知
+            function checkMessageAvatarUpdateNotification() {
+                const notification = localStorage.getItem('messageAvatarUpdateNotification');
+                if (notification) {
+                    try {
+                        const { contactName, avatar, timestamp } = JSON.parse(notification);
+                        
+                        // 检查通知是否过期（5秒内有效）
+                        if (Date.now() - timestamp < 5000) {
+                            const currentContact = JSON.parse(localStorage.getItem('currentChatFriend')) || {};
+                            
+                            // 如果是当前聊天的联系人，更新消息头像
+                            if (currentContact.name === contactName) {
+                                updateAllMessageAvatars(avatar);
+                            }
+                        }
+                        
+                        // 清除通知
+                        localStorage.removeItem('messageAvatarUpdateNotification');
+                    } catch (e) {
+                        console.error('解析消息头像更新通知失败:', e);
+                    }
+                }
             }
 
             // 更新联系人头像
@@ -1287,18 +1291,57 @@
 
             // 更新消息头像
             function updateMessageAvatars(avatar) {
-                // 更新已存在的接收消息头像
+                // 获取头部联系人头像
+                const contactAvatarElement = document.querySelector('.contact-avatar');
+                let contactAvatarContent = contactAvatarElement ? contactAvatarElement.innerHTML : avatar;
+                
+                // 更新已存在的接收消息头像（使用与头部相同的头像）
                 const receivedMessages = document.querySelectorAll('.message.received');
                 receivedMessages.forEach(message => {
                     const avatarElement = message.querySelector('.message-avatar');
                     if (avatarElement) {
-                        if (typeof avatar === 'string' && avatar.startsWith('data:image')) {
-                            avatarElement.innerHTML = `<img src="${avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
-                        } else if (typeof avatar === 'string' && (avatar.startsWith('http://') || avatar.startsWith('https://'))) {
-                            avatarElement.innerHTML = `<img src="${avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
-                        } else {
-                            avatarElement.innerHTML = avatar;
-                        }
+                        avatarElement.innerHTML = contactAvatarContent;
+                    }
+                });
+            }
+
+            // 更新所有消息头像（包括发送和接收的消息）
+            function updateAllMessageAvatars(avatar) {
+                // 获取头部联系人头像
+                const contactAvatarElement = document.querySelector('.contact-avatar');
+                let contactAvatarContent = contactAvatarElement ? contactAvatarElement.innerHTML : avatar;
+                
+                // 更新已存在的接收消息头像（使用与头部相同的头像）
+                const receivedMessages = document.querySelectorAll('.message.received');
+                receivedMessages.forEach(message => {
+                    const avatarElement = message.querySelector('.message-avatar');
+                    if (avatarElement) {
+                        avatarElement.innerHTML = contactAvatarContent;
+                    }
+                });
+
+                // 更新已存在的发送消息头像（使用用户自己的头像）
+                const sentMessages = document.querySelectorAll('.message.sent');
+                // 获取用户自己的头像
+                let userAvatarContent = '👤'; // 默认用户头像
+                
+                // 从localStorage获取用户信息
+                const userInfo = JSON.parse(localStorage.getItem('userInfo')) || { avatar: '👤' };
+                userAvatarContent = userInfo.avatar || '👤';
+                
+                // 检查是否有人设头像
+                const userCharacterSettings = JSON.parse(localStorage.getItem('characterSettings') || '{}');
+                if (userCharacterSettings.avatar) {
+                    userAvatarContent = userCharacterSettings.avatar;
+                }
+                
+                // 格式化用户头像
+                userAvatarContent = formatAvatar(userAvatarContent);
+                
+                sentMessages.forEach(message => {
+                    const avatarElement = message.querySelector('.message-avatar');
+                    if (avatarElement) {
+                        avatarElement.innerHTML = userAvatarContent;
                     }
                 });
             }
@@ -1324,6 +1367,24 @@
                 }
             }
             
+            // 格式化头像显示
+            function formatAvatar(avatar) {
+                if (!avatar) return '👤';
+                
+                // 如果是图片数据URL
+                if (typeof avatar === 'string' && avatar.startsWith('data:image')) {
+                    return `<img src="${avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;position:static;z-index:auto;">`;
+                } 
+                // 如果是网络图片URL
+                else if (typeof avatar === 'string' && (avatar.startsWith('http://') || avatar.startsWith('https://'))) {
+                    return `<img src="${avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;position:static;z-index:auto;">`;
+                } 
+                // 如果是默认头像符号或其他字符
+                else {
+                    return avatar;
+                }
+            }
+
             // 显示聊天界面
             function showChatInterface(contactId) {
                 const chatInterface = document.getElementById('chatInterface');
@@ -1896,6 +1957,12 @@
                 updateTime();
                 loadUserInfo();
                 updateExistingMessages(); // 更新已存在的消息头像
+                
+                // 检查是否有头像更新通知
+                checkAvatarUpdateNotification();
+                
+                // 检查是否有消息头像更新通知
+                checkMessageAvatarUpdateNotification();
                 
                 // 加载当前联系人的聊天记录
                 const contactInfo = JSON.parse(localStorage.getItem('currentChatFriend')) || { id: 0 };
