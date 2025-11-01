@@ -862,12 +862,55 @@
             function previewAvatar(event) {
                 const file = event.target.files[0];
                 if (file) {
+                    // 显示预览
                     const reader = new FileReader();
                     reader.onload = function(e) {
                         document.getElementById('modalAvatarPreview').innerHTML = `<img src="${e.target.result}" alt="头像预览" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
                     }
                     reader.readAsDataURL(file);
+
+                    // 上传到ImgBB
+                    uploadAvatarToImgBB(file, function(url) {
+                        if (url) {
+                            // 更新预览为ImgBB URL
+                            document.getElementById('modalAvatarPreview').innerHTML = `<img src="${url}" alt="头像预览" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+                        }
+                    });
                 }
+            }
+
+            // 上传头像到ImgBB
+            function uploadAvatarToImgBB(file, callback) {
+                // 获取ImgBB API密钥
+                const imgbbApiKey = localStorage.getItem('imgbbApiKey');
+                if (!imgbbApiKey) {
+                    showAlert('请先在设置页面配置ImgBB API密钥');
+                    return;
+                }
+
+                // 创建FormData对象
+                const formData = new FormData();
+                formData.append('image', file);
+
+                // 上传到ImgBB
+                fetch(`https://api.imgbb.com/1/upload?key=${imgbbApiKey}`, {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 200) {
+                        callback(data.data.url);
+                    } else {
+                        showAlert('头像上传失败：' + (data.error?.message || '未知错误'));
+                        callback(null);
+                    }
+                })
+                .catch(error => {
+                    console.error('上传失败:', error);
+                    showAlert('头像上传失败，请检查网络连接');
+                    callback(null);
+                });
             }
 
             // 保存人设设置
@@ -922,6 +965,9 @@
                         
                         // 发送消息通知其他页面更新头像
                         notifyAvatarUpdate(contactName, avatar);
+                        
+                        // 特别通知liaotianyemian.html页面更新消息头像
+                        notifyLiaotianyemianToUpdateMessages(contactName, avatar);
                     }
                 } catch (e) {
                     console.error('同步头像时解析联系人数据失败:', e);
@@ -944,6 +990,25 @@
                         avatar: avatar
                     }
                 }));
+            }
+
+            // 特别通知liaotianyemian.html页面更新消息头像
+            function notifyLiaotianyemianToUpdateMessages(contactName, avatar) {
+                // 保存消息头像更新标记到localStorage
+                localStorage.setItem('messageAvatarUpdateNotification', JSON.stringify({
+                    contactName: contactName,
+                    avatar: avatar,
+                    timestamp: Date.now()
+                }));
+                
+                // 同时更新当前聊天联系人的characterSettings，确保发送消息时使用正确的头像
+                const contactInfo = JSON.parse(localStorage.getItem('currentChatFriend')) || {};
+                if (contactInfo.id) {
+                    const characterSettings = {
+                        avatar: avatar
+                    };
+                    localStorage.setItem(`characterSettings_${contactInfo.id}`, JSON.stringify(characterSettings));
+                }
             }
 
             // 更新chat.html聊天列表中的头像
@@ -993,6 +1058,24 @@
                 }
             }
 
+            // 格式化头像显示
+            function formatAvatar(avatar) {
+                if (!avatar) return '👤';
+                
+                // 如果是图片数据URL
+                if (typeof avatar === 'string' && avatar.startsWith('data:image')) {
+                    return `<img src="${avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;position:static;z-index:auto;">`;
+                } 
+                // 如果是网络图片URL
+                else if (typeof avatar === 'string' && (avatar.startsWith('http://') || avatar.startsWith('https://'))) {
+                    return `<img src="${avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;position:static;z-index:auto;">`;
+                } 
+                // 如果是默认头像符号或其他字符
+                else {
+                    return avatar;
+                }
+            }
+
             // 加载人设设置
             function loadCharacterSettings(contactId) {
                 const characterSettings = JSON.parse(localStorage.getItem(`characterSettings_${contactId}`) || '{}');
@@ -1007,8 +1090,10 @@
                 }
                 
                 if (characterSettings.avatar) {
-                    document.getElementById('characterAvatarPreview').innerHTML = characterSettings.avatar;
-                    document.getElementById('modalAvatarPreview').innerHTML = characterSettings.avatar;
+                    // 如果有人设头像，使用人设头像
+                    let avatarContent = formatAvatar(characterSettings.avatar);
+                    document.getElementById('characterAvatarPreview').innerHTML = avatarContent;
+                    document.getElementById('modalAvatarPreview').innerHTML = avatarContent;
                 } else {
                     // 如果没有人设头像，尝试使用聊天联系人的头像
                     const contactAvatarData = localStorage.getItem('chatContactAvatar');
@@ -1016,18 +1101,9 @@
                         try {
                             const contactData = JSON.parse(contactAvatarData);
                             if (contactData.avatar) {
-                                document.getElementById('characterAvatarPreview').innerHTML = 
-                                    typeof contactData.avatar === 'string' && contactData.avatar.startsWith('data:image') 
-                                    ? `<img src="${contactData.avatar}" alt="头像" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">` 
-                                    : (typeof contactData.avatar === 'string' && (contactData.avatar.startsWith('http://') || contactData.avatar.startsWith('https://'))
-                                    ? `<img src="${contactData.avatar}" alt="头像" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">` 
-                                    : contactData.avatar);
-                                document.getElementById('modalAvatarPreview').innerHTML = 
-                                    typeof contactData.avatar === 'string' && contactData.avatar.startsWith('data:image') 
-                                    ? `<img src="${contactData.avatar}" alt="头像" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">` 
-                                    : (typeof contactData.avatar === 'string' && (contactData.avatar.startsWith('http://') || contactData.avatar.startsWith('https://'))
-                                    ? `<img src="${contactData.avatar}" alt="头像" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">` 
-                                    : contactData.avatar);
+                                let avatarContent = formatAvatar(contactData.avatar);
+                                document.getElementById('characterAvatarPreview').innerHTML = avatarContent;
+                                document.getElementById('modalAvatarPreview').innerHTML = avatarContent;
                             }
                         } catch (e) {
                             console.error('解析聊天联系人头像数据失败:', e);
