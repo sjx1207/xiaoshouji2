@@ -4,7 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>聊天页面</title>
+    <link href="https://fontsapi.zeoseven.com/69/main/result.css" rel="stylesheet">
     <style>
+        body {
+            font-family: "Noto Sans CJK" !important;
+            font-weight: 480 !important;
+        }
         * {
             box-sizing: border-box;
             margin: 0;
@@ -174,11 +179,12 @@
         }
 
         .message {
-            max-width: 80%;
+            max-width: 100%;
             margin-bottom: 15px;
             position: relative;
             word-wrap: break-word;
             display: flex;
+            align-items: flex-start;
         }
 
         .message.received {
@@ -187,6 +193,14 @@
 
         .message.sent {
             align-self: flex-end;
+        }
+
+        .message.received .message-bubble {
+            margin-right: auto;
+        }
+
+        .message.sent .message-bubble {
+            margin-left: auto;
         }
 
         .message-avatar {
@@ -219,39 +233,112 @@
 
         .message-content-container {
             display: flex;
-            flex-direction: column;
+            flex-direction: row;
+            align-items: flex-end;
+            position: relative;
         }
 
         .message-bubble {
-            padding: 10px 15px;
-            border-radius: 18px;
-            position: relative;
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            max-width: 100%;
+            position: relative !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            max-width: 100% !important;
+            padding: 6px 12px !important;
+            font-size: 16px !important;
+            line-height: 1.2 !important;
+            word-break: break-word !important;
+            border-radius: 20px !important;
+            box-sizing: border-box !important;
+            word-wrap: break-word !important;
+            backdrop-filter: blur(10px) !important;
+            -webkit-backdrop-filter: blur(10px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            transition: all 0.3s ease !important;
+            width: fit-content !important;
+            min-width: 30px !important;
+            white-space: normal !important;
+        }
+        
+        .message-bubble .content {
+            display: inline-block !important;
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+
+        .message-bubble:hover {
+            transform: translateY(-1px) !important;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
         }
 
         .message.received .message-bubble {
-            background: rgba(255, 255, 255, 0.1);
-            border-bottom-left-radius: 5px;
+            background: rgba(255, 255, 255, 0.1) !important;
+            backdrop-filter: blur(10px) !important;
+            -webkit-backdrop-filter: blur(10px) !important;
+            color: #fff !important;
+            border: 1px solid rgba(255, 255, 255, 0.15) !important;
         }
 
         .message.sent .message-bubble {
-            background: rgba(0, 122, 255, 0.2);
-            border: 1px solid rgba(0, 122, 255, 0.3);
-            border-bottom-right-radius: 5px;
+            background: rgba(0, 0, 0, 0.1) !important;
+            backdrop-filter: blur(10px) !important;
+            -webkit-backdrop-filter: blur(10px) !important;
+            color: #fff !important;
+            border: 1px solid rgba(0, 0, 0, 0.15) !important;
+        }
+
+        .timestamp {
+            font-size: 11px !important;
+            color: #667781 !important;
+            margin-top: 20px !important;
+            white-space: nowrap !important;
+        }
+
+
+
+        .message-wrapper.ai .timestamp {
+            position: absolute !important;
+            right: 40px !important;
+            margin-top: -15px !important;
+            text-align: right !important;
+        }
+
+        .message-wrapper.user .timestamp {
+            margin-left: auto !important;
+            margin-right: 60px !important;
+            margin-top: -15px !important;
+            text-align: right !important;
         }
 
         .message-text {
             font-size: 16px;
             line-height: 1.4;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            display: inline-block;
         }
 
         .message-time {
-            font-size: 10px;
-            color: #aaa;
-            margin-top: 5px;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.7);
+            display: flex;
+            align-items: center;
+            margin-top: 6px;
+            margin-left: 2px;
+            margin-right: 2px;
+        }
+
+        .message-status {
+            margin-left: 8px;
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .message.received .message-time {
+            justify-content: flex-start;
+        }
+
+        .message.sent .message-time {
+            justify-content: flex-end;
         }
 
         /* 底部输入区域 */
@@ -763,11 +850,12 @@
                             }
                             
                             messageElement.innerHTML = `
-                                <div class="message-content-container">
-                                    <div class="message-bubble">
-                                        <img src="${e.target.result}" style="max-width: 200px; max-height: 200px; border-radius: 10px;">
+                                <div class="message-status-icon">✓</div>
+                                <div class="timestamp">${timeString}</div>
+                                <div class="message-wrapper user">
+                                    <div class="message-bubble user">
+                                        <div class="content"><img src="${e.target.result}" style="max-width: 200px; max-height: 200px; border-radius: 10px;"></div>
                                     </div>
-                                    <div class="message-time">${timeString}</div>
                                 </div>
                                 <div class="message-avatar">${userAvatarContent}</div>
                             `;
@@ -830,11 +918,12 @@
                 }
                 
                 messageElement.innerHTML = `
-                    <div class="message-content-container">
-                        <div class="message-bubble">
-                            <span style="font-size: 24px;">❤️</span>
+                    <div class="message-status-icon">✓</div>
+                    <div class="timestamp">${timeString}</div>
+                    <div class="message-wrapper user">
+                        <div class="message-bubble user">
+                            <div class="content"><span style="font-size: 24px;">❤️</span></div>
                         </div>
-                        <div class="message-time">${timeString}</div>
                     </div>
                     <div class="message-avatar">${userAvatarContent}</div>
                 `;
@@ -937,11 +1026,11 @@
                     userAvatarContent = formatAvatar(userAvatarContent);
                     
                     messageElement.innerHTML = `
-                        <div class="message-content-container">
-                            <div class="message-bubble">
-                                <div class="message-text">${finalMessage}</div>
+                        <div class="timestamp">${timeString}</div>
+                        <div class="message-wrapper user">
+                            <div class="message-bubble user">
+                                <div class="content">${finalMessage}</div>
                             </div>
-                            <div class="message-time">${timeString}</div>
                         </div>
                         <div class="message-avatar">${userAvatarContent}</div>
                     `;
@@ -1004,11 +1093,11 @@
                 
                 messageElement.innerHTML = `
                     <div class="message-avatar">${contactAvatarContent}</div>
-                    <div class="message-content-container">
-                        <div class="message-bubble">
-                            <div class="message-text">${finalMessage}</div>
+                    <div class="timestamp">${timeString}</div>
+                    <div class="message-wrapper ai">
+                        <div class="message-bubble ai">
+                            <div class="content">${finalMessage}</div>
                         </div>
-                        <div class="message-time">${timeString}</div>
                     </div>
                 `;
                 
@@ -1075,11 +1164,11 @@
                                 currentAvatar = formatAvatar(userCharacterSettings.avatar || userInfo.avatar);
                                 
                                 messageElement.innerHTML = `
-                                    <div class="message-content-container">
-                                        <div class="message-bubble">
-                                            <div class="message-text">${message.text}</div>
+                                    <div class="timestamp">${message.time}</div>
+                                    <div class="message-wrapper user">
+                                        <div class="message-bubble user">
+                                            <div class="content">${message.text}</div>
                                         </div>
-                                        <div class="message-time">${message.time}</div>
                                     </div>
                                     <div class="message-avatar">${currentAvatar}</div>
                                 `;
@@ -1091,12 +1180,12 @@
                                 
                                 messageElement.innerHTML = `
                                     <div class="message-avatar">${currentAvatar}</div>
-                                    <div class="message-content-container">
-                                        <div class="message-bubble">
-                                            <div class="message-text">${message.text}</div>
+                                    <div class="message-wrapper ai">
+                                        <div class="message-bubble ai">
+                                            <div class="content">${message.text}</div>
                                         </div>
-                                        <div class="message-time">${message.time}</div>
                                     </div>
+                                    <div class="timestamp">${message.time}</div>
                                 `;
                             }
                             
@@ -1969,7 +2058,26 @@
                 loadMessagesFromLocalStorage(contactInfo.id);
                 
                 // 应用保存的聊天详情背景（专门用于liaotianyemian页面）
-                const savedBackground = localStorage.getItem('chatDetailBackground');
+                // 首先检查是否有联系人特定的背景
+                const contactId = contactInfo.id || 'default';
+                let savedBackground = localStorage.getItem(`chatDetailBackground_${contactId}`);
+                
+                // 如果没有联系人特定的背景，检查全局背景
+                if (!savedBackground) {
+                    savedBackground = localStorage.getItem('chatDetailBackground');
+                }
+                
+                // 如果仍然没有背景，检查聊天设置页面保存的背景（使用正确的键名）
+                if (!savedBackground) {
+                    // 从聊天设置页面获取背景（使用联系人特定的键名）
+                    savedBackground = localStorage.getItem(`chatDetailBackground_${contactInfo.name || 'default'}`);
+                }
+                
+                // 如果仍然没有背景，尝试获取默认联系人的背景
+                if (!savedBackground) {
+                    savedBackground = localStorage.getItem('chatDetailBackground_default');
+                }
+                
                 if (savedBackground) {
                     document.body.style.backgroundImage = `url(${savedBackground})`;
                     document.body.style.backgroundSize = 'cover';
