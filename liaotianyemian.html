@@ -749,15 +749,19 @@
             
             // 显示菜单
             function showMenu() {
-                // 获取当前聊天对象的头像
+                // 获取当前聊天对象的完整信息
                 const contactInfo = JSON.parse(localStorage.getItem('currentChatFriend')) || {};
                 const contactAvatar = contactInfo.avatar || '👤';
+                const contactName = contactInfo.name || '未知联系人';
+                const contactId = contactInfo.id || 'default';
                 
-                // 将头像信息保存到localStorage，供聊天设置页面使用
-                localStorage.setItem('chatContactAvatar', JSON.stringify({
+                // 将联系人信息保存到localStorage，供聊天设置页面使用
+                const contactData = {
                     avatar: contactAvatar,
-                    name: contactInfo.name || '未知联系人'
-                }));
+                    name: contactName,
+                    id: contactId
+                };
+                localStorage.setItem('chatContactAvatar', JSON.stringify(contactData));
                 
                 // 跳转到聊天设置页面
                 window.location.href = '聊天设置.html';
@@ -1232,12 +1236,20 @@
                     avatar: '👤'
                 };
                 
+                // 检查是否有为该联系人设置的人设信息
+                const characterSettings = JSON.parse(localStorage.getItem(`characterSettings_${contactInfo.id}`) || '{}');
+                
+                // 如果有人设昵称，则使用人设昵称，否则使用原始昵称
+                const displayName = characterSettings.title || contactInfo.name;
+                
                 // 更新页面上的联系人信息
-                document.querySelector('.contact-name').textContent = contactInfo.name;
+                document.querySelector('.contact-name').textContent = displayName;
                 
                 // 更新头像
                 const avatarElement = document.querySelector('.contact-avatar');
-                avatarElement.innerHTML = formatAvatar(contactInfo.avatar);
+                // 如果有人设头像，则使用人设头像，否则使用原始头像
+                const displayAvatar = characterSettings.avatar || contactInfo.avatar;
+                avatarElement.innerHTML = formatAvatar(displayAvatar);
             }
 
             // 加载用户自己的信息
@@ -1361,6 +1373,39 @@
                     } catch (e) {
                         console.error('解析消息头像更新通知失败:', e);
                     }
+                }
+            }
+
+            // 检查localStorage中的昵称更新通知
+            function checkNicknameUpdateNotification() {
+                const notification = localStorage.getItem('nicknameUpdateNotification');
+                if (notification) {
+                    try {
+                        const { contactName, nickname, timestamp } = JSON.parse(notification);
+                        
+                        // 检查通知是否过期（5秒内有效）
+                        if (Date.now() - timestamp < 5000) {
+                            const currentContact = JSON.parse(localStorage.getItem('currentChatFriend')) || {};
+                            
+                            // 如果是当前聊天的联系人，更新昵称
+                            if (currentContact.name === contactName && nickname) {
+                                updateContactNickname(nickname);
+                            }
+                        }
+                        
+                        // 清除通知
+                        localStorage.removeItem('nicknameUpdateNotification');
+                    } catch (e) {
+                        console.error('解析昵称更新通知失败:', e);
+                    }
+                }
+            }
+
+            // 更新联系人昵称
+            function updateContactNickname(nickname) {
+                const nameElement = document.querySelector('.contact-name');
+                if (nameElement && nickname) {
+                    nameElement.textContent = nickname;
                 }
             }
 
@@ -2052,6 +2097,9 @@
                 
                 // 检查是否有消息头像更新通知
                 checkMessageAvatarUpdateNotification();
+                
+                // 检查是否有昵称更新通知
+                checkNicknameUpdateNotification();
                 
                 // 加载当前联系人的聊天记录
                 const contactInfo = JSON.parse(localStorage.getItem('currentChatFriend')) || { id: 0 };
