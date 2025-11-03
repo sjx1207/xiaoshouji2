@@ -136,6 +136,58 @@
             margin-bottom: 15px;
         }
 
+        .character-content {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 10px;
+            margin-top: 10px;
+            font-size: 14px;
+            color: #ccc;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 10px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .search-results {
+            max-height: 200px;
+            overflow-y: auto;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 10px;
+            margin-top: 10px;
+        }
+
+        .search-result-item {
+            padding: 8px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+        }
+
+        .search-result-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .search-result-text {
+            font-size: 14px;
+            color: #ccc;
+        }
+
+        .search-result-time {
+            font-size: 12px;
+            color: #999;
+            margin-top: 4px;
+        }
+
         .setting-item {
             display: flex;
             align-items: center;
@@ -308,6 +360,58 @@
             align-items: center;
         }
 
+        .modal.show {
+            display: flex;
+        }
+
+        /* 提示模态框样式 */
+        .alert-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 2001;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .alert-modal.show {
+            display: flex;
+        }
+
+        .alert-modal-content {
+            background: rgba(30, 30, 30, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 20px;
+            width: 90%;
+            max-width: 300px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+
+        .alert-message {
+            font-size: 16px;
+            margin-bottom: 20px;
+            color: white;
+        }
+
+        .alert-ok-btn {
+            background: #007AFF;
+            color: white;
+            border: none;
+            border-radius: 15px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            width: 100%;
+        }
+
         .modal-content {
             background: rgba(30, 30, 30, 0.95);
             backdrop-filter: blur(20px);
@@ -318,6 +422,7 @@
             max-width: 400px;
             border: 1px solid rgba(255, 255, 255, 0.1);
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            position: relative;
         }
 
         .modal-header {
@@ -505,9 +610,9 @@
 
             <!-- Ta的人设设置 -->
             <div class="settings-section">
-                <div class="section-title">Ta的人设</div>
+                <div class="section-title" id="characterSectionTitle">Ta的人设</div>
                 <div class="setting-item">
-                    <div class="setting-label">人设标题</div>
+                    <div class="setting-label">昵称</div>
                     <div class="setting-value" id="characterTitleValue">未设置</div>
                 </div>
                 <div class="setting-item">
@@ -516,6 +621,8 @@
                         <span>👤</span>
                     </div>
                 </div>
+                <!-- 添加人设内容显示区域 -->
+                <div class="character-content" id="characterContentPreview" style="display: none;"></div>
                 <div class="action-buttons">
                     <button class="btn btn-primary" onclick="openCharacterModal()">设置人设</button>
                 </div>
@@ -556,29 +663,49 @@
                 </div>
             </div>
 
-            <!-- 其他设置项 -->
+            <!-- 我的人设设置 -->
             <div class="settings-section">
-                <div class="section-title">聊天设置</div>
+                <div class="section-title">我的人设</div>
                 <div class="setting-item">
-                    <div class="setting-label">消息提醒</div>
-                    <label class="setting-toggle">
-                        <input type="checkbox" id="notificationToggle" checked>
-                        <span class="toggle-slider"></span>
-                    </label>
+                    <div class="setting-label">我的名字</div>
+                    <div class="setting-value" id="myNameValue">未设置</div>
                 </div>
                 <div class="setting-item">
-                    <div class="setting-label">声音</div>
-                    <label class="setting-toggle">
-                        <input type="checkbox" id="soundToggle" checked>
-                        <span class="toggle-slider"></span>
-                    </label>
+                    <div class="setting-label">我的人设</div>
+                    <div class="setting-value" id="myCharacterValue">未设置</div>
                 </div>
-                <div class="setting-item">
-                    <div class="setting-label">震动</div>
-                    <label class="setting-toggle">
-                        <input type="checkbox" id="vibrateToggle" checked>
-                        <span class="toggle-slider"></span>
-                    </label>
+                <div class="action-buttons">
+                    <button class="btn btn-primary" onclick="openMyCharacterModal()">设置我的人设</button>
+                </div>
+            </div>
+
+            <!-- 消息内容总结 -->
+            <div class="settings-section">
+                <div class="section-title">消息内容总结</div>
+                <div class="character-content" id="messageSummaryContent">
+                    暂无总结内容
+                </div>
+                <div class="action-buttons">
+                    <button class="btn btn-primary" onclick="generateMessageSummary()">生成总结</button>
+                </div>
+            </div>
+
+            <!-- 查找聊天记录 -->
+            <div class="settings-section">
+                <div class="section-title">查找聊天记录</div>
+                <input type="text" class="search-input" id="searchInput" placeholder="输入关键词搜索聊天记录">
+                <div class="search-results" id="searchResults" style="display: none;"></div>
+                <div class="action-buttons">
+                    <button class="btn btn-primary" onclick="searchMessages()">搜索</button>
+                </div>
+            </div>
+
+            <!-- 操作按钮 -->
+            <div class="settings-section">
+                <div class="section-title">操作</div>
+                <div class="action-buttons">
+                    <button class="btn btn-primary" onclick="clearChatHistory()">清空聊天记录</button>
+                    <button class="btn btn-secondary" onclick="blockContact()" style="margin-top: 10px;">拉黑联系人</button>
                 </div>
             </div>
         </div>
@@ -591,8 +718,8 @@
                     <button class="modal-close" onclick="closeCharacterModal()">&times;</button>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">人设标题</label>
-                    <input type="text" class="form-input" id="characterTitle" placeholder="输入人设标题">
+                    <label class="form-label">昵称</label>
+                    <input type="text" class="form-input" id="characterTitle" placeholder="输入昵称">
                 </div>
                 <div class="form-group">
                     <label class="form-label">人设描述</label>
@@ -642,6 +769,28 @@
             <div class="alert-modal-content">
                 <div class="alert-message" id="alertMessage"></div>
                 <button class="alert-ok-btn" onclick="closeAlertModal()">确定</button>
+            </div>
+        </div>
+
+        <!-- 我的人设设置模态框 -->
+        <div class="modal" id="myCharacterModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="modal-title">设置我的人设</div>
+                    <button class="modal-close" onclick="closeMyCharacterModal()">&times;</button>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">我的名字</label>
+                    <input type="text" class="form-input" id="myName" placeholder="输入我的名字">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">我的人设</label>
+                    <textarea class="form-textarea" id="myCharacter" placeholder="输入我的人设描述"></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button class="btn-block cancel-btn" onclick="closeMyCharacterModal()">取消</button>
+                    <button class="btn-block save-btn" onclick="saveMyCharacterSettings()">保存</button>
+                </div>
             </div>
         </div>
 
@@ -745,24 +894,29 @@
             // 显示提示信息
             function showAlert(message) {
                 document.getElementById('alertMessage').textContent = message;
-                document.getElementById('alertModal').style.display = 'flex';
+                document.getElementById('alertModal').classList.add('show');
             }
 
             // 关闭提示模态框
             function closeAlertModal() {
-                document.getElementById('alertModal').style.display = 'none';
+                document.getElementById('alertModal').classList.remove('show');
             }
 
             // 页面加载时检查设置
             window.onload = function() {
-                // 获取当前聊天联系人ID
+                // 获取当前聊天联系人信息
                 const contactAvatarData = localStorage.getItem('chatContactAvatar');
                 let contactId = 'default';
+                let contactName = '未知联系人';
+                let contactAvatar = '👤';
+                
                 if (contactAvatarData) {
                     try {
                         const contactData = JSON.parse(contactAvatarData);
                         // 使用联系人名称作为ID的一部分，确保每个聊天独立
-                        contactId = contactData.name || 'default';
+                        contactId = contactData.id || contactData.name || 'default';
+                        contactName = contactData.name || '未知联系人';
+                        contactAvatar = contactData.avatar || '👤';
                     } catch (e) {
                         console.error('解析聊天联系人数据失败:', e);
                     }
@@ -770,6 +924,9 @@
                 
                 // 保存当前联系人ID到页面数据中
                 document.body.setAttribute('data-contact-id', contactId);
+                
+                // 更新页面标题显示联系人名称
+                document.querySelector('.header-title').textContent = `${contactName}的聊天设置`;
                 
                 // 加载聊天背景设置（每个联系人独立）
                 const savedBackground = localStorage.getItem(`chatDetailBackground_${contactId}`);
@@ -797,21 +954,12 @@
                     }
                 }
                 
-                // 检查通知设置（每个联系人独立）
-                const notificationEnabled = localStorage.getItem(`notificationsEnabled_${contactId}`) !== 'false';
-                document.getElementById('notificationToggle').checked = notificationEnabled;
-                
-                // 检查声音设置（每个联系人独立）
-                const soundEnabled = localStorage.getItem(`soundEnabled_${contactId}`) !== 'false';
-                document.getElementById('soundToggle').checked = soundEnabled;
-                
-                // 检查震动设置（每个联系人独立）
-                const vibrateEnabled = localStorage.getItem(`vibrateEnabled_${contactId}`) !== 'false';
-                document.getElementById('vibrateToggle').checked = vibrateEnabled;
-                
                 // 检查线下模式设置（每个联系人独立）
                 const offlineModeEnabled = localStorage.getItem(`offlineModeEnabled_${contactId}`) === 'true';
-                document.getElementById('offlineModeToggle').checked = offlineModeEnabled;
+                const offlineModeToggle = document.getElementById('offlineModeToggle');
+                if (offlineModeToggle) {
+                    offlineModeToggle.checked = offlineModeEnabled;
+                }
                 
                 // 加载人设设置（每个联系人独立）
                 loadCharacterSettings(contactId);
@@ -824,38 +972,40 @@
                 
                 // 加载聊天联系人头像
                 loadChatContactAvatar();
+                
+                // 加载我的人设设置
+                loadMyCharacterSettings();
+                
+                // 安全地添加事件监听器
+                addEventListenersSafely();
             };
 
-            // 监听设置切换
-            document.getElementById('notificationToggle').addEventListener('change', function() {
-                const contactId = document.body.getAttribute('data-contact-id') || 'default';
-                localStorage.setItem(`notificationsEnabled_${contactId}`, this.checked);
-            });
-
-            document.getElementById('soundToggle').addEventListener('change', function() {
-                const contactId = document.body.getAttribute('data-contact-id') || 'default';
-                localStorage.setItem(`soundEnabled_${contactId}`, this.checked);
-            });
-
-            document.getElementById('vibrateToggle').addEventListener('change', function() {
-                const contactId = document.body.getAttribute('data-contact-id') || 'default';
-                localStorage.setItem(`vibrateEnabled_${contactId}`, this.checked);
-            });
-
-            // 线下模式设置
-            document.getElementById('offlineModeToggle').addEventListener('change', function() {
-                const contactId = document.body.getAttribute('data-contact-id') || 'default';
-                localStorage.setItem(`offlineModeEnabled_${contactId}`, this.checked);
-            });
+            // 安全地添加事件监听器
+            function addEventListenersSafely() {
+                // 线下模式设置
+                const offlineModeToggle = document.getElementById('offlineModeToggle');
+                if (offlineModeToggle) {
+                    offlineModeToggle.addEventListener('change', function() {
+                        const contactId = document.body.getAttribute('data-contact-id') || 'default';
+                        localStorage.setItem(`offlineModeEnabled_${contactId}`, this.checked);
+                    });
+                }
+            }
 
             // 打开人设设置模态框
             function openCharacterModal() {
-                document.getElementById('characterModal').style.display = 'flex';
+                const modal = document.getElementById('characterModal');
+                if (modal) {
+                    modal.classList.add('show');
+                }
             }
 
             // 关闭人设设置模态框
             function closeCharacterModal() {
-                document.getElementById('characterModal').style.display = 'none';
+                const modal = document.getElementById('characterModal');
+                if (modal) {
+                    modal.classList.remove('show');
+                }
             }
 
             // 预览头像
@@ -865,7 +1015,10 @@
                     // 显示预览
                     const reader = new FileReader();
                     reader.onload = function(e) {
-                        document.getElementById('modalAvatarPreview').innerHTML = `<img src="${e.target.result}" alt="头像预览" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+                        const preview = document.getElementById('modalAvatarPreview');
+                        if (preview) {
+                            preview.innerHTML = `<img src="${e.target.result}" alt="头像预览" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+                        }
                     }
                     reader.readAsDataURL(file);
 
@@ -873,7 +1026,10 @@
                     uploadAvatarToImgBB(file, function(url) {
                         if (url) {
                             // 更新预览为ImgBB URL
-                            document.getElementById('modalAvatarPreview').innerHTML = `<img src="${url}" alt="头像预览" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+                            const preview = document.getElementById('modalAvatarPreview');
+                            if (preview) {
+                                preview.innerHTML = `<img src="${url}" alt="头像预览" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+                            }
                         }
                     });
                 }
@@ -915,9 +1071,18 @@
 
             // 保存人设设置
             function saveCharacterSettings() {
-                const title = document.getElementById('characterTitle').value;
-                const description = document.getElementById('characterDescription').value;
-                const avatar = document.getElementById('modalAvatarPreview').innerHTML;
+                const titleInput = document.getElementById('characterTitle');
+                const descriptionInput = document.getElementById('characterDescription');
+                const preview = document.getElementById('modalAvatarPreview');
+                
+                if (!titleInput || !descriptionInput || !preview) {
+                    console.error('找不到必要的元素');
+                    return;
+                }
+                
+                const title = titleInput.value;
+                const description = descriptionInput.value;
+                const avatar = preview.innerHTML;
                 
                 const contactId = document.body.getAttribute('data-contact-id') || 'default';
                 
@@ -930,8 +1095,32 @@
                 localStorage.setItem(`characterSettings_${contactId}`, JSON.stringify(characterSettings));
                 
                 // 更新显示
-                document.getElementById('characterTitleValue').textContent = title || '未设置';
-                document.getElementById('characterAvatarPreview').innerHTML = avatar;
+                const titleValue = document.getElementById('characterTitleValue');
+                if (titleValue) {
+                    titleValue.textContent = title || '未设置';
+                }
+                
+                const avatarPreview = document.getElementById('characterAvatarPreview');
+                if (avatarPreview) {
+                    avatarPreview.innerHTML = avatar;
+                }
+                
+                // 更新人设内容显示
+                const contentPreview = document.getElementById('characterContentPreview');
+                if (contentPreview) {
+                    if (description) {
+                        contentPreview.textContent = description;
+                        contentPreview.style.display = 'block';
+                    } else {
+                        contentPreview.style.display = 'none';
+                    }
+                }
+                
+                // 直接更新chat.html中的联系人数据
+                updateChatContactsDirectly(contactId, title, avatar);
+                
+                // 同步昵称到聊天页面
+                syncNicknameToChatPages(contactId, title);
                 
                 // 同步更新chat.html中的聊天列表和好友列表头像
                 syncAvatarToChatPages(contactId, avatar);
@@ -940,6 +1129,72 @@
                 closeCharacterModal();
                 
                 showAlert('人设设置已保存');
+            }
+
+            // 直接更新chat.html中的联系人数据
+            function updateChatContactsDirectly(contactId, nickname, avatar) {
+                // 获取当前联系人信息
+                const contactAvatarData = localStorage.getItem('chatContactAvatar');
+                if (!contactAvatarData) return;
+                
+                try {
+                    const contactData = JSON.parse(contactAvatarData);
+                    const contactName = contactData.name || 'default';
+                    
+                    // 更新chat.html聊天列表中的联系人
+                    updateChatListContact(contactName, nickname, avatar);
+                    
+                    // 更新chat.html好友列表中的联系人
+                    updateFriendsListContact(contactName, nickname, avatar);
+                } catch (e) {
+                    console.error('更新chat.html联系人数据时解析联系人数据失败:', e);
+                }
+            }
+
+            // 更新chat.html聊天列表中的联系人
+            function updateChatListContact(oldName, newName, avatar) {
+                if (!newName) return;
+                
+                // 从localStorage获取聊天联系人列表
+                let contacts = JSON.parse(localStorage.getItem('chatContacts') || '[]');
+                
+                // 查找匹配的联系人并更新昵称和头像
+                const contactIndex = contacts.findIndex(contact => contact.name === oldName);
+                if (contactIndex !== -1) {
+                    contacts[contactIndex].name = newName;
+                    if (avatar) {
+                        contacts[contactIndex].avatar = avatar;
+                    }
+                    
+                    // 保存更新后的联系人列表
+                    localStorage.setItem('chatContacts', JSON.stringify(contacts));
+                    
+                    // 标记需要重新渲染聊天列表
+                    localStorage.setItem('chatListUpdated', 'true');
+                }
+            }
+
+            // 更新chat.html好友列表中的联系人
+            function updateFriendsListContact(oldName, newName, avatar) {
+                if (!newName) return;
+                
+                // 从localStorage获取好友列表
+                let friends = JSON.parse(localStorage.getItem('friendsList') || '[]');
+                
+                // 查找匹配的好友并更新昵称和头像
+                const friendIndex = friends.findIndex(friend => friend.name === oldName);
+                if (friendIndex !== -1) {
+                    friends[friendIndex].name = newName;
+                    if (avatar) {
+                        friends[friendIndex].avatar = avatar;
+                    }
+                    
+                    // 保存更新后的好友列表
+                    localStorage.setItem('friendsList', JSON.stringify(friends));
+                    
+                    // 标记需要重新渲染好友列表
+                    localStorage.setItem('friendsListUpdated', 'true');
+                }
             }
 
             // 同步头像到chat.html页面
@@ -1008,6 +1263,118 @@
                         avatar: avatar
                     };
                     localStorage.setItem(`characterSettings_${contactInfo.id}`, JSON.stringify(characterSettings));
+                }
+            }
+
+            // 同步昵称到聊天页面
+            function syncNicknameToChatPages(contactId, nickname) {
+                // 获取当前联系人信息
+                const contactAvatarData = localStorage.getItem('chatContactAvatar');
+                if (!contactAvatarData) return;
+                
+                try {
+                    const contactData = JSON.parse(contactAvatarData);
+                    const contactName = contactData.name || 'default';
+                    
+                    // 如果联系人ID匹配当前联系人，则更新chat.html中的昵称
+                    if (contactName === contactId || contactId === 'default') {
+                        // 更新liaotianyemian.html当前聊天联系人的昵称
+                        updateCurrentChatNickname(contactName, nickname);
+                        
+                        // 更新chat.html聊天列表中的昵称
+                        updateChatListNickname(contactName, nickname);
+                        
+                        // 更新chat.html好友列表中的昵称
+                        updateFriendsListNickname(contactName, nickname);
+                        
+                        // 通知chat.html页面更新昵称
+                        notifyChatToUpdateNickname(contactName, nickname);
+                    }
+                } catch (e) {
+                    console.error('同步昵称时解析联系人数据失败:', e);
+                }
+            }
+
+            // 通知chat.html页面更新昵称
+            function notifyChatToUpdateNickname(contactName, nickname) {
+                // 保存昵称更新标记到localStorage
+                localStorage.setItem('nicknameUpdateNotification', JSON.stringify({
+                    contactName: contactName,
+                    nickname: nickname,
+                    timestamp: Date.now()
+                }));
+            }
+
+            // 更新liaotianyemian.html当前聊天联系人的昵称
+            function updateCurrentChatNickname(contactName, nickname) {
+                // 更新当前聊天联系人的昵称信息
+                const currentContact = localStorage.getItem('currentChatFriend');
+                if (currentContact && nickname) {
+                    try {
+                        const contact = JSON.parse(currentContact);
+                        if (contact.name === contactName) {
+                            contact.name = nickname;
+                            localStorage.setItem('currentChatFriend', JSON.stringify(contact));
+                            
+                            // 更新页面标题
+                            document.querySelector('.header-title').textContent = `${nickname}的聊天设置`;
+                            
+                            // 通知liaotianyemian.html页面更新昵称
+                            notifyLiaotianyemianToUpdateNickname(contactName, nickname);
+                        }
+                    } catch (e) {
+                        console.error('更新当前聊天联系人昵称失败:', e);
+                    }
+                }
+            }
+
+            // 通知liaotianyemian.html页面更新昵称
+            function notifyLiaotianyemianToUpdateNickname(contactName, nickname) {
+                // 保存昵称更新标记到localStorage
+                localStorage.setItem('nicknameUpdateNotification', JSON.stringify({
+                    contactName: contactName,
+                    nickname: nickname,
+                    timestamp: Date.now()
+                }));
+            }
+
+            // 更新chat.html聊天列表中的昵称
+            function updateChatListNickname(contactName, nickname) {
+                if (!nickname) return;
+                
+                // 从localStorage获取聊天联系人列表
+                let contacts = JSON.parse(localStorage.getItem('chatContacts') || '[]');
+                
+                // 查找匹配的联系人并更新昵称
+                const contactIndex = contacts.findIndex(contact => contact.name === contactName);
+                if (contactIndex !== -1) {
+                    contacts[contactIndex].name = nickname;
+                    
+                    // 保存更新后的联系人列表
+                    localStorage.setItem('chatContacts', JSON.stringify(contacts));
+                    
+                    // 通知chat.html重新渲染聊天列表
+                    notifyChatToRerenderList();
+                }
+            }
+
+            // 更新chat.html好友列表中的昵称
+            function updateFriendsListNickname(contactName, nickname) {
+                if (!nickname) return;
+                
+                // 从localStorage获取好友列表
+                let friends = JSON.parse(localStorage.getItem('friendsList') || '[]');
+                
+                // 查找匹配的好友并更新昵称
+                const friendIndex = friends.findIndex(friend => friend.name === contactName);
+                if (friendIndex !== -1) {
+                    friends[friendIndex].name = nickname;
+                    
+                    // 保存更新后的好友列表
+                    localStorage.setItem('friendsList', JSON.stringify(friends));
+                    
+                    // 通知chat.html重新渲染好友列表
+                    notifyChatToRerenderList();
                 }
             }
 
@@ -1080,6 +1447,15 @@
             function loadCharacterSettings(contactId) {
                 const characterSettings = JSON.parse(localStorage.getItem(`characterSettings_${contactId}`) || '{}');
                 
+                // 显示保存的人设内容
+                const contentPreview = document.getElementById('characterContentPreview');
+                if (characterSettings.description) {
+                    contentPreview.textContent = characterSettings.description;
+                    contentPreview.style.display = 'block';
+                } else {
+                    contentPreview.style.display = 'none';
+                }
+                
                 if (characterSettings.title) {
                     document.getElementById('characterTitleValue').textContent = characterSettings.title;
                     document.getElementById('characterTitle').value = characterSettings.title;
@@ -1110,16 +1486,66 @@
                         }
                     }
                 }
+                
+                // 同步聊天页面的昵称
+                const contactAvatarData = localStorage.getItem('chatContactAvatar');
+                if (contactAvatarData) {
+                    try {
+                        const contactData = JSON.parse(contactAvatarData);
+                        if (contactData.name) {
+                            // 如果人设中没有设置昵称，则使用联系人名称
+                            const displayName = characterSettings.title || contactData.name;
+                            document.getElementById('characterSectionTitle').textContent = displayName + '的人设';
+                        }
+                    } catch (e) {
+                        console.error('解析聊天联系人数据失败:', e);
+                    }
+                }
             }
 
             // 打开世界观设置模态框
             function openWorldModal() {
-                document.getElementById('worldModal').style.display = 'flex';
+                const modal = document.getElementById('worldModal');
+                if (modal) {
+                    modal.classList.add('show');
+                }
             }
 
             // 关闭世界观设置模态框
             function closeWorldModal() {
-                document.getElementById('worldModal').style.display = 'none';
+                const modal = document.getElementById('worldModal');
+                if (modal) {
+                    modal.classList.remove('show');
+                }
+            }
+
+            // 打开我的人设设置模态框
+            function openMyCharacterModal() {
+                // 加载已保存的我的人设设置
+                const myCharacterSettings = JSON.parse(localStorage.getItem('myCharacterSettings') || '{}');
+                
+                const nameInput = document.getElementById('myName');
+                if (nameInput && myCharacterSettings.name) {
+                    nameInput.value = myCharacterSettings.name;
+                }
+                
+                const characterInput = document.getElementById('myCharacter');
+                if (characterInput && myCharacterSettings.character) {
+                    characterInput.value = myCharacterSettings.character;
+                }
+                
+                const modal = document.getElementById('myCharacterModal');
+                if (modal) {
+                    modal.classList.add('show');
+                }
+            }
+
+            // 关闭我的人设设置模态框
+            function closeMyCharacterModal() {
+                const modal = document.getElementById('myCharacterModal');
+                if (modal) {
+                    modal.classList.remove('show');
+                }
             }
 
             // 加载世界书列表
@@ -1202,6 +1628,19 @@
                 }
             }
 
+            // 加载我的人设设置
+            function loadMyCharacterSettings() {
+                const myCharacterSettings = JSON.parse(localStorage.getItem('myCharacterSettings') || '{}');
+                
+                if (myCharacterSettings.name) {
+                    document.getElementById('myNameValue').textContent = myCharacterSettings.name;
+                }
+                
+                if (myCharacterSettings.character) {
+                    document.getElementById('myCharacterValue').textContent = myCharacterSettings.character;
+                }
+            }
+
             // 加载聊天联系人头像
             function loadChatContactAvatar() {
                 const contactAvatarData = localStorage.getItem('chatContactAvatar');
@@ -1214,6 +1653,197 @@
                     } catch (e) {
                         console.error('解析聊天联系人头像数据失败:', e);
                     }
+                }
+            }
+
+            // 保存我的人设设置
+            function saveMyCharacterSettings() {
+                const name = document.getElementById('myName').value;
+                const character = document.getElementById('myCharacter').value;
+                
+                // 保存到localStorage
+                const myCharacterSettings = {
+                    name: name,
+                    character: character
+                };
+                localStorage.setItem('myCharacterSettings', JSON.stringify(myCharacterSettings));
+                
+                // 更新显示
+                document.getElementById('myNameValue').textContent = name || '未设置';
+                document.getElementById('myCharacterValue').textContent = character || '未设置';
+                
+                // 关闭模态框
+                closeMyCharacterModal();
+                
+                showAlert('我的人设设置已保存');
+            }
+
+            // 生成消息总结
+            function generateMessageSummary() {
+                // 获取当前联系人ID
+                const contactId = document.body.getAttribute('data-contact-id') || 'default';
+                
+                // 从localStorage获取聊天记录
+                const chatKey = `chat_${contactId}_messages`;
+                const messages = JSON.parse(localStorage.getItem(chatKey) || '[]');
+                
+                if (messages.length === 0) {
+                    document.getElementById('messageSummaryContent').textContent = '暂无聊天记录';
+                    return;
+                }
+                
+                // 简单的消息总结逻辑（实际应用中可以使用更复杂的AI总结）
+                const messageCount = messages.length;
+                const sentCount = messages.filter(msg => msg.type === 'sent').length;
+                const receivedCount = messages.filter(msg => msg.type === 'received').length;
+                
+                const summary = `聊天总结：
+
+总消息数：${messageCount}条
+发送消息：${sentCount}条
+接收消息：${receivedCount}条
+
+最近消息时间：${messages[messages.length - 1].time}`;
+                
+                document.getElementById('messageSummaryContent').textContent = summary;
+            }
+
+            // 搜索消息
+            function searchMessages() {
+                const keyword = document.getElementById('searchInput').value.trim();
+                if (!keyword) {
+                    showAlert('请输入搜索关键词');
+                    return;
+                }
+                
+                // 获取当前联系人ID
+                const contactId = document.body.getAttribute('data-contact-id') || 'default';
+                
+                // 从localStorage获取聊天记录
+                const chatKey = `chat_${contactId}_messages`;
+                const messages = JSON.parse(localStorage.getItem(chatKey) || '[]');
+                
+                // 搜索匹配的消息
+                const results = messages.filter(msg => 
+                    msg.text && msg.text.toLowerCase().includes(keyword.toLowerCase())
+                );
+                
+                const resultsContainer = document.getElementById('searchResults');
+                
+                if (results.length === 0) {
+                    resultsContainer.innerHTML = '<div class="search-result-item">未找到匹配的消息</div>';
+                    resultsContainer.style.display = 'block';
+                    return;
+                }
+                
+                // 显示搜索结果
+                let resultsHTML = '';
+                results.forEach(msg => {
+                    resultsHTML += `
+                        <div class="search-result-item">
+                            <div class="search-result-text">${msg.text}</div>
+                            <div class="search-result-time">${msg.time} - ${msg.type === 'sent' ? '我' : '对方'}</div>
+                        </div>
+                    `;
+                });
+                
+                resultsContainer.innerHTML = resultsHTML;
+                resultsContainer.style.display = 'block';
+            }
+
+            // 清空聊天记录
+            function clearChatHistory() {
+                if (confirm('确定要清空所有聊天记录吗？此操作不可恢复。')) {
+                    // 获取当前联系人ID
+                    const contactId = document.body.getAttribute('data-contact-id') || 'default';
+                    
+                    // 清空聊天记录
+                    const chatKey = `chat_${contactId}_messages`;
+                    localStorage.removeItem(chatKey);
+                    
+                    showAlert('聊天记录已清空');
+                }
+            }
+
+            // 拉黑联系人
+            function blockContact() {
+                if (confirm('确定要拉黑此联系人吗？拉黑后将无法接收对方消息。')) {
+                    // 获取当前联系人ID
+                    const contactId = document.body.getAttribute('data-contact-id') || 'default';
+                    
+                    // 保存拉黑状态
+                    localStorage.setItem(`blocked_${contactId}`, 'true');
+                    
+                    showAlert('已拉黑该联系人');
+                }
+            }
+        </script>
+    </div>
+</body>
+</html>         if (!keyword) {
+                    showAlert('请输入搜索关键词');
+                    return;
+                }
+                
+                // 获取当前联系人ID
+                const contactId = document.body.getAttribute('data-contact-id') || 'default';
+                
+                // 从localStorage获取聊天记录
+                const chatKey = `chat_${contactId}_messages`;
+                const messages = JSON.parse(localStorage.getItem(chatKey) || '[]');
+                
+                // 搜索匹配的消息
+                const results = messages.filter(msg => 
+                    msg.text && msg.text.toLowerCase().includes(keyword.toLowerCase())
+                );
+                
+                const resultsContainer = document.getElementById('searchResults');
+                
+                if (results.length === 0) {
+                    resultsContainer.innerHTML = '<div class="search-result-item">未找到匹配的消息</div>';
+                    resultsContainer.style.display = 'block';
+                    return;
+                }
+                
+                // 显示搜索结果
+                let resultsHTML = '';
+                results.forEach(msg => {
+                    resultsHTML += `
+                        <div class="search-result-item">
+                            <div class="search-result-text">${msg.text}</div>
+                            <div class="search-result-time">${msg.time} - ${msg.type === 'sent' ? '我' : '对方'}</div>
+                        </div>
+                    `;
+                });
+                
+                resultsContainer.innerHTML = resultsHTML;
+                resultsContainer.style.display = 'block';
+            }
+
+            // 清空聊天记录
+            function clearChatHistory() {
+                if (confirm('确定要清空所有聊天记录吗？此操作不可恢复。')) {
+                    // 获取当前联系人ID
+                    const contactId = document.body.getAttribute('data-contact-id') || 'default';
+                    
+                    // 清空聊天记录
+                    const chatKey = `chat_${contactId}_messages`;
+                    localStorage.removeItem(chatKey);
+                    
+                    showAlert('聊天记录已清空');
+                }
+            }
+
+            // 拉黑联系人
+            function blockContact() {
+                if (confirm('确定要拉黑此联系人吗？拉黑后将无法接收对方消息。')) {
+                    // 获取当前联系人ID
+                    const contactId = document.body.getAttribute('data-contact-id') || 'default';
+                    
+                    // 保存拉黑状态
+                    localStorage.setItem(`blocked_${contactId}`, 'true');
+                    
+                    showAlert('已拉黑该联系人');
                 }
             }
         </script>
