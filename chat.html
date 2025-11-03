@@ -1258,7 +1258,112 @@
             window.onload = function() {
                 updateTime();
                 renderChatList();
+                
+                // 检查是否有昵称更新通知
+                checkNicknameUpdateNotification();
+                
+                // 检查是否有列表更新标记
+                checkListUpdateMarkers();
             };
+
+            // 检查列表更新标记
+            function checkListUpdateMarkers() {
+                // 检查聊天列表更新标记
+                if (localStorage.getItem('chatListUpdated') === 'true') {
+                    renderChatList();
+                    localStorage.removeItem('chatListUpdated');
+                }
+                
+                // 检查好友列表更新标记
+                if (localStorage.getItem('friendsListUpdated') === 'true') {
+                    renderFriendsList();
+                    localStorage.removeItem('friendsListUpdated');
+                }
+            }
+
+            // 检查localStorage中的昵称更新通知
+            function checkNicknameUpdateNotification() {
+                const notification = localStorage.getItem('nicknameUpdateNotification');
+                if (notification) {
+                    try {
+                        const { contactName, nickname, timestamp } = JSON.parse(notification);
+                        
+                        // 检查通知是否过期（5秒内有效）
+                        if (Date.now() - timestamp < 5000) {
+                            // 更新聊天列表中的昵称
+                            updateChatListNickname(contactName, nickname);
+                            
+                            // 更新好友列表中的昵称
+                            updateFriendsListNickname(contactName, nickname);
+                        }
+                        
+                        // 清除通知
+                        localStorage.removeItem('nicknameUpdateNotification');
+                    } catch (e) {
+                        console.error('解析昵称更新通知失败:', e);
+                    }
+                }
+                
+                // 检查是否有重新渲染列表的通知
+                const rerenderNotification = localStorage.getItem('rerenderListNotification');
+                if (rerenderNotification) {
+                    try {
+                        const { timestamp } = JSON.parse(rerenderNotification);
+                        
+                        // 检查通知是否过期（5秒内有效）
+                        if (Date.now() - timestamp < 5000) {
+                            // 重新渲染聊天列表和好友列表
+                            renderChatList();
+                            renderFriendsList();
+                        }
+                        
+                        // 清除通知
+                        localStorage.removeItem('rerenderListNotification');
+                    } catch (e) {
+                        console.error('解析重新渲染列表通知失败:', e);
+                    }
+                }
+            }
+
+            // 更新聊天列表中的昵称
+            function updateChatListNickname(oldName, newName) {
+                if (!newName) return;
+                
+                // 从localStorage获取聊天联系人列表
+                let contacts = JSON.parse(localStorage.getItem('chatContacts') || '[]');
+                
+                // 查找匹配的联系人并更新昵称
+                const contactIndex = contacts.findIndex(contact => contact.name === oldName);
+                if (contactIndex !== -1) {
+                    contacts[contactIndex].name = newName;
+                    
+                    // 保存更新后的联系人列表
+                    localStorage.setItem('chatContacts', JSON.stringify(contacts));
+                    
+                    // 重新渲染聊天列表
+                    renderChatList();
+                }
+            }
+
+            // 更新好友列表中的昵称
+            function updateFriendsListNickname(oldName, newName) {
+                if (!newName) return;
+                
+                // 从localStorage获取好友列表
+                let friends = JSON.parse(localStorage.getItem('friendsList') || '[]');
+                
+                // 查找匹配的好友并更新昵称
+                const friendIndex = friends.findIndex(friend => friend.name === oldName);
+                if (friendIndex !== -1) {
+                    friends[friendIndex].name = newName;
+                    
+                    // 保存更新后的好友列表
+                    localStorage.setItem('friendsList', JSON.stringify(friends));
+                    
+                    // 重新渲染好友列表
+                    renderFriendsList();
+                }
+            }
 
             // 初始化滑动事件
             function initSwipeEvents() {
