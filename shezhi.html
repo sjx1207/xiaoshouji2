@@ -351,14 +351,10 @@
         }
         
         /* 添加模型选择区域样式 */
-        .model-selection {
-            margin-top: 16px;
-            padding: 12px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+        .model-selection-container {
+            position: relative;
         }
-
+        
         .model-list {
             max-height: 150px;
             overflow-y: auto;
@@ -482,6 +478,28 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        
+        /* 新增样式 */
+        .model-selection-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .refresh-models-btn {
+            background: rgba(0, 122, 255, 0.2);
+            border: none;
+            color: #007AFF;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        
+        .refresh-models-btn:hover {
+            background: rgba(0, 122, 255, 0.3);
+        }
     </style>
 </head>
 <body>
@@ -538,6 +556,7 @@
                         <option value="siliconflow">SiliconFlow</option>
                         <option value="claude">Claude</option>
                         <option value="qwen">通义千问</option>
+                        <option value="custom">自定义模型</option>
                     </select>
                 </div>
                 
@@ -553,15 +572,26 @@
                 
                 <div class="input-group">
                     <label class="input-label">选择具体模型</label>
-                    <select class="input-field" id="specific-model-select">
-                        <!-- 默认选项，将根据选择的提供商动态更新 -->
-                        <option value="">请选择具体模型</option>
-                    </select>
+                    <div class="model-selection-container">
+                        <select class="input-field" id="specific-model-select">
+                            <!-- 默认选项，将根据选择的提供商动态更新 -->
+                            <option value="">请选择具体模型</option>
+                        </select>
+                        <div class="button-group" style="margin-top: 10px;">
+                            <div class="btn btn-secondary" onclick="fetchModelList()" style="flex: 1;">拉取模型列表</div>
+                        </div>
+                        
+                        <!-- 模型选择区域 -->
+                        <div class="model-list" id="model-list-container" style="display: none; margin-top: 15px;">
+                            <div class="model-selection-header">
+                                <div class="setting-title">可用模型</div>
+                            </div>
+                            <div id="model-list-content"></div>
+                        </div>
+                    </div>
                 </div>
                 
                 <div class="button-group">
-                    <div class="btn btn-secondary" onclick="testConnection()">测试连接</div>
-                    <div class="btn btn-secondary" onclick="advancedTest()">高级测试</div>
                     <div class="btn btn-primary" onclick="saveSettings()">保存设置</div>
                 </div>
                 
@@ -589,6 +619,10 @@
                     </div>
                     <div class="model-item">
                         <div class="model-name">通义千问</div>
+                        <div class="model-status status-unavailable">未配置</div>
+                    </div>
+                    <div class="model-item">
+                        <div class="model-name">自定义模型</div>
                         <div class="model-status status-unavailable">未配置</div>
                     </div>
                 </div>
@@ -631,25 +665,22 @@
                             <input type="radio" name="default-model" value="qwen" onchange="setDefaultModel(this.value)">
                         </div>
                     </div>
+                    <div class="model-item">
+                        <div class="model-name">自定义模型</div>
+                        <div class="model-status status-unavailable">
+                            <input type="radio" name="default-model" value="custom" onchange="setDefaultModel(this.value)">
+                        </div>
+                    </div>
                 </div>
             </div>
             
             <!-- AI测试面板 -->
             <div class="setting-item">
                 <div class="setting-title">AI连接测试</div>
-                <div class="setting-description">测试AI连接和网络状态</div>
+                <div class="setting-description">测试AI连接和消息交互</div>
                 
                 <div class="button-group">
-                    <div class="btn btn-secondary" onclick="testNetworkConnection()">测试网络连接</div>
-                    <div class="btn btn-secondary" onclick="fetchModelList()">拉取模型列表</div>
-                </div>
-                
-                <!-- 模型选择区域 -->
-                <div class="model-selection">
-                    <div class="model-list" id="model-list-container" style="display: none; margin-top: 15px;">
-                        <div class="setting-title">可用模型</div>
-                        <div id="model-list-content"></div>
-                    </div>
+                    <div class="btn btn-secondary" onclick="testConnection()">测试连接</div>
                 </div>
                 
                 <div class="loading" id="loading" style="display: none; margin-top: 15px;">
@@ -810,6 +841,9 @@
                     { value: 'qwen-turbo', name: '通义千问 Turbo' },
                     { value: 'qwen-plus', name: '通义千问 Plus' },
                     { value: 'qwen-max', name: '通义千问 Max' }
+                ],
+                'custom': [
+                    { value: '', name: '请输入自定义模型名称' }
                 ]
             };
 
@@ -836,6 +870,39 @@
                         specificModelSelect.appendChild(option);
                     });
                 }
+                
+                // 特殊处理自定义模型
+                if (model === 'custom') {
+                    // 清空选项并添加一个空选项
+                    specificModelSelect.innerHTML = '';
+                    const customOption = document.createElement('option');
+                    customOption.value = '';
+                    customOption.textContent = '请输入自定义模型名称';
+                    specificModelSelect.appendChild(customOption);
+                    
+                    // 检查是否已经存在自定义输入框
+                    let customInput = document.getElementById('custom-model-input');
+                    if (!customInput) {
+                        // 添加一个输入框用于自定义模型名称
+                        customInput = document.createElement('input');
+                        customInput.type = 'text';
+                        customInput.id = 'custom-model-input';
+                        customInput.className = 'input-field';
+                        customInput.placeholder = '输入自定义模型名称，如：gpt-3.5-turbo';
+                        customInput.style.marginTop = '10px';
+                        customInput.style.width = '100%';
+                        
+                        // 将输入框插入到specific-model-select后面
+                        const parent = specificModelSelect.parentNode;
+                        parent.appendChild(customInput);
+                    }
+                } else {
+                    // 移除可能存在的自定义输入框
+                    const customInput = document.getElementById('custom-model-input');
+                    if (customInput) {
+                        customInput.remove();
+                    }
+                }
             }
 
             // 加载对应提供商的API密钥
@@ -855,9 +922,19 @@
                 
                 // 加载保存的具体模型选择
                 if (aiSettings[model] && aiSettings[model].model) {
-                    document.getElementById('specific-model-select').value = aiSettings[model].model;
+                    if (model === 'custom') {
+                        // 对于自定义模型，直接设置输入框的值
+                        const customInput = document.getElementById('custom-model-input');
+                        if (customInput) {
+                            customInput.value = aiSettings[model].model;
+                        }
+                    } else {
+                        document.getElementById('specific-model-select').value = aiSettings[model].model;
+                    }
                 } else {
-                    document.getElementById('specific-model-select').selectedIndex = 0;
+                    if (model !== 'custom') {
+                        document.getElementById('specific-model-select').selectedIndex = 0;
+                    }
                 }
                 
                 // 加载API URL
@@ -891,6 +968,9 @@
                     case 'qwen':
                         // 通义千问API密钥格式
                         return apiKey.length > 10;
+                    case 'custom':
+                        // 自定义模型，只要密钥不为空即可
+                        return apiKey.length > 0;
                     default:
                         return apiKey.length > 10;
                 }
@@ -904,7 +984,8 @@
                     'gemini': 'Gemini',
                     'siliconflow': 'SiliconFlow',
                     'claude': 'Claude',
-                    'qwen': '通义千问'
+                    'qwen': '通义千问',
+                    'custom': '自定义模型'
                 };
                 return modelNames[modelKey] || modelKey;
             }
@@ -1115,9 +1196,9 @@
                 const aiSettings = JSON.parse(localStorage.getItem('aiSettings')) || {};
                 
                 // 更新UI显示已配置的模型
-                Object.keys(aiSettings).forEach(modelKey => {
-                    updateModelStatus(modelKey, null); // 显示为已配置
-                });
+                if (aiSettings.provider) {
+                    updateModelStatus(aiSettings.provider, null); // 显示为已配置
+                }
             }
 
             // 加载默认模型设置
@@ -1171,6 +1252,10 @@
                     case 'deepseek':
                         urlInput.placeholder = '例如: https://api.deepseek.com/v1';
                         if (!urlInput.value) urlInput.value = 'https://api.deepseek.com/v1'; // 修复DeepSeek API URL
+                        break;
+                    case 'custom':
+                        urlInput.placeholder = '请输入反向代理地址，例如: https://api.custom-model.com/v1';
+                        // 不自动填充URL，让用户自己输入
                         break;
                     default:
                         urlInput.placeholder = '输入API地址';
@@ -1502,7 +1587,193 @@
                         })
                     };
                 } else {
-                    // 自定义提供商
+                    // 自定义提供商和其他提供商使用相同的格式
+                    // 检查URL是否已经包含chat/completions路径，避免重复添加
+                    let completionsUrl = apiUrl;
+                    if (!apiUrl.includes('/chat/completions')) {
+                        if (apiUrl.endsWith('/')) {
+                            completionsUrl = `${apiUrl}chat/completions`;
+                        } else {
+                            completionsUrl = `${apiUrl}/chat/completions`;
+                        }
+                    }
+                    fetchUrl = completionsUrl;
+                    fetchOptions = {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${settings.key}`
+                        },
+                        body: JSON.stringify({
+                            model: settings.model,
+                            messages: messages,
+                            temperature: 0.7
+                        })
+                    };
+                }
+
+                // 添加超时控制
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 15000); // 15秒超时
+                fetchOptions.signal = controller.signal;
+
+                console.log('发送测试消息 - 请求URL:', fetchUrl);
+                console.log('发送测试消息 - 请求选项:', fetchOptions);
+
+                const response = await fetch(fetchUrl, fetchOptions);
+                clearTimeout(timeoutId);
+
+                // 检查响应状态
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`API请求失败: ${response.status} ${response.statusText}\n请求URL: ${fetchUrl}\n${errorText}`);
+                }
+
+                // 解析响应
+                const data = await response.json();
+                
+                if (settings.provider === 'gemini') {
+                    // Gemini响应格式
+                    aiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || '无法获取响应内容';
+                } else {
+                    // OpenAI/SiliconFlow/DeepSeek/自定义响应格式
+                    aiResponse = data.choices?.[0]?.message?.content || '无法获取响应内容';
+                }
+                
+                responseArea.innerHTML = `<pre>${aiResponse}</pre>`;
+            } catch (error) {
+                if (error.name === 'AbortError') {
+                    responseArea.innerHTML = `<pre style="color: #ff6b6b;">错误: 请求超时，请检查网络连接或代理设置</pre>`;
+                } else {
+                    responseArea.innerHTML = `<pre style="color: #ff6b6b;">错误: ${error.message}</pre>`;
+                }
+            } finally {
+                loading.style.display = 'none';
+            }
+        }
+
+        // 发送测试消息
+        async function sendTestMessage() {
+            const message = document.getElementById('test-message').value;
+            const loading = document.getElementById('loading');
+            const responseArea = document.getElementById('response-area');
+
+            if (!message.trim()) {
+                showModal('错误', '请输入测试消息');
+                return;
+            }
+
+            loading.style.display = 'block';
+            responseArea.innerHTML = '<pre>正在发送消息...</pre>';
+
+            try {
+                // 获取API配置
+                const savedSettings = localStorage.getItem('aiSettings');
+                let settings = {
+                    provider: 'openai',
+                    url: 'https://api.openai.com/v1',
+                    key: '',
+                    model: 'gpt-3.5-turbo',
+                    enabled: true
+                };
+                
+                if (savedSettings) {
+                    try {
+                        settings = JSON.parse(savedSettings);
+                    } catch (e) {
+                        console.error('Failed to parse saved settings', e);
+                    }
+                }
+
+                // 如果AI连接未启用，显示提示
+                if (!settings.enabled) {
+                    responseArea.innerHTML = '<pre style="color: #ff6b6b;">AI连接未启用，请在设置中启用后再测试</pre>';
+                    loading.style.display = 'none';
+                    return;
+                }
+
+                // 检查必要配置
+                if (!settings.key) {
+                    throw new Error('请配置API密钥');
+                }
+
+                if (!settings.model) {
+                    throw new Error('请配置模型名称');
+                }
+
+                // 根据提供商构建请求
+                let apiUrl = settings.url;
+                
+                // 确保URL格式正确
+                if (!apiUrl) {
+                    if (settings.provider === 'openai') {
+                        apiUrl = 'https://api.openai.com/v1';
+                    } else if (settings.provider === 'gemini') {
+                        apiUrl = 'https://generativelanguage.googleapis.com/v1beta';
+                    } else if (settings.provider === 'siliconflow') {
+                        apiUrl = 'https://api.siliconflow.cn/v1';
+                    } else if (settings.provider === 'deepseek') {
+                        apiUrl = 'https://api.deepseek.com/v1';
+                    } else if (settings.provider === 'custom') {
+                        // 自定义提供商需要用户提供API地址
+                        if (!apiUrl) {
+                            throw new Error('请配置API地址');
+                        }
+                    } else {
+                        // 其他提供商
+                        if (!apiUrl) {
+                            throw new Error('请配置API地址');
+                        }
+                    }
+                }
+                
+                // 对于自定义提供商，确保URL格式正确
+                if (settings.provider === 'custom') {
+                    // 移除末尾的/chat/completions，如果存在的话
+                    if (apiUrl.includes('/chat/completions')) {
+                        apiUrl = apiUrl.split('/chat/completions')[0];
+                    }
+                    // 确保URL以/结尾
+                    if (!apiUrl.endsWith('/')) {
+                        apiUrl += '/';
+                    }
+                } else {
+                    // 确保URL以/结尾（用于chat/completions）
+                    if (settings.provider !== 'gemini' && !apiUrl.endsWith('/')) {
+                        apiUrl += '/';
+                    }
+                }
+
+                let fetchUrl = '';
+                let fetchOptions = {};
+                let aiResponse = '';
+
+                // 构建消息历史
+                const messages = [
+                    {
+                        role: "user",
+                        content: message
+                    }
+                ];
+
+                if (settings.provider === 'gemini') {
+                    // Google Gemini API
+                    fetchUrl = `${apiUrl}/models/${settings.model}:generateContent?key=${settings.key}`;
+                    fetchOptions = {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            contents: [{
+                                parts: [{
+                                    text: message
+                                }]
+                            }]
+                        })
+                    };
+                } else if (settings.provider === 'siliconflow') {
+                    // SiliconFlow API
                     fetchUrl = apiUrl.endsWith('/') ? `${apiUrl}chat/completions` : `${apiUrl}/chat/completions`;
                     fetchOptions = {
                         method: 'POST',
@@ -1513,8 +1784,61 @@
                         body: JSON.stringify({
                             model: settings.model,
                             messages: messages,
-                            temperature: 0.7,
-                            max_tokens: 1000
+                            temperature: 0.7
+                        })
+                    };
+                } else if (settings.provider === 'deepseek') {
+                    // DeepSeek API
+                    fetchUrl = apiUrl.endsWith('/') ? `${apiUrl}chat/completions` : `${apiUrl}/chat/completions`;
+                    fetchOptions = {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${settings.key}`
+                        },
+                        body: JSON.stringify({
+                            model: settings.model,
+                            messages: messages,
+                            temperature: 0.7
+                        })
+                    };
+                } else if (settings.provider === 'openai') {
+                    // OpenAI API
+                    fetchUrl = apiUrl.endsWith('/') ? `${apiUrl}chat/completions` : `${apiUrl}/chat/completions`;
+                    fetchOptions = {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${settings.key}`
+                        },
+                        body: JSON.stringify({
+                            model: settings.model,
+                            messages: messages,
+                            temperature: 0.7
+                        })
+                    };
+                } else {
+                    // 自定义提供商和其他提供商使用相同的格式
+                    // 检查URL是否已经包含chat/completions路径，避免重复添加
+                    let completionsUrl = apiUrl;
+                    if (!apiUrl.includes('/chat/completions')) {
+                        if (apiUrl.endsWith('/')) {
+                            completionsUrl = `${apiUrl}chat/completions`;
+                        } else {
+                            completionsUrl = `${apiUrl}/chat/completions`;
+                        }
+                    }
+                    fetchUrl = completionsUrl;
+                    fetchOptions = {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${settings.key}`
+                        },
+                        body: JSON.stringify({
+                            model: settings.model,
+                            messages: messages,
+                            temperature: 0.7
                         })
                     };
                 }
@@ -1523,6 +1847,9 @@
                 const controller = new AbortController();
                 const timeoutId = setTimeout(() => controller.abort(), 15000); // 15秒超时
                 fetchOptions.signal = controller.signal;
+
+                console.log('发送测试消息 - 请求URL:', fetchUrl);
+                console.log('发送测试消息 - 请求选项:', fetchOptions);
 
                 const response = await fetch(fetchUrl, fetchOptions);
                 clearTimeout(timeoutId);
@@ -1561,7 +1888,15 @@
             const provider = document.getElementById('model-select').value;
             const key = document.getElementById('api-key').value;
             const url = document.getElementById('api-url').value;
-            const model = document.getElementById('specific-model-select').value;
+            let model = document.getElementById('specific-model-select').value;
+            
+            // 对于自定义模型，获取自定义输入框的值
+            if (provider === 'custom') {
+                const customInput = document.getElementById('custom-model-input');
+                if (customInput) {
+                    model = customInput.value;
+                }
+            }
 
             // 验证必要字段
             if (!key) {
@@ -1701,8 +2036,7 @@
                         body: JSON.stringify({
                             model: settings.model,
                             messages: messages,
-                            temperature: 0.7,
-                            max_tokens: 1000
+                            temperature: 0.7
                         })
                     };
                 } else if (settings.provider === 'deepseek') {
@@ -1717,8 +2051,7 @@
                         body: JSON.stringify({
                             model: settings.model,
                             messages: messages,
-                            temperature: 0.7,
-                            max_tokens: 1000
+                            temperature: 0.7
                         })
                     };
                 } else if (settings.provider === 'openai') {
@@ -1733,13 +2066,21 @@
                         body: JSON.stringify({
                             model: settings.model,
                             messages: messages,
-                            temperature: 0.7,
-                            max_tokens: 1000
+                            temperature: 0.7
                         })
                     };
                 } else {
-                    // 自定义提供商
-                    fetchUrl = apiUrl.endsWith('/') ? `${apiUrl}chat/completions` : `${apiUrl}/chat/completions`;
+                    // 自定义提供商和其他提供商使用相同的格式
+                    // 检查URL是否已经包含chat/completions路径，避免重复添加
+                    let completionsUrl = apiUrl;
+                    if (!apiUrl.includes('/chat/completions')) {
+                        if (apiUrl.endsWith('/')) {
+                            completionsUrl = `${apiUrl}chat/completions`;
+                        } else {
+                            completionsUrl = `${apiUrl}/chat/completions`;
+                        }
+                    }
+                    fetchUrl = completionsUrl;
                     fetchOptions = {
                         method: 'POST',
                         headers: {
@@ -1749,8 +2090,7 @@
                         body: JSON.stringify({
                             model: settings.model,
                             messages: messages,
-                            temperature: 0.7,
-                            max_tokens: 1000
+                            temperature: 0.7
                         })
                     };
                 }
@@ -1759,6 +2099,9 @@
                 const controller = new AbortController();
                 const timeoutId = setTimeout(() => controller.abort(), 15000); // 15秒超时
                 fetchOptions.signal = controller.signal;
+
+                console.log('发送测试消息 - 请求URL:', fetchUrl);
+                console.log('发送测试消息 - 请求选项:', fetchOptions);
 
                 const response = await fetch(fetchUrl, fetchOptions);
                 clearTimeout(timeoutId);
@@ -1792,83 +2135,6 @@
             }
         }
 
-        // 测试网络连接
-        async function testNetworkConnection() {
-            const responseArea = document.getElementById('response-area');
-            const loading = document.getElementById('loading');
-            
-            loading.style.display = 'block';
-            responseArea.innerHTML = '<pre>正在测试网络连接...</pre>';
-            
-            try {
-                // 获取当前设置
-                const savedSettings = localStorage.getItem('aiSettings');
-                let settings = {
-                    provider: 'openai',
-                    url: 'https://api.openai.com/v1',
-                    key: ''
-                };
-                
-                if (savedSettings) {
-                    try {
-                        settings = JSON.parse(savedSettings);
-                    } catch (e) {
-                        console.error('Failed to parse saved settings', e);
-                    }
-                }
-                
-                // 确定要测试的URL
-                let testUrl = settings.url;
-                if (!testUrl) {
-                    if (settings.provider === 'openai') {
-                        testUrl = 'https://api.openai.com';
-                    } else if (settings.provider === 'gemini') {
-                        testUrl = 'https://generativelanguage.googleapis.com';
-                    } else if (settings.provider === 'siliconflow') {
-                        testUrl = 'https://api.siliconflow.cn';
-                    } else if (settings.provider === 'deepseek') {
-                        testUrl = 'https://api.deepseek.com';
-                    } else {
-                        throw new Error('请先配置API地址');
-                    }
-                }
-                
-                // 只取域名部分进行测试
-                try {
-                    const urlObj = new URL(testUrl);
-                    testUrl = `${urlObj.protocol}//${urlObj.hostname}`;
-                } catch (e) {
-                    // 如果不是有效的URL，直接使用
-                }
-                
-                responseArea.innerHTML = `<pre>正在测试连接到: ${testUrl}</pre>`;
-                
-                // 尝试连接
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 10000); // 10秒超时
-                
-                const response = await fetch(testUrl, {
-                    method: 'GET',
-                    signal: controller.signal
-                });
-                
-                clearTimeout(timeoutId);
-                
-                if (response.ok) {
-                    responseArea.innerHTML = `<pre style="color: #2ed573;">网络连接正常！\n状态码: ${response.status}\n状态文本: ${response.statusText}</pre>`;
-                } else {
-                    responseArea.innerHTML = `<pre style="color: #ff6b6b;">网络连接异常！\n状态码: ${response.status}\n状态文本: ${response.statusText}</pre>`;
-                }
-            } catch (error) {
-                if (error.name === 'AbortError') {
-                    responseArea.innerHTML = `<pre style="color: #ff6b6b;">错误: 连接超时，请检查网络连接</pre>`;
-                } else {
-                    responseArea.innerHTML = `<pre style="color: #ff6b6b;">网络连接错误: ${error.message}</pre>`;
-                }
-            } finally {
-                loading.style.display = 'none';
-            }
-        }
 
         // 拉取模型列表
         async function fetchModelList() {
@@ -1902,6 +2168,11 @@
                 // 检查必要配置
                 if (!settings.key) {
                     throw new Error('请先配置API密钥');
+                }
+
+                // 对于自定义模型，尝试获取模型列表
+                if (settings.provider === 'custom') {
+                    // 继续执行下面的逻辑来获取模型列表
                 }
 
                 // 根据提供商构建请求
@@ -1975,6 +2246,7 @@
                     };
                 } else {
                     // 自定义提供商 - 获取模型列表
+                    // 与OpenAI使用相同的逻辑
                     fetchUrl = apiUrl.endsWith('/') ? `${apiUrl}models` : `${apiUrl}/models`;
                     fetchOptions = {
                         method: 'GET',
@@ -2019,7 +2291,17 @@
                         modelItem.className = 'model-item';
                         modelItem.textContent = model;
                         modelItem.addEventListener('click', () => {
-                            document.getElementById('specific-model-select').value = model;
+                            const modelSelect = document.getElementById('model-select');
+                            if (modelSelect.value === 'custom') {
+                                // 对于自定义模型，更新自定义输入框的值
+                                const customInput = document.getElementById('custom-model-input');
+                                if (customInput) {
+                                    customInput.value = model;
+                                }
+                            } else {
+                                // 对于预定义模型，更新选择框的值
+                                document.getElementById('specific-model-select').value = model;
+                            }
                             modelListContainer.style.display = 'none';
                             responseArea.innerHTML = `<pre>已选择模型: ${model}</pre>`;
                         });
@@ -2105,8 +2387,13 @@
                         apiUrl = 'https://api.siliconflow.cn/v1';
                     } else if (settings.provider === 'deepseek') {
                         apiUrl = 'https://api.deepseek.com/v1';
+                    } else if (settings.provider === 'custom') {
+                        // 自定义提供商需要用户提供API地址
+                        if (!apiUrl) {
+                            throw new Error('请配置API地址');
+                        }
                     } else {
-                        // 自定义提供商
+                        // 其他提供商
                         if (!apiUrl) {
                             throw new Error('请配置API地址');
                         }
@@ -2158,8 +2445,7 @@
                         body: JSON.stringify({
                             model: settings.model,
                             messages: messages,
-                            temperature: 0.7,
-                            max_tokens: 1000
+                            temperature: 0.7
                         })
                     };
                 } else if (settings.provider === 'deepseek') {
@@ -2174,8 +2460,7 @@
                         body: JSON.stringify({
                             model: settings.model,
                             messages: messages,
-                            temperature: 0.7,
-                            max_tokens: 1000
+                            temperature: 0.7
                         })
                     };
                 } else if (settings.provider === 'openai') {
@@ -2190,12 +2475,249 @@
                         body: JSON.stringify({
                             model: settings.model,
                             messages: messages,
-                            temperature: 0.7,
-                            max_tokens: 1000
+                            temperature: 0.7
                         })
                     };
                 } else {
-                    // 自定义提供商
+                    // 自定义提供商和其他提供商使用相同的格式
+                    // 检查URL是否已经包含chat/completions路径，避免重复添加
+                    let completionsUrl = apiUrl;
+                    if (!apiUrl.includes('/chat/completions')) {
+                        if (apiUrl.endsWith('/')) {
+                            completionsUrl = `${apiUrl}chat/completions`;
+                        } else {
+                            completionsUrl = `${apiUrl}/chat/completions`;
+                        }
+                    }
+                    fetchUrl = completionsUrl;
+                    fetchOptions = {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${settings.key}`
+                        },
+                        body: JSON.stringify({
+                            model: settings.model,
+                            messages: messages,
+                            temperature: 0.7
+                        })
+                    };
+                }
+
+                // 添加超时控制
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 15000); // 15秒超时
+                fetchOptions.signal = controller.signal;
+
+                console.log('拉取模型列表 - 请求URL:', fetchUrl);
+                console.log('拉取模型列表 - 请求选项:', fetchOptions);
+
+                response = await fetch(fetchUrl, fetchOptions);
+                clearTimeout(timeoutId);
+
+                // 检查响应状态
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`获取模型列表失败: ${response.status} ${response.statusText}\n请求URL: ${fetchUrl}\n${errorText}`);
+                }
+
+                // 解析响应
+                const data = await response.json();
+
+                // 更新模型列表
+                modelList.innerHTML = '';
+                data.forEach(model => {
+                    const option = document.createElement('option');
+                    option.value = model.id;
+                    option.textContent = model.name;
+                    modelList.appendChild(option);
+                });
+
+                // 选择默认模型
+                if (settings.model) {
+                    modelList.value = settings.model;
+                } else {
+                    modelList.value = modelList.options[0].value;
+                }
+            } catch (error) {
+                console.error('拉取模型列表时出错:', error);
+                modelList.innerHTML = '<option value="">无法获取模型列表</option>';
+            }
+        }
+
+        async function testConnection() {
+            try {
+                const fetchUrl = settings.apiEndpoint + '/v1/models';
+                const fetchOptions = {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${settings.apiKey}`,
+                    },
+                };
+
+                // 添加超时控制
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 15000); // 15秒超时
+                fetchOptions.signal = controller.signal;
+
+                console.log('测试连接 - 请求URL:', fetchUrl);
+                console.log('测试连接 - 请求选项:', fetchOptions);
+
+                const response = await fetch(fetchUrl, fetchOptions);
+                clearTimeout(timeoutId);
+
+                // 检查响应状态
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`API请求失败: ${response.status} ${response.statusText}\n请求URL: ${fetchUrl}\n${errorText}`);
+                }
+
+                // 解析响应
+                const data = await response.json();
+                
+                if (settings.provider === 'gemini') {
+                    // Gemini响应格式
+                    aiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || '无法获取响应内容';
+                } else {
+                    // OpenAI/SiliconFlow/DeepSeek/自定义响应格式
+                    aiResponse = data.choices?.[0]?.message?.content || '无法获取响应内容';
+                }
+                
+                responseArea.innerHTML = `<pre>${aiResponse}</pre>`;
+            } catch (error) {
+                if (error.name === 'AbortError') {
+                    responseArea.innerHTML = `<pre style="color: #ff6b6b;">错误: 请求超时，请检查网络连接或代理设置</pre>`;
+                } else {
+                    responseArea.innerHTML = `<pre style="color: #ff6b6b;">错误: ${error.message}</pre>`;
+                }
+            } finally {
+                loading.style.display = 'none';
+            }
+        }
+
+        // 测试连接 - 实现真实的API调用
+        async function testConnection() {
+            const prompt = "你好，这是一个测试消息";
+            const loading = document.getElementById('loading');
+            const responseArea = document.getElementById('response-area');
+
+            if (!prompt.trim()) {
+                showModal('错误', '请输入测试提示词');
+                return;
+            }
+
+            loading.style.display = 'block';
+            responseArea.innerHTML = '<pre>正在发送请求...</pre>';
+
+            try {
+                // 获取API配置
+                const savedSettings = localStorage.getItem('aiSettings');
+                let settings = {
+                    provider: 'openai',
+                    url: 'https://api.openai.com/v1',
+                    key: '',
+                    model: 'gpt-3.5-turbo',
+                    enabled: true
+                };
+                
+                if (savedSettings) {
+                    try {
+                        settings = JSON.parse(savedSettings);
+                    } catch (e) {
+                        console.error('Failed to parse saved settings', e);
+                    }
+                }
+
+                // 如果AI连接未启用，显示提示
+                if (!settings.enabled) {
+                    responseArea.innerHTML = '<pre style="color: #ff6b6b;">AI连接未启用，请在设置中启用后再测试</pre>';
+                    loading.style.display = 'none';
+                    return;
+                }
+
+                // 检查必要配置
+                if (!settings.key) {
+                    throw new Error('请配置API密钥');
+                }
+
+                if (!settings.model) {
+                    throw new Error('请配置模型名称');
+                }
+
+                // 根据提供商构建请求
+                let apiUrl = settings.url;
+                
+                // 确保URL格式正确
+                if (!apiUrl) {
+                    if (settings.provider === 'openai') {
+                        apiUrl = 'https://api.openai.com/v1';
+                    } else if (settings.provider === 'gemini') {
+                        apiUrl = 'https://generativelanguage.googleapis.com/v1beta';
+                    } else if (settings.provider === 'siliconflow') {
+                        apiUrl = 'https://api.siliconflow.cn/v1';
+                    } else if (settings.provider === 'deepseek') {
+                        apiUrl = 'https://api.deepseek.com/v1'; // 修复DeepSeek API URL
+                    } else if (settings.provider === 'custom') {
+                        // 自定义提供商需要用户提供API地址
+                        if (!apiUrl) {
+                            throw new Error('请配置API地址');
+                        }
+                    } else {
+                        // 其他提供商
+                        if (!apiUrl) {
+                            throw new Error('请配置API地址');
+                        }
+                    }
+                }
+                
+                // 对于自定义提供商，确保URL格式正确
+                if (settings.provider === 'custom') {
+                    // 移除末尾的/chat/completions，如果存在的话
+                    if (apiUrl.includes('/chat/completions')) {
+                        apiUrl = apiUrl.split('/chat/completions')[0];
+                    }
+                    // 确保URL以/结尾
+                    if (!apiUrl.endsWith('/')) {
+                        apiUrl += '/';
+                    }
+                } else {
+                    // 确保URL以/结尾（用于chat/completions）
+                    if (settings.provider !== 'gemini' && !apiUrl.endsWith('/')) {
+                        apiUrl += '/';
+                    }
+                }
+
+                let fetchUrl = '';
+                let fetchOptions = {};
+                let aiResponse = '';
+
+                // 构建消息历史，要求更自然的回复
+                const messages = [
+                    {
+                        role: "user",
+                        content: prompt
+                    }
+                ];
+
+                if (settings.provider === 'gemini') {
+                    // Google Gemini API
+                    fetchUrl = `${apiUrl.replace('/v1/', '/v1beta/').replace('/v1', '/v1beta')}models/${settings.model}:generateContent?key=${settings.key}`;
+                    fetchOptions = {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                                contents: [{
+                                    parts: [{
+                                        text: prompt
+                                    }]
+                                }]
+                        })
+                    };
+                } else if (settings.provider === 'siliconflow') {
+                    // SiliconFlow API
                     fetchUrl = apiUrl.endsWith('/') ? `${apiUrl}chat/completions` : `${apiUrl}/chat/completions`;
                     fetchOptions = {
                         method: 'POST',
@@ -2206,8 +2728,39 @@
                         body: JSON.stringify({
                             model: settings.model,
                             messages: messages,
-                            temperature: 0.7,
-                            max_tokens: 1000
+                            temperature: 0.7
+                        })
+                    };
+                } else if (settings.provider === 'custom') {
+                    // 自定义提供商
+                    // 与OpenAI使用相同的逻辑
+                    fetchUrl = apiUrl.endsWith('/') ? `${apiUrl}chat/completions` : `${apiUrl}/chat/completions`;
+                    fetchOptions = {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${settings.key}`
+                        },
+                        body: JSON.stringify({
+                            model: settings.model,
+                            messages: messages,
+                            temperature: 0.7
+                        })
+                    };
+                } else {
+                    // 其他提供商使用相同的格式
+                    // 与OpenAI使用相同的逻辑
+                    fetchUrl = apiUrl.endsWith('/') ? `${apiUrl}chat/completions` : `${apiUrl}/chat/completions`;
+                    fetchOptions = {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${settings.key}`
+                        },
+                        body: JSON.stringify({
+                            model: settings.model,
+                            messages: messages,
+                            temperature: 0.7
                         })
                     };
                 }
@@ -2216,6 +2769,228 @@
                 const controller = new AbortController();
                 const timeoutId = setTimeout(() => controller.abort(), 15000); // 15秒超时
                 fetchOptions.signal = controller.signal;
+
+                console.log('测试连接 - 请求URL:', fetchUrl);
+                console.log('测试连接 - 请求选项:', fetchOptions);
+
+                const response = await fetch(fetchUrl, fetchOptions);
+                clearTimeout(timeoutId);
+
+                // 检查响应状态
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`API请求失败: ${response.status} ${response.statusText}\n请求URL: ${fetchUrl}\n${errorText}`);
+                }
+
+                // 解析响应
+                const data = await response.json();
+                
+                if (settings.provider === 'gemini') {
+                    // Gemini响应格式
+                    aiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || '无法获取响应内容';
+                } else {
+                    // OpenAI/SiliconFlow/DeepSeek/自定义响应格式
+                    aiResponse = data.choices?.[0]?.message?.content || '无法获取响应内容';
+                }
+                
+                responseArea.innerHTML = `<pre>${aiResponse}</pre>`;
+            } catch (error) {
+                if (error.name === 'AbortError') {
+                    responseArea.innerHTML = `<pre style="color: #ff6b6b;">错误: 请求超时，请检查网络连接或代理设置</pre>`;
+                } else {
+                    responseArea.innerHTML = `<pre style="color: #ff6b6b;">错误: ${error.message}</pre>`;
+                }
+            } finally {
+                loading.style.display = 'none';
+            }
+        }
+
+        // 发送测试消息
+        async function sendTestMessage() {
+            const message = document.getElementById('test-message').value;
+            const loading = document.getElementById('loading');
+            const responseArea = document.getElementById('response-area');
+
+            if (!message.trim()) {
+                showModal('错误', '请输入测试消息');
+                return;
+            }
+
+            loading.style.display = 'block';
+            responseArea.innerHTML = '<pre>正在发送消息...</pre>';
+
+            try {
+                // 获取API配置
+                const savedSettings = localStorage.getItem('aiSettings');
+                let settings = {
+                    provider: 'openai',
+                    url: 'https://api.openai.com/v1',
+                    key: '',
+                    model: 'gpt-3.5-turbo',
+                    enabled: true
+                };
+                
+                if (savedSettings) {
+                    try {
+                        settings = JSON.parse(savedSettings);
+                    } catch (e) {
+                        console.error('Failed to parse saved settings', e);
+                    }
+                }
+
+                // 如果AI连接未启用，显示提示
+                if (!settings.enabled) {
+                    responseArea.innerHTML = '<pre style="color: #ff6b6b;">AI连接未启用，请在设置中启用后再测试</pre>';
+                    loading.style.display = 'none';
+                    return;
+                }
+
+                // 检查必要配置
+                if (!settings.key) {
+                    throw new Error('请配置API密钥');
+                }
+
+                if (!settings.model) {
+                    throw new Error('请配置模型名称');
+                }
+
+                // 根据提供商构建请求
+                let apiUrl = settings.url;
+                
+                // 确保URL格式正确
+                if (!apiUrl) {
+                    if (settings.provider === 'openai') {
+                        apiUrl = 'https://api.openai.com/v1';
+                    } else if (settings.provider === 'gemini') {
+                        apiUrl = 'https://generativelanguage.googleapis.com/v1beta';
+                    } else if (settings.provider === 'siliconflow') {
+                        apiUrl = 'https://api.siliconflow.cn/v1';
+                    } else if (settings.provider === 'deepseek') {
+                        apiUrl = 'https://api.deepseek.com/v1';
+                    } else if (settings.provider === 'custom') {
+                        // 自定义提供商需要用户提供API地址
+                        if (!apiUrl) {
+                            throw new Error('请配置API地址');
+                        }
+                    } else {
+                        // 其他提供商
+                        if (!apiUrl) {
+                            throw new Error('请配置API地址');
+                        }
+                    }
+                }
+                
+                // 对于自定义提供商，确保URL格式正确
+                if (settings.provider === 'custom') {
+                    // 确保URL以/结尾
+                    if (!apiUrl.endsWith('/')) {
+                        apiUrl += '/';
+                    }
+                } else {
+                    // 确保URL以/结尾（用于chat/completions）
+                    if (settings.provider !== 'gemini' && !apiUrl.endsWith('/')) {
+                        apiUrl += '/';
+                    }
+                }
+
+                let fetchUrl = '';
+                let fetchOptions = {};
+                let aiResponse = '';
+
+                // 构建消息历史
+                const messages = [
+                    {
+                        role: "user",
+                        content: message
+                    }
+                ];
+
+                if (settings.provider === 'gemini') {
+                    // Google Gemini API
+                    fetchUrl = `${apiUrl}/models/${settings.model}:generateContent?key=${settings.key}`;
+                    fetchOptions = {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            contents: [{
+                                parts: [{
+                                    text: message
+                                }]
+                            }]
+                        })
+                    };
+                } else if (settings.provider === 'siliconflow') {
+                    // SiliconFlow API
+                    fetchUrl = apiUrl.endsWith('/') ? `${apiUrl}chat/completions` : `${apiUrl}/chat/completions`;
+                    fetchOptions = {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${settings.key}`
+                        },
+                        body: JSON.stringify({
+                            model: settings.model,
+                            messages: messages,
+                            temperature: 0.7
+                        })
+                    };
+                } else if (settings.provider === 'deepseek') {
+                    // DeepSeek API
+                    fetchUrl = apiUrl.endsWith('/') ? `${apiUrl}chat/completions` : `${apiUrl}/chat/completions`;
+                    fetchOptions = {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${settings.key}`
+                        },
+                        body: JSON.stringify({
+                            model: settings.model,
+                            messages: messages,
+                            temperature: 0.7
+                        })
+                    };
+                } else if (settings.provider === 'openai') {
+                    // OpenAI API
+                    fetchUrl = apiUrl.endsWith('/') ? `${apiUrl}chat/completions` : `${apiUrl}/chat/completions`;
+                    fetchOptions = {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${settings.key}`
+                        },
+                        body: JSON.stringify({
+                            model: settings.model,
+                            messages: messages,
+                            temperature: 0.7
+                        })
+                    };
+                } else {
+                    // 自定义提供商和其他提供商使用相同的格式
+                    // 与OpenAI使用相同的逻辑
+                    fetchUrl = apiUrl.endsWith('/') ? `${apiUrl}chat/completions` : `${apiUrl}/chat/completions`;
+                    fetchOptions = {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${settings.key}`
+                        },
+                        body: JSON.stringify({
+                            model: settings.model,
+                            messages: messages,
+                            temperature: 0.7
+                        })
+                    };
+                }
+
+                // 添加超时控制
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 15000); // 15秒超时
+                fetchOptions.signal = controller.signal;
+
+                console.log('发送测试消息 - 请求URL:', fetchUrl);
+                console.log('发送测试消息 - 请求选项:', fetchOptions);
 
                 const response = await fetch(fetchUrl, fetchOptions);
                 clearTimeout(timeoutId);
@@ -2253,11 +3028,37 @@
         function saveSettings() {
             const model = document.getElementById('model-select').value;
             const apiKey = document.getElementById('api-key').value;
-            const apiUrl = document.getElementById('api-url').value;
-            const specificModel = document.getElementById('specific-model-select').value;
+            let apiUrl = document.getElementById('api-url').value;
+            let specificModel = document.getElementById('specific-model-select').value;
+            
+            // 对于自定义模型，获取自定义输入框的值
+            if (model === 'custom') {
+                const customInput = document.getElementById('custom-model-input');
+                if (customInput) {
+                    specificModel = customInput.value;
+                }
+                
+                // 确保自定义API URL格式正确
+                if (apiUrl) {
+                    // 移除末尾的/chat/completions，如果存在的话
+                    if (apiUrl.includes('/chat/completions')) {
+                        apiUrl = apiUrl.split('/chat/completions')[0];
+                    }
+                    // 确保URL以/结尾
+                    if (!apiUrl.endsWith('/')) {
+                        apiUrl += '/';
+                    }
+                }
+            }
             
             if (!apiKey) {
                 showModal('错误', '请输入API密钥');
+                return;
+            }
+            
+            // 对于自定义模型，检查模型名称是否为空
+            if (model === 'custom' && !specificModel) {
+                showModal('错误', '请输入自定义模型名称');
                 return;
             }
             
@@ -2282,6 +3083,22 @@
             showModal('保存成功', '设置已保存');
             updateModelStatus(model, null); // 更新为已配置状态
         }
+        
+        // 添加事件监听器处理自定义模型选择框变化
+        document.addEventListener('DOMContentLoaded', function() {
+            const specificModelSelect = document.getElementById('specific-model-select');
+            if (specificModelSelect) {
+                specificModelSelect.addEventListener('change', function() {
+                    const modelSelect = document.getElementById('model-select');
+                    if (modelSelect && modelSelect.value === 'custom') {
+                        const customInput = document.getElementById('custom-model-input');
+                        if (customInput) {
+                            customInput.value = this.value;
+                        }
+                    }
+                });
+            }
+        });
     </script>
 </body>
 </html>
