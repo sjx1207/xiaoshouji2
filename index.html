@@ -1138,6 +1138,7 @@
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
             z-index: 20;
             transform: translateX(0);
+            height: calc(100% - 120px); /* 增加高度，为智能体应用留出空间 */
         }
         
         /* 小组件时间样式 */
@@ -1170,7 +1171,7 @@
         /* 照片容器样式 */
         .photo-container {
             width: 100%;
-            height: 100px;
+            height: 150px; /* 增加照片容器高度 */
             background: rgba(255, 255, 255, 0.1);
             border-radius: 15px;
             margin-bottom: 15px;
@@ -1225,19 +1226,20 @@
         }
         
         .send-btn, .add-btn {
-            padding: 12px 20px;
-            border-radius: 20px;
-            background: rgba(255, 255, 255, 0.8);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: #333;
-            font-size: 16px;
-            font-weight: bold;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%; /* 圆形按钮 */
+            background: #8B4513; /* 褐色背景 */
+            border: none;
             cursor: pointer;
             transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         
         .send-btn:hover, .add-btn:hover {
-            background: rgba(255, 255, 255, 1);
+            background: #A0522D; /* 深一点的褐色 */
             transform: translateY(-2px);
         }
     </style>
@@ -1668,8 +1670,17 @@
                         </div>
                         <div class="input-container">
                             <input type="text" class="widget-input" id="widgetInput" placeholder="点击输入..." onclick="changeWidgetInput()">
-                            <button class="send-btn" onclick="sendWidgetMessage()">发送</button>
-                            <button class="add-btn" onclick="addWidgetItem()">+</button>
+                            <button class="send-btn" onclick="sendWidgetMessage()">
+                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="20" height="20">
+                                    <path d="M2 21L23 12L2 3V10L17 12L2 14V21Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </button>
+                            <button class="add-btn" onclick="addWidgetItem()">
+                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="20" height="20">
+                                    <path d="M12 5V19" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                                    <path d="M5 12H19" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                                </svg>
+                            </button>
                         </div>
                     </div>
                     
