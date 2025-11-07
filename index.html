@@ -363,6 +363,11 @@
         .page:nth-child(2) {
             transform: translateX(100%);
         }
+        
+        /* 第三页初始位置在屏幕右侧 */
+        .page:nth-child(3) {
+            transform: translateX(100%);
+        }
 
         /* 主屏幕内容区域 */
         .home-screen {
@@ -1132,6 +1137,7 @@
             border: 1px solid rgba(255, 255, 255, 0.1);
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
             z-index: 20;
+            transform: translateX(0);
         }
         
         /* 小组件时间样式 */
@@ -1851,12 +1857,26 @@
                     updateDaysDisplay();
                     // 加载小组件数据
                     loadWidgetData();
+                    // 确保页面初始位置正确
+                    initializePagePositions();
                 }, 500); // 延迟500毫秒，确保页面完全加载
                 
                 // 从本地存储加载天气状态，如果没有则默认为晴天
                 const savedWeatherState = localStorage.getItem('weatherState') || 'sunny';
                 setWeatherState(savedWeatherState);
             });
+                    
+            // 初始化页面位置
+            function initializePagePositions() {
+                const page1 = document.getElementById('page1');
+                const page2 = document.getElementById('page2');
+                const page3 = document.getElementById('page3');
+                        
+                // 确保页面初始位置正确
+                if (page1) page1.style.transform = 'translateX(0)';
+                if (page2) page2.style.transform = 'translateX(100%)';
+                if (page3) page3.style.transform = 'translateX(100%)';
+            }
 
             // 监听来自图标管理页面的消息
             window.addEventListener('message', function(event) {
