@@ -1117,6 +1117,116 @@
             width: 20px;
             height: 20px;
         }
+        
+        /* 新增小组件样式 */
+        .custom-widget {
+            position: absolute;
+            top: 80px;
+            left: 20px;
+            width: calc(100% - 40px);
+            background: rgba(255, 255, 255, 0.05); /* 玻璃透明背景 */
+            border-radius: 20px;
+            padding: 20px;
+            backdrop-filter: blur(0px); /* 不模糊壁纸 */
+            -webkit-backdrop-filter: blur(0px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            z-index: 20;
+        }
+        
+        /* 小组件时间样式 */
+        .widget-time {
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: #fff;
+            margin-bottom: 20px;
+        }
+        
+        /* 爱心气泡样式 */
+        .love-bubble {
+            background: rgba(255, 255, 255, 0.8); /* 白色带点灰 */
+            color: #333;
+            padding: 15px 20px;
+            border-radius: 30px;
+            margin-bottom: 20px;
+            cursor: pointer;
+            display: inline-block;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .love-bubble:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 照片容器样式 */
+        .photo-container {
+            width: 100%;
+            height: 150px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            margin-bottom: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .photo-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+        }
+        
+        .photo-placeholder {
+            text-align: center;
+            color: #aaa;
+            font-size: 16px;
+        }
+        
+        /* 输入容器样式 */
+        .input-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .widget-input {
+            flex: 1;
+            padding: 12px 15px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.8); /* 和气泡颜色相同 */
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #333;
+            font-size: 16px;
+            outline: none;
+        }
+        
+        .widget-input::placeholder {
+            color: #999;
+        }
+        
+        .send-btn, .add-btn {
+            padding: 12px 20px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #333;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .send-btn:hover, .add-btn:hover {
+            background: rgba(255, 255, 255, 1);
+            transform: translateY(-2px);
+        }
     </style>
 </head>
 <body>
@@ -1533,6 +1643,39 @@
                         </div>
                     </div>
                 </div>
+                <!-- 第三页 -->
+                <div class="page" id="page3">
+                    <!-- 新增的小组件 -->
+                    <div class="custom-widget">
+                        <div class="widget-time" id="widgetTime">00:00</div>
+                        <div class="love-bubble" id="loveBubble" onclick="changeLoveText()">I love you</div>
+                        <div class="photo-container" onclick="changeWidgetPhoto()">
+                            <img id="widgetPhoto" src="" alt="照片" style="display: none;">
+                            <div id="photoPlaceholder" class="photo-placeholder">📷 点击添加照片</div>
+                        </div>
+                        <div class="input-container">
+                            <input type="text" class="widget-input" id="widgetInput" placeholder="点击输入..." onclick="changeWidgetInput()">
+                            <button class="send-btn" onclick="sendWidgetMessage()">发送</button>
+                            <button class="add-btn" onclick="addWidgetItem()">+</button>
+                        </div>
+                    </div>
+                    
+                    <!-- 主屏幕内容 -->
+                    <div class="home-screen">
+                        <!-- 智能体应用图标 - 第四行第一列 -->
+                        <div class="app-icon" onclick="alert('智能体应用功能开发中')" data-app="智能体" style="grid-row: 4; grid-column: 1;">
+                            <div class="icon-bg">
+                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2Z" stroke="white" stroke-width="2"/>
+                                    <path d="M8 16C9.10457 16 10 15.1046 10 14C10 12.8954 9.10457 12 8 12C6.89543 12 6 12.8954 6 14C6 15.1046 6.89543 16 8 16Z" fill="white"/>
+                                    <path d="M16 16C17.1046 16 18 15.1046 18 14C18 12.8954 17.1046 12 16 12C14.8954 12 14 12.8954 14 14C14 15.1046 14.8954 16 16 16Z" fill="white"/>
+                                    <path d="M8 11C8 11 9.5 13 12 13C14.5 13 16 11 16 11" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                                </svg>
+                            </div>
+                            <span>智能体</span>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -1663,6 +1806,9 @@
                 const timeString = now.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
                 document.getElementById('current-time').textContent = timeString;
                 
+                // 更新小组件中的时间
+                updateWidgetTime();
+                
                 // 更新天气组件中的星期和日期
                 const weekdays = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
                 const months = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'];
@@ -1696,6 +1842,8 @@
                     console.log('浪漫头像加载完成');
                     // 更新天数显示
                     updateDaysDisplay();
+                    // 加载小组件数据
+                    loadWidgetData();
                 }, 500); // 延迟500毫秒，确保页面完全加载
                 
                 // 从本地存储加载天气状态，如果没有则默认为晴天
@@ -3509,8 +3657,135 @@
                 
                 isSwiping = false;
             });
+                    
+                    // ========= 新增小组件相关函数 =========
+                    
+                    // 更新小组件时间
+                    function updateWidgetTime() {
+                        const now = new Date();
+                        const timeString = now.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+                        document.getElementById('widgetTime').textContent = timeString;
+                    }
+                    
+                    // 更换爱心气泡文本
+                    function changeLoveText() {
+                        const text = prompt('请输入新的文本：', document.getElementById('loveBubble').textContent);
+                        if (text !== null) {
+                            document.getElementById('loveBubble').textContent = text;
+                            localStorage.setItem('loveBubbleText', text);
+                        }
+                    }
+                    
+                    // 更换小组件照片
+                    function changeWidgetPhoto() {
+                        const input = document.createElement('input');
+                        input.type = 'file';
+                        input.accept = 'image/*';
+                        input.onchange = function(event) {
+                            const file = event.target.files[0];
+                            if (file) {
+                                // 上传到imgbb
+                                uploadToImgBB(file, function(url) {
+                                    if (url) {
+                                        document.getElementById('widgetPhoto').src = url;
+                                        document.getElementById('widgetPhoto').style.display = 'block';
+                                        document.getElementById('photoPlaceholder').style.display = 'none';
+                                        localStorage.setItem('widgetPhotoUrl', url);
+                                    }
+                                });
+                            }
+                        };
+                        input.click();
+                    }
+                    
+                    // 上传到imgbb
+                    function uploadToImgBB(file, callback) {
+                        const formData = new FormData();
+                        formData.append('image', file);
+                        
+                        // 显示上传提示
+                        showPageAlert('正在上传照片...');
+                        
+                        // 这里使用一个公开的imgbb API密钥（实际应用中应该使用自己的密钥）
+                        // 注意：为了演示目的，这里使用一个测试密钥，实际使用时需要替换为有效的密钥
+                        fetch('https://api.imgbb.com/1/upload?key=YOUR_IMGBB_API_KEY', {
+                            method: 'POST',
+                            body: formData
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                showPageAlert('照片上传成功！');
+                                callback(data.data.url);
+                            } else {
+                                showPageAlert('照片上传失败，请重试');
+                                callback(null);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('上传错误:', error);
+                            showPageAlert('上传失败，请检查网络连接');
+                            callback(null);
+                        });
+                    }
+                    
+                    // 更换输入框文本
+                    function changeWidgetInput() {
+                        const inputValue = document.getElementById('widgetInput').value;
+                        const text = prompt('请输入新的文本：', inputValue);
+                        if (text !== null) {
+                            document.getElementById('widgetInput').value = text;
+                            localStorage.setItem('widgetInputText', text);
+                        }
+                    }
+                    
+                    // 发送消息
+                    function sendWidgetMessage() {
+                        const message = document.getElementById('widgetInput').value;
+                        if (message.trim() !== '') {
+                            showPageAlert('消息已发送: ' + message);
+                            // 这里可以添加实际的发送逻辑
+                            document.getElementById('widgetInput').value = '';
+                            localStorage.removeItem('widgetInputText');
+                        } else {
+                            showPageAlert('请输入消息内容');
+                        }
+                    }
+                    
+                    // 添加项目
+                    function addWidgetItem() {
+                        showPageAlert('添加功能已触发');
+                        // 这里可以添加实际的添加逻辑
+                    }
+                    
+                    // 加载小组件数据
+                    function loadWidgetData() {
+                        // 加载爱心气泡文本
+                        const savedLoveText = localStorage.getItem('loveBubbleText');
+                        if (savedLoveText) {
+                            document.getElementById('loveBubble').textContent = savedLoveText;
+                        }
+                        
+                        // 加载照片
+                        const savedPhotoUrl = localStorage.getItem('widgetPhotoUrl');
+                        if (savedPhotoUrl) {
+                            document.getElementById('widgetPhoto').src = savedPhotoUrl;
+                            document.getElementById('widgetPhoto').style.display = 'block';
+                            document.getElementById('photoPlaceholder').style.display = 'none';
+                        }
+                        
+                        // 加载输入框文本
+                        const savedInputText = localStorage.getItem('widgetInputText');
+                        if (savedInputText) {
+                            document.getElementById('widgetInput').value = savedInputText;
+                        }
+                    }
+
+
+            
         </script>
     </div>
 </body>
 </html>
+
 
