@@ -1138,7 +1138,7 @@
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
             z-index: 20;
             transform: translateX(0);
-            height: calc(65% - 30px); /* 调整高度，只覆盖前几行，为智能体应用留出约10px空间 */
+            height: calc(45% - 20px); /* 调整高度，只覆盖前几行，为智能体应用留出约10px空间 */
         }
         
         /* 小组件时间样式 */
@@ -1171,7 +1171,7 @@
         /* 照片容器样式 */
         .photo-container {
             width: 100%;
-            height: 150px; /* 增加照片容器高度 */
+            height: 180px; /* 增加照片容器高度 */
             background: rgba(255, 255, 255, 0.1);
             border-radius: 15px;
             margin-bottom: 15px;
@@ -3744,9 +3744,10 @@
                         // 显示上传提示
                         showPageAlert('正在上传照片...');
                         
-                        // 这里使用一个公开的imgbb API密钥（实际应用中应该使用自己的密钥）
-                        // 注意：为了演示目的，这里使用一个测试密钥，实际使用时需要替换为有效的密钥
-                        fetch('https://api.imgbb.com/1/upload?key=YOUR_IMGBB_API_KEY', {
+                        // 获取用户在设置页面配置的imgbb API密钥
+                        const apiKey = localStorage.getItem('imgbbApiKey') || 'YOUR_IMGBB_API_KEY'; // 如果没有配置，则使用默认密钥
+                        
+                        fetch(`https://api.imgbb.com/1/upload?key=${apiKey}`, {
                             method: 'POST',
                             body: formData
                         })
