@@ -3404,6 +3404,7 @@
             const pages = document.querySelectorAll('.page'); // 获取所有页面
             const page1 = document.getElementById('page1');
             const page2 = document.getElementById('page2');
+            const page3 = document.getElementById('page3'); // 添加第三页
 
             // 触摸开始事件
             document.addEventListener('touchstart', function(e) {
@@ -3427,15 +3428,29 @@
                     
                     // 根据当前页面和滑动方向更新位置
                     if (currentPage === 0 && diffX < 0) {
-                        // 第一页向左滑动
+                        // 第一页向左滑动到第二页
                         const movePercent = Math.max(0, Math.min(100, -diffX / window.innerWidth * 100));
                         page1.style.transform = `translateX(${-movePercent}%)`;
                         page2.style.transform = `translateX(${-movePercent + 100}%)`;
+                        page3.style.transform = `translateX(100%)`;
                     } else if (currentPage === 1 && diffX > 0) {
-                        // 第二页向右滑动
+                        // 第二页向右滑动到第一页
                         const movePercent = Math.max(0, Math.min(100, diffX / window.innerWidth * 100));
                         page1.style.transform = `translateX(${-100 + movePercent}%)`;
                         page2.style.transform = `translateX(${movePercent}%)`;
+                        page3.style.transform = `translateX(100%)`;
+                    } else if (currentPage === 1 && diffX < 0) {
+                        // 第二页向左滑动到第三页
+                        const movePercent = Math.max(0, Math.min(100, -diffX / window.innerWidth * 100));
+                        page1.style.transform = `translateX(-100%)`;
+                        page2.style.transform = `translateX(${-movePercent}%)`;
+                        page3.style.transform = `translateX(${-movePercent + 100}%)`;
+                    } else if (currentPage === 2 && diffX > 0) {
+                        // 第三页向右滑动到第二页
+                        const movePercent = Math.max(0, Math.min(100, diffX / window.innerWidth * 100));
+                        page1.style.transform = `translateX(-100%)`;
+                        page2.style.transform = `translateX(${-100 + movePercent}%)`;
+                        page3.style.transform = `translateX(${movePercent}%)`;
                     }
                 }
             });
@@ -3455,20 +3470,40 @@
                         currentPage = 1;
                         page1.style.transform = 'translateX(-100%)';
                         page2.style.transform = 'translateX(0)';
+                        page3.style.transform = 'translateX(100%)';
                     } else if (diffX > 0 && currentPage === 1) {
                         // 向右滑动到第一页
                         currentPage = 0;
                         page1.style.transform = 'translateX(0)';
                         page2.style.transform = 'translateX(100%)';
+                        page3.style.transform = 'translateX(100%)';
+                    } else if (diffX < 0 && currentPage === 1) {
+                        // 向左滑动到第三页
+                        currentPage = 2;
+                        page1.style.transform = 'translateX(-100%)';
+                        page2.style.transform = 'translateX(-100%)';
+                        page3.style.transform = 'translateX(0)';
+                    } else if (diffX > 0 && currentPage === 2) {
+                        // 向右滑动到第二页
+                        currentPage = 1;
+                        page1.style.transform = 'translateX(-100%)';
+                        page2.style.transform = 'translateX(0)';
+                        page3.style.transform = 'translateX(100%)';
                     }
                 } else {
                     // 滑动距离不够，回到原位置
                     if (currentPage === 0) {
                         page1.style.transform = 'translateX(0)';
                         page2.style.transform = 'translateX(100%)';
-                    } else {
+                        page3.style.transform = 'translateX(100%)';
+                    } else if (currentPage === 1) {
                         page1.style.transform = 'translateX(-100%)';
                         page2.style.transform = 'translateX(0)';
+                        page3.style.transform = 'translateX(100%)';
+                    } else {
+                        page1.style.transform = 'translateX(-100%)';
+                        page2.style.transform = 'translateX(-100%)';
+                        page3.style.transform = 'translateX(0)';
                     }
                 }
                 
