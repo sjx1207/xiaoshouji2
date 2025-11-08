@@ -1171,7 +1171,7 @@
         /* 照片容器样式 */
         .photo-container {
             width: 100%;
-            height: 180px; /* 增加照片容器高度 */
+            height: 160px; /* 设置固定高度 */
             background: rgba(255, 255, 255, 0.1);
             border-radius: 15px;
             margin-bottom: 10px;
@@ -1201,7 +1201,7 @@
             display: flex;
             align-items: center;
             gap: 10px;
-            margin-top: 15px;
+            margin-top: 5px;
         }
         
         .widget-input {
@@ -3761,7 +3761,7 @@
                         showPageAlert('正在上传照片...');
                         
                         // 获取用户在设置页面配置的imgbb API密钥
-                        const apiKey = localStorage.getItem('imgbbApiKey') || 'YOUR_IMGBB_API_KEY'; // 如果没有配置，则使用默认密钥
+                        const apiKey = localStorage.getItem('imgbbApiKey') || 'e575f2643476020fc17a4f4ee408d079'; // 如果没有配置，则使用默认密钥
                         
                         fetch(`https://api.imgbb.com/1/upload?key=${apiKey}`, {
                             method: 'POST',
@@ -3892,6 +3892,5 @@
     </div>
 </body>
 </html>
-
 
 
