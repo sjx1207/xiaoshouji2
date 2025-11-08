@@ -754,7 +754,259 @@
             object-fit: cover;
             object-position: center;
         }
-        
+
+        /* 新增小组件样式 */
+        .custom-widget-container {
+            position: absolute;
+            top: 60px;
+            left: 20px;
+            right: 20px;
+            height: calc(50% - 30px);
+            z-index: 100;
+        }
+
+        .custom-widget {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 15px;
+            height: 100%;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .widget-header-text {
+            text-align: center;
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            padding: 8px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .widget-header-text:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .photos-container {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex: 1;
+        }
+
+        .photo-square {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            transition: transform 0.2s;
+            position: relative;
+        }
+
+        .photo-square:hover {
+            transform: scale(1.05);
+        }
+
+        .photo-square::before {
+            content: "📷";
+            font-size: 24px;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .photo-square img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 10px;
+        }
+
+        .avatar-bubble-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .widget-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            flex-shrink: 0;
+            transition: transform 0.2s;
+        }
+
+        .widget-avatar:hover {
+            transform: scale(1.1);
+        }
+
+        .widget-avatar::before {
+            content: "👤";
+            font-size: 24px;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .widget-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+
+        .widget-bubble {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 20px;
+            padding: 12px 15px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            min-height: 20px;
+        }
+
+        .widget-bubble:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* 文本输入弹窗样式 */
+        .text-input-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .text-input-modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .text-input-modal-content {
+            background: rgba(30, 30, 30, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 25px;
+            width: 90%;
+            max-width: 350px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+        }
+
+        .text-input-modal.active .text-input-modal-content {
+            transform: translateY(0);
+        }
+
+        .text-input-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .text-input-modal-title {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .text-input-close-btn {
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        .text-input-close-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .text-input-form-group {
+            margin-bottom: 20px;
+        }
+
+        .text-input-label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #aaa;
+        }
+
+        .text-input-field {
+            width: 100%;
+            padding: 12px 15px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+
+        .text-input-field:focus {
+            outline: none;
+            border-color: rgba(0, 122, 255, 0.5);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .text-input-submit-btn {
+            width: 100%;
+            padding: 15px;
+            border-radius: 12px;
+            background: linear-gradient(45deg, #007AFF, #0A84FF);
+            border: none;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .text-input-submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(10, 132, 255, 0.4);
+        }
+
+        .text-input-submit-btn:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
         .avatar-placeholder {
             font-size: 30px;
             line-height: 60px;
@@ -1543,6 +1795,31 @@
                 </div>
                 <!-- 第三页 -->
                 <div class="page" id="page3">
+                    <!-- 新增小组件 -->
+                    <div class="custom-widget-container">
+                        <!-- 小组件内容 -->
+                        <div class="custom-widget" id="customWidget">
+                            <!-- 顶部文字 -->
+                            <div class="widget-header-text" id="widgetHeaderText" onclick="changeHeaderText()">点击设置顶部文字</div>
+                            
+                            <!-- 三张方形图片 -->
+                            <div class="photos-container">
+                                <div class="photo-square" id="photo1" onclick="changePhoto(1)"></div>
+                                <div class="photo-square" id="photo2" onclick="changePhoto(2)"></div>
+                                <div class="photo-square" id="photo3" onclick="changePhoto(3)"></div>
+                            </div>
+                            
+                            <!-- 头像和气泡容器 -->
+                            <div class="avatar-bubble-container">
+                                <!-- 左侧圆形头像 -->
+                                <div class="widget-avatar" id="widgetAvatar" onclick="changeWidgetAvatar()"></div>
+                                
+                                <!-- 右侧圆角气泡 -->
+                                <div class="widget-bubble" id="widgetBubble" onclick="changeBubbleText()">点击设置气泡文字</div>
+                            </div>
+                        </div>
+                    </div>
+                    
                     <!-- 主屏幕内容 -->
                     <div class="home-screen">
                         <!-- 智能体应用图标 - 第四行第一列 -->
@@ -2620,6 +2897,175 @@
                 }
             }
 
+            // 更换照片
+            function changePhoto(photoNumber) {
+                // 创建文件输入元素
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = 'image/*';
+                input.onchange = function(event) {
+                    const file = event.target.files[0];
+                    if (file) {
+                        // 获取ImgBB API密钥
+                        const imgbbApiKey = localStorage.getItem('imgbbApiKey');
+                        if (!imgbbApiKey) {
+                            alert('请先在设置页面配置ImgBB API密钥');
+                            return;
+                        }
+
+                        // 创建FormData对象用于上传到imgbb
+                        const formData = new FormData();
+                        formData.append('image', file);
+                        
+                        // 显示上传中提示
+                        showPageAlert('正在上传图片...');
+
+                        // 上传图片到imgbb
+                        fetch(`https://api.imgbb.com/1/upload?key=${imgbbApiKey}`, {
+                            method: 'POST',
+                            body: formData
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.status === 200) {
+                                // 更新照片显示，确保正确比例
+                                const photoSquare = document.getElementById(`photo${photoNumber}`);
+                                photoSquare.innerHTML = `<img src="${data.data.url}" alt="照片${photoNumber}" style="width:100%;height:100%;object-fit:cover;border-radius:10px;">`;
+                                // 保存到本地存储
+                                localStorage.setItem(`photo${photoNumber}`, data.data.url);
+                                showPageAlert('图片上传成功！');
+                            } else {
+                                throw new Error(data.error?.message || '上传失败');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('上传图片时出错:', error);
+                            alert('上传图片失败: ' + error.message);
+                        });
+                    }
+                };
+                input.click();
+            }
+
+            // 加载保存的照片
+            function loadSavedPhotos() {
+                for (let i = 1; i <= 3; i++) {
+                    const savedPhoto = localStorage.getItem(`photo${i}`);
+                    if (savedPhoto) {
+                        const photoSquare = document.getElementById(`photo${i}`);
+                        photoSquare.innerHTML = `<img src="${savedPhoto}" alt="照片${i}" style="width:100%;height:100%;object-fit:cover;border-radius:10px;">`;
+                    }
+                }
+            }
+
+            // 更换小组件顶部文字
+            function changeHeaderText() {
+                // 创建自定义弹窗
+                showCustomPrompt('请输入顶部文字：', document.getElementById('widgetHeaderText').textContent)
+                    .then(text => {
+                        if (text !== null) {
+                            document.getElementById('widgetHeaderText').textContent = text;
+                            localStorage.setItem('widgetHeaderText', text);
+                        }
+                    });
+            }
+
+            // 更换小组件气泡文字
+            function changeBubbleText() {
+                // 创建自定义弹窗
+                showCustomPrompt('请输入气泡文字：', document.getElementById('widgetBubble').textContent)
+                    .then(text => {
+                        if (text !== null) {
+                            document.getElementById('widgetBubble').textContent = text;
+                            localStorage.setItem('widgetBubbleText', text);
+                        }
+                    });
+            }
+
+            // 更换小组件头像
+            function changeWidgetAvatar() {
+                // 创建文件输入元素
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = 'image/*';
+                input.onchange = function(event) {
+                    const file = event.target.files[0];
+                    if (file) {
+                        // 获取ImgBB API密钥
+                        const imgbbApiKey = localStorage.getItem('imgbbApiKey');
+                        if (!imgbbApiKey) {
+                            alert('请先在设置页面配置ImgBB API密钥');
+                            return;
+                        }
+
+                        // 创建FormData对象用于上传到imgbb
+                        const formData = new FormData();
+                        formData.append('image', file);
+                        
+                        // 显示上传中提示
+                        showPageAlert('正在上传头像...');
+
+                        // 上传图片到imgbb
+                        fetch(`https://api.imgbb.com/1/upload?key=${imgbbApiKey}`, {
+                            method: 'POST',
+                            body: formData
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.status === 200) {
+                                // 更新头像显示，确保正确比例
+                                const widgetAvatar = document.getElementById('widgetAvatar');
+                                widgetAvatar.innerHTML = `<img src="${data.data.url}" alt="头像" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+                                // 保存到本地存储
+                                localStorage.setItem('widgetAvatar', data.data.url);
+                                showPageAlert('头像上传成功！');
+                            } else {
+                                throw new Error(data.error?.message || '上传失败');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('上传头像时出错:', error);
+                            alert('上传头像失败: ' + error.message);
+                        });
+                    }
+                };
+                input.click();
+            }
+
+            // 加载小组件数据
+            function loadWidgetData() {
+                // 加载顶部文字
+                const savedHeaderText = localStorage.getItem('widgetHeaderText');
+                if (savedHeaderText) {
+                    document.getElementById('widgetHeaderText').textContent = savedHeaderText;
+                }
+
+                // 加载气泡文字
+                const savedBubbleText = localStorage.getItem('widgetBubbleText');
+                if (savedBubbleText) {
+                    document.getElementById('widgetBubble').textContent = savedBubbleText;
+                }
+
+                // 加载头像
+                const savedAvatar = localStorage.getItem('widgetAvatar');
+                if (savedAvatar) {
+                    document.getElementById('widgetAvatar').innerHTML = `<img src="${savedAvatar}" alt="头像" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+                }
+
+                // 加载照片
+                loadSavedPhotos();
+            }
+
+            function showPageAlert(message) {
+                const alertContainer = document.getElementById('pageAlertContainer');
+                const alertMessage = document.getElementById('pageAlertMessage');
+                alertMessage.textContent = message;
+                alertContainer.style.display = 'block';
+                setTimeout(() => {
+                    alertContainer.style.display = 'none';
+                }, 3000);
+            }
+
             // 更换头像
             function changeProfileAvatar() {
                 // 创建文件输入元素
@@ -2820,11 +3266,25 @@
                 const alertContainer = document.getElementById('pageAlertContainer');
                 const alertMessage = document.getElementById('pageAlertMessage');
                 alertMessage.textContent = message;
-                alertContainer.style.display = 'block';
-                setTimeout(() => {
-                    alertContainer.style.display = 'none';
-                }, 3000);
             }
+            // 加载小组件数据
+            function loadWidgetData() {
+                // 加载顶部文字
+                const savedHeaderText = localStorage.getItem('widgetHeaderText');
+                if (savedHeaderText) {
+                    document.getElementById('widgetHeaderText').textContent = savedHeaderText;
+                }
+
+                // 加载气泡文字
+                const savedBubbleText = localStorage.getItem('widgetBubbleText');
+                if (savedBubbleText) {
+                    document.getElementById('widgetBubble').                document.getElementById('widgetAvatar').innerHTML = `<img src="${savedAvatar}" alt="头像" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+                }
+
+                // 加载照片
+                loadSavedPhotos();
+            }
+
             function loadSettings() {
                 const settings = JSON.parse(localStorage.getItem('settings')) || {};
                 document.getElementById('voiceName').value = settings.voiceName || 'default';
