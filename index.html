@@ -1237,6 +1237,99 @@
             background: #A0522D; /* 深一点的褐色 */
             transform: translateY(-2px);
         }
+        
+        /* 移动端适配 */
+        @media (max-width: 768px) {
+            .custom-widget {
+                top: 50px;
+                left: 15px;
+                width: calc(100% - 30px);
+                padding: 12px;
+                height: calc(50% - 25px);
+            }
+            
+            .widget-time {
+                font-size: 16px;
+                margin-bottom: 8px;
+            }
+            
+            .love-bubble {
+                padding: 10px 15px;
+                margin-bottom: 12px;
+                font-size: 14px;
+                max-width: 85%;
+            }
+            
+            .photo-container {
+                height: 140px;
+                margin-bottom: 8px;
+            }
+            
+            .photo-placeholder {
+                font-size: 14px;
+            }
+            
+            .input-container {
+                margin-top: 4px;
+            }
+            
+            .widget-input {
+                padding: 8px 12px;
+                font-size: 14px;
+                height: 36px;
+            }
+            
+            .send-btn, .add-btn {
+                width: 36px;
+                height: 36px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .custom-widget {
+                top: 45px;
+                left: 10px;
+                width: calc(100% - 20px);
+                padding: 10px;
+                height: calc(48% - 20px);
+            }
+            
+            .widget-time {
+                font-size: 14px;
+                margin-bottom: 6px;
+            }
+            
+            .love-bubble {
+                padding: 8px 12px;
+                margin-bottom: 10px;
+                font-size: 13px;
+                max-width: 90%;
+            }
+            
+            .photo-container {
+                height: 120px;
+                margin-bottom: 6px;
+            }
+            
+            .photo-placeholder {
+                font-size: 12px;
+            }
+            
+            .input-container {
+                margin-top: 3px;
+            }
+            
+            .widget-input {
+                padding: 6px 10px;
+                font-size: 13px;
+                height: 32px;
+            }
+            
+            .send-btn, .add-btn {
+                width: 32px;
+                height: 32px;
+            }
+        }
     </style>
 </head>
 <body>
