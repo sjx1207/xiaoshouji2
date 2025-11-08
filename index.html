@@ -1190,13 +1190,6 @@
             object-position: center;
         }
         
-        .photo-container img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            object-position: center;
-        }
-        
         .photo-placeholder {
             text-align: center;
             color: #aaa;
@@ -1213,13 +1206,14 @@
         
         .widget-input {
             flex: 1;
-            padding: 12px 15px;
+            padding: 10px 15px;
             border-radius: 20px;
             background: rgba(255, 255, 255, 0.8); /* 和气泡颜色相同 */
             border: 1px solid rgba(255, 255, 255, 0.2);
             color: #333;
             font-size: 16px;
             outline: none;
+            height: 40px; /* 与按钮高度一致 */
         }
         
         .widget-input::placeholder {
@@ -1663,7 +1657,7 @@
                 <div class="page" id="page3">
                     <!-- 新增的小组件 -->
                     <div class="custom-widget">
-                        <div class="widget-time" id="widgetTime">00:00</div>
+                        <div class="widget-time" id="widgetTime" onclick="openTimeSettingsModal()">00:00</div>
                         <div class="love-bubble" id="loveBubble" onclick="changeLoveText()">I love you</div>
                         <div class="photo-container" onclick="changeWidgetPhoto()">
                             <img id="widgetPhoto" src="" alt="照片" style="display: none; max-width: 100%; max-height: 100%; object-fit: contain;">
@@ -1782,6 +1776,25 @@
             </div>
         </div>
 
+        <!-- 时间设置弹窗 -->
+        <div class="modal" id="timeSettingsModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="modal-title">时间设置</div>
+                    <button class="close-btn" onclick="closeTimeSettingsModal()">&times;</button>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">自定义时间格式</label>
+                    <input type="text" class="form-input" id="customTimeFormat" placeholder="例如: HH:mm:ss 或 HH:mm">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">时间颜色</label>
+                    <input type="color" class="form-input" id="timeColor" value="#ffffff">
+                </div>
+                <button class="submit-btn" onclick="saveTimeSettings()">保存</button>
+            </div>
+        </div>
+
         <!-- 天气选择弹窗 -->
         <div class="modal" id="weatherModal">
             <div class="modal-content">
@@ -1871,6 +1884,8 @@
                     loadWidgetData();
                     // 确保页面初始位置正确
                     initializePagePositions();
+                    // 加载时间设置
+                    loadTimeSettings();
                 }, 500); // 延迟500毫秒，确保页面完全加载
                 
                 // 从本地存储加载天气状态，如果没有则默认为晴天
@@ -3818,6 +3833,56 @@
                         const savedInputText = localStorage.getItem('widgetInputText');
                         if (savedInputText) {
                             document.getElementById('widgetInput').value = savedInputText;
+                        }
+                    }
+
+                    // 打开时间设置弹窗
+                    function openTimeSettingsModal() {
+                        document.getElementById('timeSettingsModal').classList.add('active');
+                        
+                        // 加载当前设置
+                        const savedFormat = localStorage.getItem('customTimeFormat');
+                        const savedColor = localStorage.getItem('timeColor');
+                        
+                        if (savedFormat) {
+                            document.getElementById('customTimeFormat').value = savedFormat;
+                        }
+                        if (savedColor) {
+                            document.getElementById('timeColor').value = savedColor;
+                        }
+                    }
+
+                    // 关闭时间设置弹窗
+                    function closeTimeSettingsModal() {
+                        document.getElementById('timeSettingsModal').classList.remove('active');
+                    }
+
+                    // 保存时间设置
+                    function saveTimeSettings() {
+                        const format = document.getElementById('customTimeFormat').value;
+                        const color = document.getElementById('timeColor').value;
+                        
+                        if (format) {
+                            localStorage.setItem('customTimeFormat', format);
+                        } else {
+                            localStorage.removeItem('customTimeFormat');
+                        }
+                        
+                        if (color) {
+                            localStorage.setItem('timeColor', color);
+                            // 更新时间颜色
+                            document.getElementById('widgetTime').style.color = color;
+                        }
+                        
+                        closeTimeSettingsModal();
+                        showPageAlert('时间设置已保存');
+                    }
+
+                    // 加载时间设置
+                    function loadTimeSettings() {
+                        const savedColor = localStorage.getItem('timeColor');
+                        if (savedColor) {
+                            document.getElementById('widgetTime').style.color = savedColor;
                         }
                     }
 
