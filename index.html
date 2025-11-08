@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>手机主屏幕</title>
     <style>
         * {
@@ -1138,7 +1138,7 @@
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
             z-index: 20;
             transform: translateX(0);
-            height: calc(53% - 30px); /* 调整高度，只覆盖前几行，为智能体应用留出约10px空间 */
+            height: calc(55% - 35px); /* 调整高度，为内部元素提供更多空间 */
         }
         
         /* 小组件时间样式 */
@@ -1147,7 +1147,7 @@
             font-size: 18px;
             font-weight: bold;
             color: #fff;
-            margin-bottom: 10px;
+            margin-bottom: 12px; /* 增加底部边距 */
         }
         
         /* 爱心气泡样式 */
@@ -1161,6 +1161,9 @@
             display: inline-block;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
             transition: all 0.3s ease;
+            max-width: 80%; /* 限制最大宽度 */
+            word-wrap: break-word; /* 允许长文本换行 */
+            text-align: center; /* 居中显示文本 */
         }
         
         .love-bubble:hover {
@@ -1171,10 +1174,10 @@
         /* 照片容器样式 */
         .photo-container {
             width: 100%;
-            height: 160px; /* 设置固定高度 */
+            height: 180px; /* 增加高度以改善比例 */
             background: rgba(255, 255, 255, 0.1);
             border-radius: 15px;
-            margin-bottom: 10px;
+            margin-bottom: 15px; /* 增加底部边距 */
             cursor: pointer;
             display: flex;
             align-items: center;
@@ -1188,6 +1191,9 @@
             max-height: 100%;
             object-fit: contain;
             object-position: center;
+            width: 100%;
+            height: 100%;
+            display: block;
         }
         
         .photo-placeholder {
@@ -1201,7 +1207,8 @@
             display: flex;
             align-items: center;
             gap: 10px;
-            margin-top: 5px;
+            margin-top: 15px; /* 增加顶部边距，与照片容器分离 */
+            margin-bottom: 5px; /* 增加底部边距 */
         }
         
         .widget-input {
@@ -1214,6 +1221,7 @@
             font-size: 16px;
             outline: none;
             height: 40px; /* 与按钮高度一致 */
+            min-width: 0; /* 允许输入框收缩 */
         }
         
         .widget-input::placeholder {
@@ -1231,6 +1239,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            flex-shrink: 0; /* 防止按钮收缩 */
         }
         
         .send-btn:hover, .add-btn:hover {
@@ -1245,12 +1254,12 @@
                 left: 15px;
                 width: calc(100% - 30px);
                 padding: 12px;
-                height: calc(50% - 25px);
+                height: calc(52% - 30px); /* 调整移动端高度 */
             }
             
             .widget-time {
                 font-size: 16px;
-                margin-bottom: 8px;
+                margin-bottom: 10px; /* 调整移动端时间显示底部边距 */
             }
             
             .love-bubble {
@@ -1258,11 +1267,12 @@
                 margin-bottom: 12px;
                 font-size: 14px;
                 max-width: 85%;
+                word-wrap: break-word; /* 允许长文本换行 */
             }
             
             .photo-container {
-                height: 140px;
-                margin-bottom: 8px;
+                height: 150px; /* 调整移动端照片容器高度 */
+                margin-bottom: 12px; /* 增加底部边距 */
             }
             
             .photo-placeholder {
@@ -1270,7 +1280,8 @@
             }
             
             .input-container {
-                margin-top: 4px;
+                margin-top: 12px; /* 调整移动端输入容器顶部边距 */
+                margin-bottom: 4px; /* 增加底部边距 */
             }
             
             .widget-input {
@@ -1291,12 +1302,12 @@
                 left: 10px;
                 width: calc(100% - 20px);
                 padding: 10px;
-                height: calc(48% - 20px);
+                height: calc(50% - 25px); /* 调整小屏幕高度 */
             }
             
             .widget-time {
                 font-size: 14px;
-                margin-bottom: 6px;
+                margin-bottom: 8px; /* 调整小屏幕时间显示底部边距 */
             }
             
             .love-bubble {
@@ -1304,11 +1315,12 @@
                 margin-bottom: 10px;
                 font-size: 13px;
                 max-width: 90%;
+                word-wrap: break-word; /* 允许长文本换行 */
             }
             
             .photo-container {
-                height: 120px;
-                margin-bottom: 6px;
+                height: 130px; /* 调整小屏幕照片容器高度 */
+                margin-bottom: 10px; /* 增加底部边距 */
             }
             
             .photo-placeholder {
@@ -1316,7 +1328,8 @@
             }
             
             .input-container {
-                margin-top: 3px;
+                margin-top: 10px; /* 调整小屏幕输入容器顶部边距 */
+                margin-bottom: 3px; /* 增加底部边距 */
             }
             
             .widget-input {
@@ -1753,7 +1766,7 @@
                         <div class="widget-time" id="widgetTime" onclick="openTimeSettingsModal()">00:00</div>
                         <div class="love-bubble" id="loveBubble" onclick="changeLoveText()">I love you</div>
                         <div class="photo-container" onclick="changeWidgetPhoto()">
-                            <img id="widgetPhoto" src="" alt="照片" style="display: none; max-width: 100%; max-height: 100%; object-fit: contain;">
+                            <img id="widgetPhoto" src="" alt="照片" style="display: none; width: 100%; height: 100%; object-fit: contain; object-position: center;">
                             <div id="photoPlaceholder" class="photo-placeholder">📷 点击添加照片</div>
                         </div>
                         <div class="input-container">
@@ -1955,9 +1968,108 @@
             // 每秒更新一次时间
             setInterval(updateTime, 1000);
             updateTime(); // 初始化时间
+            
+            // 监听窗口大小改变事件
+            window.addEventListener('resize', function() {
+                detectMobileDevice();
+            });
+            
+            // 检测是否为移动端设备
+            function detectMobileDevice() {
+                const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+                const isSmallScreen = window.innerWidth <= 768;
+                
+                if (isMobile || isSmallScreen) {
+                    document.body.classList.add('mobile-device');
+                    // 直接调整小组件样式
+                    adjustWidgetForMobile();
+                }
+            }
+            
+            // 为移动端调整小组件样式
+            function adjustWidgetForMobile() {
+                const widget = document.querySelector('.custom-widget');
+                if (widget) {
+                    // 根据屏幕宽度调整样式
+                    if (window.innerWidth <= 480) {
+                        widget.style.height = 'calc(50% - 25px)';
+                        widget.style.padding = '10px';
+                        widget.style.top = '45px';
+                        widget.style.left = '10px';
+                        widget.style.width = 'calc(100% - 20px)';
+                        
+                        // 调整内部元素
+                        const photoContainer = widget.querySelector('.photo-container');
+                        if (photoContainer) {
+                            photoContainer.style.height = '130px';
+                            photoContainer.style.marginBottom = '10px';
+                        }
+                        
+                        const inputContainer = widget.querySelector('.input-container');
+                        if (inputContainer) {
+                            inputContainer.style.marginTop = '10px';
+                            inputContainer.style.marginBottom = '3px';
+                        }
+                        
+                        const loveBubble = widget.querySelector('.love-bubble');
+                        if (loveBubble) {
+                            loveBubble.style.marginBottom = '10px';
+                            loveBubble.style.fontSize = '13px';
+                            loveBubble.style.padding = '8px 12px';
+                        }
+                        
+                        const widgetTime = widget.querySelector('.widget-time');
+                        if (widgetTime) {
+                            widgetTime.style.marginBottom = '8px';
+                            widgetTime.style.fontSize = '14px';
+                        }
+                    } else if (window.innerWidth <= 768) {
+                        widget.style.height = 'calc(52% - 30px)';
+                        widget.style.padding = '12px';
+                        widget.style.top = '50px';
+                        widget.style.left = '15px';
+                        widget.style.width = 'calc(100% - 30px)';
+                        
+                        // 调整内部元素
+                        const photoContainer = widget.querySelector('.photo-container');
+                        if (photoContainer) {
+                            photoContainer.style.height = '150px';
+                            photoContainer.style.marginBottom = '12px';
+                        }
+                        
+                        const inputContainer = widget.querySelector('.input-container');
+                        if (inputContainer) {
+                            inputContainer.style.marginTop = '12px';
+                            inputContainer.style.marginBottom = '4px';
+                        }
+                        
+                        const loveBubble = widget.querySelector('.love-bubble');
+                        if (loveBubble) {
+                            loveBubble.style.marginBottom = '12px';
+                            loveBubble.style.fontSize = '14px';
+                            loveBubble.style.padding = '10px 15px';
+                        }
+                        
+                        const widgetTime = widget.querySelector('.widget-time');
+                        if (widgetTime) {
+                            widgetTime.style.marginBottom = '10px';
+                            widgetTime.style.fontSize = '16px';
+                        }
+                    } else {
+                        // 恢复默认样式
+                        widget.style.height = 'calc(55% - 35px)';
+                        widget.style.padding = '15px';
+                        widget.style.top = '60px';
+                        widget.style.left = '20px';
+                        widget.style.width = 'calc(100% - 40px)';
+                    }
+                }
+            }
 
             // 页面加载时检查是否有保存的壁纸
             window.addEventListener('load', function() {
+                // 检测是否为移动端设备
+                detectMobileDevice();
                 updateTime();
                 loadProfileData();
                 loadWallpaper();
@@ -1979,6 +2091,8 @@
                     initializePagePositions();
                     // 加载时间设置
                     loadTimeSettings();
+                    // 调整移动端样式
+                    detectMobileDevice();
                 }, 500); // 延迟500毫秒，确保页面完全加载
                 
                 // 从本地存储加载天气状态，如果没有则默认为晴天
@@ -1998,6 +2112,11 @@
                 if (page3) page3.style.transform = 'translateX(100%)';
             }
 
+            // 页面加载完成后调整移动端样式
+            setTimeout(function() {
+                adjustWidgetForMobile();
+            }, 100);
+            
             // 监听来自图标管理页面的消息
             window.addEventListener('message', function(event) {
                 try {
@@ -3828,6 +3947,12 @@
                         const input = document.createElement('input');
                         input.type = 'file';
                         input.accept = 'image/*';
+                        
+                        // 移动端友好的文件选择
+                        if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+                            input.setAttribute('capture', 'environment'); // 使用摄像头
+                        }
+                        
                         input.onchange = function(event) {
                             const file = event.target.files[0];
                             if (file) {
@@ -3983,6 +4108,28 @@
             
         </script>
     </div>
+    
+    <!-- 移动端测试按钮（仅用于测试） -->
+    <div id="mobileTest" style="position: fixed; bottom: 10px; right: 10px; background: rgba(255,255,255,0.2); padding: 10px; border-radius: 5px; display: none;">
+        <button onclick="testMobileAdjustment()" style="background: #007AFF; color: white; border: none; padding: 5px 10px; border-radius: 3px;">测试移动端</button>
+    </div>
+    
+    <script>
+        // 测试移动端调整功能
+        function testMobileAdjustment() {
+            console.log('屏幕宽度:', window.innerWidth);
+            console.log('是否为移动端:', /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent));
+            adjustWidgetForMobile();
+            alert('已尝试调整移动端样式，请检查小组件是否正常显示');
+        }
+        
+        // 页面加载时显示测试按钮（仅在移动端）
+        window.addEventListener('load', function() {
+            if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+                document.getElementById('mobileTest').style.display = 'block';
+            }
+        });
+    </script>
 </body>
 </html>
 
