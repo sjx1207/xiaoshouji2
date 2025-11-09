@@ -462,7 +462,8 @@
             <div class="message-bubble service-message">
                 您好！我是您的智能助手，专门帮助您解决在使用手机应用时遇到的各种问题。请告诉我您遇到了什么困难，我会尽力为您提供帮助！
             </div>
-            
+        </div>
+
         <!-- 输入区域 -->
         <div class="input-area">
             <input type="text" class="message-input" id="messageInput" placeholder="输入消息..." onkeypress="handleKeyPress(event)">
@@ -592,9 +593,9 @@
                 try {
                     const wallpaperData = JSON.parse(savedWallpaper);
                     if (wallpaperData && wallpaperData.src) {
-                        // 设置页面背景，保持图片原始比例
+                        // 设置页面背景，让图片占满整个屏幕
                         document.body.style.backgroundImage = `url(${wallpaperData.src})`;
-                        document.body.style.backgroundSize = 'contain';
+                        document.body.style.backgroundSize = 'cover';
                         document.body.style.backgroundPosition = 'center';
                         document.body.style.backgroundRepeat = 'no-repeat';
                     }
@@ -646,7 +647,21 @@
             // 添加所有历史消息到聊天容器
             chatHistory.forEach(entry => {
                 addMessage(entry.user, 'user');
-                addMessage(entry.ai, 'service');
+                
+                // 处理AI回复，如果是多条消息则分条发送
+                if (entry.ai.includes('\n\n')) {
+                    // 如果回复包含多个段落，分条发送
+                    const messages = entry.ai.split('\n\n').filter(msg => msg.trim() !== '');
+                    messages.forEach((message, index) => {
+                        // 添加小延迟以确保消息按顺序显示
+                        setTimeout(() => {
+                            addMessage(message, 'service');
+                        }, index * 100);
+                    });
+                } else {
+                    // 单条消息直接发送
+                    addMessage(entry.ai, 'service');
+                }
             });
         }
 
