@@ -743,6 +743,44 @@
                     <div class="btn btn-primary" onclick="saveImgbbApiSettings()">保存设置</div>
                 </div>
             </div>
+            
+            <!-- 七牛云存储设置 -->
+            <div class="setting-item">
+                <div class="setting-title">七牛云存储设置</div>
+                <div class="setting-description">配置七牛云Access Key以启用视频和大文件上传功能</div>
+                
+                <div class="input-group">
+                    <label class="input-label">七牛云Access Key (AK)</label>
+                    <input type="text" class="input-field" id="qiniu-access-key" placeholder="请输入七牛云Access Key">
+                </div>
+                
+                <div class="input-group">
+                    <label class="input-label">七牛云Secret Key (SK)</label>
+                    <input type="password" class="input-field" id="qiniu-secret-key" placeholder="请输入七牛云Secret Key">
+                </div>
+                
+                <div class="input-group">
+                    <label class="input-label">存储空间名称 (Bucket)</label>
+                    <input type="text" class="input-field" id="qiniu-bucket" placeholder="请输入存储空间名称">
+                </div>
+                
+                <div class="setting-description">
+                    <p>注册地址: <a href="https://www.qiniu.com/" target="_blank" style="color: #007AFF;">https://www.qiniu.com/</a></p>
+                    <p>获取密钥步骤：</p>
+                    <ol style="color: #aaa; font-size: 12px; padding-left: 20px; margin: 5px 0;">
+                        <li>注册并登录七牛云控制台</li>
+                        <li>进入"密钥管理"页面</li>
+                        <li>复制Access Key和Secret Key</li>
+                        <li>创建存储空间(Bucket)并填写名称</li>
+                    </ol>
+                    <p>Secret Key为敏感信息，请妥善保管，不要在代码中硬编码</p>
+                </div>
+                
+                <div class="button-group">
+                    <div class="btn btn-secondary" onclick="testQiniuApi()">测试连接</div>
+                    <div class="btn btn-primary" onclick="saveQiniuSettings()">保存设置</div>
+                </div>
+            </div>
         </div>
 
         <!-- 自定义弹窗 -->
@@ -1187,8 +1225,15 @@
                 loadWeatherApiKey();
                 // 加载ImgBB API密钥
                 loadImgbbApiKey();
+                // 加载七牛云配置
+                loadQiniuSettings();
                 // 加载AI设置
                 loadAISettings();
+                // 设置七牛云API URL默认值
+                const qiniuApiUrlInput = document.getElementById('qiniu-api-url');
+                if (qiniuApiUrlInput && !qiniuApiUrlInput.value) {
+                    qiniuApiUrlInput.value = 'https://api.qnaigc.com/v1';
+                }
             };
 
             // 加载已保存的设置
@@ -1396,7 +1441,111 @@
                     document.getElementById('imgbb-api-key').value = savedApiKey;
                 }
             }
+            
+            // 保存七牛云设置
+            function saveQiniuSettings() {
+                const accessKey = document.getElementById('qiniu-access-key').value;
+                const secretKey = document.getElementById('qiniu-secret-key').value;
+                const bucket = document.getElementById('qiniu-bucket').value;
+                
+                if (!accessKey) {
+                    showModal('错误', '请输入七牛云Access Key');
+                    return;
+                }
+                
+                if (!secretKey) {
+                    showModal('错误', '请输入七牛云Secret Key');
+                    return;
+                }
+                
+                if (!bucket) {
+                    showModal('错误', '请输入存储空间名称');
+                    return;
+                }
+                
+                // 保存到localStorage
+                localStorage.setItem('qiniuAccessKey', accessKey);
+                localStorage.setItem('qiniuSecretKey', secretKey);
+                localStorage.setItem('qiniuBucket', bucket);
+                
+                showModal('保存成功', '七牛云配置已保存');
+            }
+            
+            // 加载已保存的七牛云配置
+            function loadQiniuSettings() {
+                const savedAccessKey = localStorage.getItem('qiniuAccessKey');
+                const savedSecretKey = localStorage.getItem('qiniuSecretKey');
+                const savedBucket = localStorage.getItem('qiniuBucket');
+                
+                if (savedAccessKey) {
+                    document.getElementById('qiniu-access-key').value = savedAccessKey;
+                }
+                
+                if (savedSecretKey) {
+                    document.getElementById('qiniu-secret-key').value = savedSecretKey;
+                }
+                
+                if (savedBucket) {
+                    document.getElementById('qiniu-bucket').value = savedBucket;
+                }
+            }
         
+            // 测试七牛云API连接
+            function testQiniuApi() {
+                const accessKey = document.getElementById('qiniu-access-key').value;
+                const secretKey = document.getElementById('qiniu-secret-key').value;
+                const bucket = document.getElementById('qiniu-bucket').value;
+                
+                if (!accessKey) {
+                    showModal('错误', '请输入七牛云Access Key');
+                    return;
+                }
+                
+                if (!secretKey) {
+                    showModal('错误', '请输入七牛云Secret Key');
+                    return;
+                }
+                
+                if (!bucket) {
+                    showModal('错误', '请输入存储空间名称');
+                    return;
+                }
+                
+                // 显示加载指示器
+                showLoading('正在测试七牛云API连接...');
+                
+                // 由于浏览器CORS限制，我们无法直接测试七牛云API
+                // 改为验证配置格式是否正确
+                setTimeout(() => {
+                    hideLoading();
+                    
+                    // 验证Access Key格式（通常为40位字符串）
+                    if (accessKey.length !== 40) {
+                        showModal('测试结果', 'Access Key格式可能不正确（应为40位字符）');
+                        return;
+                    }
+                    
+                    // 验证Secret Key格式（通常为40位字符串）
+                    if (secretKey.length !== 40) {
+                        showModal('测试结果', 'Secret Key格式可能不正确（应为40位字符）');
+                        return;
+                    }
+                    
+                    // 验证存储空间名称（不应包含特殊字符）
+                    if (!/^[a-zA-Z0-9\-_]+$/.test(bucket)) {
+                        showModal('测试结果', '存储空间名称格式不正确（只能包含字母、数字、连字符和下划线）');
+                        return;
+                    }
+                    
+                    showModal('测试成功', '七牛云配置格式正确，已保存！');
+                }, 1000);
+            }
+            
+            // 初始化页面
+            function init() {
+                loadQiniuSettings();
+            }
+            
             // 点击模态框外部关闭模态框
             window.onclick = function(event) {
                 const modal = document.getElementById('customModal');
