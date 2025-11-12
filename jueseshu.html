@@ -119,23 +119,24 @@
             flex: 1;
             display: flex;
             flex-direction: column;
-            padding: 110px 20px 20px; /* 调整padding以适应头部 */
+            padding: 110px 15px 20px; /* 调整padding以适应头部 */
             overflow-y: auto;
+            -webkit-overflow-scrolling: touch; /* iOS Safari滚动优化 */
         }
 
         /* 角色卡片容器 */
         .characters-container {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 20px;
-            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 15px;
         }
 
         /* 角色卡片 */
         .character-card {
             background: rgba(255, 255, 255, 0.1);
             border-radius: 15px;
-            padding: 15px;
+            padding: 20px 15px;
             text-align: center;
             cursor: pointer;
             transition: all 0.3s ease;
@@ -143,6 +144,10 @@
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
             touch-action: manipulation; /* 防止默认的触摸行为 */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
         }
 
         .character-card:hover {
@@ -157,15 +162,15 @@
         }
 
         .character-avatar {
-            width: 60px;
-            height: 60px;
+            width: 80px;
+            height: 80px;
             border-radius: 50%;
             background: #333;
             margin: 0 auto 10px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 24px;
+            font-size: 32px;
             overflow: hidden;
         }
 
@@ -177,19 +182,24 @@
         }
 
         .character-name {
-            font-size: 14px;
+            font-size: 16px;
             font-weight: bold;
             margin-bottom: 5px;
+            word-break: break-all;
+            padding: 0 5px;
         }
 
         .character-desc {
-            font-size: 12px;
+            font-size: 14px;
             color: #aaa;
             overflow: hidden;
             text-overflow: ellipsis;
             display: -webkit-box;
-            line-clamp: 2;
+            line-clamp: 4;
             -webkit-box-orient: vertical;
+            text-align: left;
+            width: 100%;
+            line-height: 1.5;
         }
 
         /* 添加角色按钮 */
@@ -198,14 +208,14 @@
             border: none;
             border-radius: 15px;
             color: white;
-            padding: 15px;
-            font-size: 16px;
+            padding: 18px;
+            font-size: 17px;
             font-weight: bold;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
+            gap: 12px;
             margin-top: 20px;
             transition: all 0.3s ease;
         }
@@ -242,15 +252,16 @@
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             border-radius: 20px;
-            padding: 25px;
-            width: 90%;
-            max-width: 90%;
-            max-height: 90vh;
+            padding: 20px 15px;
+            width: 95%;
+            max-width: 95%;
+            max-height: 85vh;
             overflow-y: auto;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
             border: 1px solid rgba(255, 255, 255, 0.1);
             transform: translateY(20px);
             transition: transform 0.3s ease;
+            -webkit-overflow-scrolling: touch; /* iOS Safari滚动优化 */
         }
 
         .modal.active .modal-content {
@@ -261,11 +272,12 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
+            padding: 0 5px;
         }
 
         .modal-title {
-            font-size: 18px;
+            font-size: 20px;
             font-weight: bold;
         }
 
@@ -273,14 +285,15 @@
             background: transparent;
             border: none;
             color: white;
-            font-size: 24px;
+            font-size: 28px;
             cursor: pointer;
-            width: 30px;
-            height: 30px;
+            width: 40px;
+            height: 40px;
             display: flex;
             align-items: center;
             justify-content: center;
             border-radius: 50%;
+            margin-right: -10px;
         }
 
         .close-btn:hover {
@@ -293,20 +306,21 @@
 
         .form-label {
             display: block;
-            margin-bottom: 8px;
-            font-size: 14px;
+            margin-bottom: 10px;
+            font-size: 16px;
             color: #aaa;
         }
 
         .form-input {
             width: 100%;
-            padding: 12px 15px;
+            padding: 15px;
             border-radius: 12px;
             background: rgba(255, 255, 255, 0.1);
             border: 1px solid rgba(255, 255, 255, 0.1);
             color: white;
             font-size: 16px;
             box-sizing: border-box;
+            margin-bottom: 10px;
         }
 
         .form-input:focus {
@@ -317,28 +331,30 @@
 
         .form-textarea {
             width: 100%;
-            padding: 12px 15px;
+            padding: 15px;
             border-radius: 12px;
             background: rgba(255, 255, 255, 0.1);
             border: 1px solid rgba(255, 255, 255, 0.1);
             color: white;
             font-size: 16px;
             box-sizing: border-box;
-            min-height: 100px;
+            min-height: 120px;
             resize: vertical;
+            margin-bottom: 10px;
         }
 
         .submit-btn {
             width: 100%;
-            padding: 15px;
+            padding: 16px;
             border-radius: 12px;
             background: linear-gradient(45deg, #007AFF, #0A84FF);
             border: none;
             color: white;
-            font-size: 16px;
+            font-size: 17px;
             font-weight: bold;
             cursor: pointer;
             transition: all 0.3s;
+            margin-top: 10px;
         }
 
         .submit-btn:hover {
@@ -348,16 +364,16 @@
 
         .delete-btn {
             width: 100%;
-            padding: 15px;
+            padding: 16px;
             border-radius: 12px;
             background: linear-gradient(135deg, #FF3B30, #FF453A);
             border: none;
             color: white;
-            font-size: 16px;
+            font-size: 17px;
             font-weight: bold;
             cursor: pointer;
             transition: all 0.3s;
-            margin-top: 10px;
+            margin-top: 15px;
         }
 
         .delete-btn:hover {
@@ -436,18 +452,23 @@
         .character-detail-modal .modal-content {
             max-width: 90%;
             width: auto;
+            max-height: 85vh;
         }
         
         .character-detail-content {
             text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
         
         .character-detail-avatar {
-            width: 100px;
-            height: 100px;
+            width: 120px;
+            height: 120px;
             border-radius: 50%;
             margin: 0 auto 20px;
             overflow: hidden;
+            border: 3px solid rgba(255, 255, 255, 0.2);
         }
         
         .character-detail-avatar img {
@@ -460,14 +481,24 @@
             font-size: 24px;
             font-weight: bold;
             margin-bottom: 10px;
+            word-break: break-all;
+            padding: 0 10px;
         }
         
         .character-detail-desc {
             font-size: 16px;
             color: #aaa;
-            line-height: 1.5;
+            line-height: 1.6;
             text-align: left;
             white-space: pre-wrap;
+            max-height: 50vh;
+            overflow-y: auto;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            width: 100%;
+            margin-top: 15px;
+            -webkit-overflow-scrolling: touch; /* iOS Safari滚动优化 */
         }
         
         /* 确认删除弹窗 */
@@ -497,7 +528,7 @@
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             border-radius: 20px;
-            padding: 25px;
+            padding: 20px 15px;
             width: 90%;
             max-width: 300px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
@@ -518,14 +549,15 @@
         }
 
         .confirm-modal-title {
-            font-size: 18px;
+            font-size: 20px;
             font-weight: bold;
         }
 
         .confirm-modal-message {
-            font-size: 16px;
+            font-size: 17px;
             margin-bottom: 20px;
             text-align: center;
+            line-height: 1.5;
         }
 
         .confirm-modal-actions {
@@ -535,11 +567,11 @@
 
         .confirm-btn {
             flex: 1;
-            padding: 12px;
+            padding: 15px;
             border-radius: 12px;
             border: none;
             color: white;
-            font-size: 16px;
+            font-size: 17px;
             font-weight: bold;
             cursor: pointer;
             transition: all 0.3s;
@@ -556,16 +588,16 @@
         /* 确保删除按钮正常显示 */
         .delete-btn {
             width: 100%;
-            padding: 15px;
+            padding: 16px;
             border-radius: 12px;
             background: linear-gradient(135deg, #FF3B30, #FF453A);
             border: none;
             color: white;
-            font-size: 16px;
+            font-size: 17px;
             font-weight: bold;
             cursor: pointer;
             transition: all 0.3s;
-            margin-top: 10px;
+            margin-top: 15px;
         }
 
         .delete-btn:hover {
@@ -576,15 +608,15 @@
         /* 修复工具按钮样式 */
         .repair-btn {
             width: 100%;
-            padding: 12px;
+            padding: 15px;
             border-radius: 12px;
             border: none;
             color: white;
-            font-size: 14px;
+            font-size: 16px;
             font-weight: bold;
             cursor: pointer;
             transition: all 0.3s;
-            margin-top: 10px;
+            margin-top: 12px;
         }
         
         .repair-warning-btn {
@@ -721,7 +753,7 @@
                     <button class="confirm-btn confirm-delete-btn" onclick="confirmDeleteCharacter()">删除</button>
                 </div>
                 <!-- 添加手机端修复工具按钮 -->
-                <div style="margin-top: 15px; text-align: center; display: flex; flex-direction: column; gap: 10px;">
+                <div style="margin-top: 15px; text-align: center; display: flex; flex-direction: column; gap: 12px;">
                     <button class="repair-btn repair-warning-btn" onclick="emergencyFixCharacters()">紧急修复</button>
                     <button class="repair-btn repair-info-btn" onclick="mobileDataRepair()">数据修复</button>
                     <button class="repair-btn confirm-delete-btn" onclick="mobileEmergencyReset()">紧急重置</button>
@@ -1348,6 +1380,12 @@
                 if (modal) {
                     modal.classList.remove('active');
                     
+                    // 确保模态框完全隐藏
+                    setTimeout(() => {
+                        modal.style.opacity = '0';
+                        modal.style.visibility = 'hidden';
+                    }, 300); // 与CSS过渡时间匹配
+                    
                     // 恢复添加角色弹窗的原始状态
                     const titleElement = modal.querySelector('.modal-title');
                     if (titleElement) {
@@ -1359,6 +1397,23 @@
                         saveButton.textContent = '保存角色';
                         saveButton.onclick = addCharacter;
                     }
+                    
+                    // 重置表单和临时变量
+                    document.getElementById('characterName').value = '';
+                    document.getElementById('characterDesc').value = '';
+                    const previewArea = document.getElementById('avatarPreviewArea');
+                    if (previewArea) {
+                        previewArea.innerHTML = `
+                            <div class="upload-icon">👤</div>
+                            <div class="upload-text" id="uploadText">点击选择头像或使用URL上传</div>
+                        `;
+                    }
+                    const urlContainer = document.getElementById('urlUploadContainer');
+                    if (urlContainer) {
+                        urlContainer.style.display = 'none';
+                    }
+                    document.getElementById('avatarUrl').value = '';
+                    window.tempAvatar = undefined; // 重置为undefined而不是null
                 }
             }
 
@@ -1519,8 +1574,8 @@
                 const name = document.getElementById('characterName').value.trim();
                 const desc = document.getElementById('characterDesc').value.trim();
                 
-                if (!name) {
-                    showPageAlert('请输入角色名称');
+                // 验证表单数据
+                if (!validateCharacterForm(name, desc)) {
                     return;
                 }
                 
@@ -1560,7 +1615,14 @@
                     localStorage.setItem('characters', JSON.stringify(characters));
                 } catch (e) {
                     console.error('保存角色时出错:', e);
-                    showPageAlert('保存角色时出错，请重试');
+                    
+                    // 检查是否为存储空间不足错误
+                    if (e.name === 'QuotaExceededError') {
+                        showPageAlert('存储空间不足，请删除一些角色后再试');
+                    } else {
+                        showPageAlert('保存角色时出错，请重试');
+                    }
+                    
                     return;
                 }
                 
@@ -1594,6 +1656,12 @@
                 console.log('查看角色详情:', character, index);
                 // 清除可能存在的长按状态
                 handleLongPressEnd();
+                
+                // 验证角色数据
+                if (!character || !character.name) {
+                    showPageAlert('角色数据不完整');
+                    return;
+                }
                 
                 // 设置当前角色和索引
                 currentCharacter = character;
@@ -1664,6 +1732,8 @@
                         modal.style.opacity = '1';
                         modal.style.visibility = 'visible';
                     }, 10);
+                } else {
+                    showPageAlert('无法打开角色详情');
                 }
             }
 
@@ -1678,84 +1748,154 @@
                         modal.style.visibility = 'hidden';
                     }, 300); // 与CSS过渡时间匹配
                 }
+                // 清除当前角色引用
                 currentCharacter = null;
                 currentCharacterIndex = null;
+                
+                // 清除详情弹窗内容
+                const detailName = document.getElementById('detailName');
+                const detailDesc = document.getElementById('detailDesc');
+                
+                if (detailName) {
+                    detailName.textContent = '';
+                }
+                if (detailDesc) {
+                    detailDesc.textContent = '';
+                }
+                
+                // 清除头像
+                const avatarContainer = document.querySelector('.character-detail-avatar');
+                if (avatarContainer) {
+                    avatarContainer.innerHTML = '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:40px;">👤</div>';
+                }
             }
 
             // 编辑角色
             function editCharacter() {
+                // 检查是否有选中的角色
+                if (!currentCharacter) {
+                    showPageAlert('未选择角色，请从角色列表中选择要编辑的角色');
+                    return;
+                }
+                
+                // 保存当前角色引用，因为在关闭详情弹窗时会被清除
+                const characterToEdit = currentCharacter;
+                const characterIndexToEdit = currentCharacterIndex;
+                
                 // 关闭详情弹窗
                 closeCharacterDetailModal();
                 
-                // 打开编辑弹窗
-                openEditCharacterModal();
+                // 确保详情弹窗完全关闭后再打开编辑弹窗
+                setTimeout(() => {
+                    // 恢复当前角色引用
+                    currentCharacter = characterToEdit;
+                    currentCharacterIndex = characterIndexToEdit;
+                    // 打开编辑弹窗
+                    openEditCharacterModal();
+                }, 350); // 等待详情弹窗关闭动画完成
             }
 
             // 打开编辑角色弹窗
             function openEditCharacterModal() {
+                // 检查是否有选中的角色
+                if (!currentCharacter) {
+                    showPageAlert('未选择角色，请重新选择');
+                    return;
+                }
+                
                 // 设置表单数据
-                if (currentCharacter) {
-                    document.getElementById('characterName').value = currentCharacter.name || '';
-                    document.getElementById('characterDesc').value = currentCharacter.desc || '';
-                    
-                    // 设置头像预览
-                    const previewArea = document.getElementById('avatarPreviewArea');
-                    if (previewArea) {
-                        if (currentCharacter.avatar) {
-                            if (currentCharacter.avatar.startsWith('data:image') || 
-                                currentCharacter.avatar.startsWith('http://') || 
-                                currentCharacter.avatar.startsWith('https://')) {
-                                previewArea.innerHTML = `
-                                    <img src="${currentCharacter.avatar}" style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover; margin: 0 auto 10px;">
-                                    <div class="upload-text" id="uploadText">当前头像</div>
-                                `;
-                            } else {
-                                previewArea.innerHTML = `
-                                    <div class="upload-icon">👤</div>
-                                    <div class="upload-text" id="uploadText">点击选择新头像</div>
-                                `;
-                            }
+                document.getElementById('characterName').value = currentCharacter.name || '';
+                document.getElementById('characterDesc').value = currentCharacter.desc || '';
+                
+                // 设置头像预览
+                const previewArea = document.getElementById('avatarPreviewArea');
+                if (previewArea) {
+                    if (currentCharacter.avatar) {
+                        if (currentCharacter.avatar.startsWith('data:image') || 
+                            currentCharacter.avatar.startsWith('http://') || 
+                            currentCharacter.avatar.startsWith('https://')) {
+                            previewArea.innerHTML = `
+                                <img src="${currentCharacter.avatar}" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; margin: 0 auto 10px;">
+                                <div class="upload-text" id="uploadText">当前头像</div>
+                            `;
                         } else {
                             previewArea.innerHTML = `
                                 <div class="upload-icon">👤</div>
-                                <div class="upload-text" id="uploadText">点击选择头像</div>
+                                <div class="upload-text" id="uploadText">点击选择新头像</div>
                             `;
                         }
+                    } else {
+                        previewArea.innerHTML = `
+                            <div class="upload-icon">👤</div>
+                            <div class="upload-text" id="uploadText">点击选择头像</div>
+                        `;
+                    }
+                }
+                
+                // 保存当前角色到临时变量
+                window.tempAvatar = currentCharacter.avatar || null;
+                
+                // 显示添加角色弹窗（用于编辑）
+                const modal = document.getElementById('addCharacterModal');
+                if (modal) {
+                    // 更改标题为编辑角色
+                    const titleElement = modal.querySelector('.modal-title');
+                    if (titleElement) {
+                        titleElement.textContent = '编辑角色';
                     }
                     
-                    // 保存当前角色到临时变量
-                    window.tempAvatar = currentCharacter.avatar || null;
-                    
-                    // 显示添加角色弹窗（用于编辑）
-                    const modal = document.getElementById('addCharacterModal');
-                    if (modal) {
-                        // 更改标题为编辑角色
-                        const titleElement = modal.querySelector('.modal-title');
-                        if (titleElement) {
-                            titleElement.textContent = '编辑角色';
-                        }
-                        
-                        // 更改保存按钮文字
-                        const saveButton = modal.querySelector('.submit-btn');
-                        if (saveButton) {
-                            saveButton.textContent = '更新角色';
-                            // 更改保存按钮的点击事件
-                            saveButton.onclick = updateCharacter;
-                        }
-                        
-                        modal.classList.add('active');
+                    // 更改保存按钮文字
+                    const saveButton = modal.querySelector('.submit-btn');
+                    if (saveButton) {
+                        saveButton.textContent = '更新角色';
+                        // 更改保存按钮的点击事件
+                        saveButton.onclick = updateCharacter;
                     }
+                    
+                    // 显示模态框
+                    modal.classList.add('active');
+                    
+                    // 确保模态框可见
+                    setTimeout(() => {
+                        modal.style.opacity = '1';
+                        modal.style.visibility = 'visible';
+                    }, 10);
+                } else {
+                    showPageAlert('无法打开编辑界面');
                 }
             }
 
+            // 验证角色表单数据
+            function validateCharacterForm(name, desc) {
+                // 验证名称
+                if (!name || name.trim() === '') {
+                    showPageAlert('请输入角色名称');
+                    return false;
+                }
+                
+                // 检查名称长度
+                if (name.length > 50) {
+                    showPageAlert('角色名称不能超过50个字符');
+                    return false;
+                }
+                
+                // 检查描述长度
+                if (desc && desc.length > 500) {
+                    showPageAlert('角色描述不能超过500个字符');
+                    return false;
+                }
+                
+                return true;
+            }
+            
             // 更新角色
             function updateCharacter() {
                 console.log('更新角色函数被调用');
                 const name = document.getElementById('characterName').value.trim();
                 const desc = document.getElementById('characterDesc').value.trim();
                 
-                if (!name) {
-                    showPageAlert('请输入角色名称');
+                // 验证表单数据
+                if (!validateCharacterForm(name, desc)) {
                     return;
                 }
                 
@@ -1773,13 +1913,32 @@
                     }
                 }
                 
+                // 检查是否已存在同名角色（排除当前编辑的角色）
+                const existingCharacter = characters.find(char => char.name === name && char.id !== currentCharacter.id);
+                if (existingCharacter) {
+                    showPageAlert('已存在同名角色，请使用不同的名称');
+                    return;
+                }
+                
                 // 查找并更新角色
                 let updated = false;
+                let originalCreatedAt = null;
                 for (let i = 0; i < characters.length; i++) {
                     if (characters[i].id === currentCharacter.id) {
+                        // 保存原始创建时间
+                        originalCreatedAt = characters[i].createdAt;
+                        
+                        // 更新角色信息
                         characters[i].name = name;
                         characters[i].desc = desc;
                         characters[i].avatar = window.tempAvatar || characters[i].avatar;
+                        
+                        // 确保创建时间不变
+                        if (!originalCreatedAt) {
+                            originalCreatedAt = new Date().toISOString();
+                        }
+                        characters[i].createdAt = originalCreatedAt;
+                        
                         updated = true;
                         break;
                     }
@@ -1795,7 +1954,14 @@
                     localStorage.setItem('characters', JSON.stringify(characters));
                 } catch (e) {
                     console.error('保存角色时出错:', e);
-                    showPageAlert('保存角色时出错，请重试');
+                    
+                    // 检查是否为存储空间不足错误
+                    if (e.name === 'QuotaExceededError') {
+                        showPageAlert('存储空间不足，请删除一些角色后再试');
+                    } else {
+                        showPageAlert('保存角色时出错，请重试');
+                    }
+                    
                     return;
                 }
                 
