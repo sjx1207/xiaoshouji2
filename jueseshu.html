@@ -18,11 +18,11 @@
             background: linear-gradient(135deg, #1a1a1a, #000);
             color: #fff;
             height: 100vh;
-            overflow: hidden;
+            overflow: auto; /* 允许页面滚动，支持安卓浏览器 */
         }
 
         .phone {
-            height: 100vh;
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
             position: relative;
@@ -121,7 +121,23 @@
             flex-direction: column;
             padding: 110px 15px 20px; /* 调整padding以适应头部 */
             overflow-y: auto;
-            -webkit-overflow-scrolling: touch; /* iOS Safari滚动优化 */
+            -webkit-overflow-scrolling: touch; /* 滚动优化 */
+            scrollbar-width: thin; /* Firefox滚动条 */
+            scrollbar-color: rgba(255, 255, 255, 0.3) transparent; /* Firefox滚动条颜色 */
+        }
+        
+        /* Webkit浏览器滚动条样式 */
+        .content::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .content::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        .content::-webkit-scrollbar-thumb {
+            background-color: rgba(255, 255, 255, 0.3);
+            border-radius: 4px;
         }
 
         /* 角色卡片容器 */
@@ -1040,86 +1056,91 @@
                     let touchStartX = 0;
                     let touchStartY = 0;
                     
-                    characterCard.addEventListener('touchstart', (e) => {
-                        touchStartTime = Date.now();
-                        if (e.touches && e.touches[0]) {
-                            touchStartX = e.touches[0].clientX;
-                            touchStartY = e.touches[0].clientY;
-                        }
-                        // 不阻止默认行为，允许点击事件正常工作
-                    }, { passive: true });
+                    // 移除touchstart事件监听器，避免干扰页面滚动
+                    // characterCard.addEventListener('touchstart', (e) => {
+                    //     touchStartTime = Date.now();
+                    //     if (e.touches && e.touches[0]) {
+                    //         touchStartX = e.touches[0].clientX;
+                    //         touchStartY = e.touches[0].clientY;
+                    //     }
+                    //     // 不阻止默认行为，允许点击事件正常工作
+                    // }, { passive: true });
                     
-                    characterCard.addEventListener('touchend', (e) => {
-                        const touchEndTime = Date.now();
-                        const touchDuration = touchEndTime - touchStartTime;
-                        
-                        let touchEndX = touchStartX;
-                        let touchEndY = touchStartY;
-                        if (e.changedTouches && e.changedTouches[0]) {
-                            touchEndX = e.changedTouches[0].clientX;
-                            touchEndY = e.changedTouches[0].clientY;
-                        }
-                        
-                        // 计算触摸移动距离
-                        const moveDistance = Math.sqrt(
-                            Math.pow(touchEndX - touchStartX, 2) + 
-                            Math.pow(touchEndY - touchStartY, 2)
-                        );
-                        
-                        // 如果触摸时间超过500ms且移动距离较小，则视为长按
-                        if (touchDuration > 500 && moveDistance < 20) {
-                            // 长按操作
-                            e.preventDefault();
-                            e.stopPropagation();
-                            handleLongPressStart(e, character, index);
-                        }
-                        
-                        // 重置长按状态
-                        handleLongPressEnd(e);
-                    }, { passive: true });
+                    // 移除touchend事件监听器，避免干扰页面滚动
+                    // characterCard.addEventListener('touchend', (e) => {
+                    //     const touchEndTime = Date.now();
+                    //     const touchDuration = touchEndTime - touchStartTime;
+                    //     
+                    //     let touchEndX = touchStartX;
+                    //     let touchEndY = touchStartY;
+                    //     if (e.changedTouches && e.changedTouches[0]) {
+                    //         touchEndX = e.changedTouches[0].clientX;
+                    //         touchEndY = e.changedTouches[0].clientY;
+                    //     }
+                    //     
+                    //     // 计算触摸移动距离
+                    //     const moveDistance = Math.sqrt(
+                    //         Math.pow(touchEndX - touchStartX, 2) + 
+                    //         Math.pow(touchEndY - touchStartY, 2)
+                    //     );
+                    //     
+                    //     // 如果触摸时间超过500ms且移动距离较小，则视为长按
+                    //     if (touchDuration > 500 && moveDistance < 20) {
+                    //         // 长按操作
+                    //         e.preventDefault();
+                    //         e.stopPropagation();
+                    //         handleLongPressStart(e, character, index);
+                    //     }
+                    //     
+                    //     // 重置长按状态
+                    //     handleLongPressEnd(e);
+                    // }, { passive: true });
                     
-                    characterCard.addEventListener('touchmove', (e) => {
-                        // 如果有较大移动，取消长按检测
-                        if (touchStartTime > 0) {
-                            let currentX = touchStartX;
-                            let currentY = touchStartY;
-                            if (e.touches && e.touches[0]) {
-                                currentX = e.touches[0].clientX;
-                                currentY = e.touches[0].clientY;
-                            }
-                            
-                            const moveDistance = Math.sqrt(
-                                Math.pow(currentX - touchStartX, 2) + 
-                                Math.pow(currentY - touchStartY, 2)
-                            );
-                            
-                            // 如果移动距离超过一定阈值，取消长按检测
-                            if (moveDistance > 20) {
-                                handleLongPressEnd(e);
-                            }
-                        }
-                    }, { passive: true });
+                    // 移除touchmove事件监听器，避免干扰页面滚动
+                    // characterCard.addEventListener('touchmove', (e) => {
+                    //     // 如果有较大移动，取消长按检测
+                    //     if (touchStartTime > 0) {
+                    //         let currentX = touchStartX;
+                    //         let currentY = touchStartY;
+                    //         if (e.touches && e.touches[0]) {
+                    //             currentX = e.touches[0].clientX;
+                    //             currentY = e.touches[0].clientY;
+                    //         }
+                    //         
+                    //         const moveDistance = Math.sqrt(
+                    //             Math.pow(currentX - touchStartX, 2) + 
+                    //             Math.pow(currentY - touchStartY, 2)
+                    //         );
+                    //         
+                    //         // 如果移动距离超过一定阈值，取消长按检测
+                    //         if (moveDistance > 20) {
+                    //             handleLongPressEnd(e);
+                    //         }
+                    //     }
+                    // }, { passive: true });
                     
-                    characterCard.addEventListener('touchcancel', (e) => {
-                        handleLongPressEnd(e);
-                    }, { passive: true });
+                    // 移除touchcancel事件监听器，避免干扰页面滚动
+                    // characterCard.addEventListener('touchcancel', (e) => {
+                    //     handleLongPressEnd(e);
+                    // }, { passive: true });
                     
-                    // 添加鼠标事件（用于桌面测试）
-                    characterCard.addEventListener('mousedown', (e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        handleLongPressStart(e, character, index);
-                    });
-                    characterCard.addEventListener('mouseup', (e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        handleLongPressEnd(e);
-                    });
-                    characterCard.addEventListener('mouseleave', (e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        handleLongPressEnd(e);
-                    });
+                    // 移除鼠标事件监听器，避免干扰页面滚动
+                    // // 添加鼠标事件（用于桌面测试）
+                    // characterCard.addEventListener('mousedown', (e) => {
+                    //     e.preventDefault();
+                    //     e.stopPropagation();
+                    //     handleLongPressStart(e, character, index);
+                    // });
+                    // characterCard.addEventListener('mouseup', (e) => {
+                    //     e.preventDefault();
+                    //     e.stopPropagation();
+                    //     handleLongPressEnd(e);
+                    // });
+                    // characterCard.addEventListener('mouseleave', (e) => {
+                    //     e.preventDefault();
+                    //     e.stopPropagation();
+                    //     handleLongPressEnd(e);
+                    // });
                     
                     charactersContainer.appendChild(characterCard);
                 });
