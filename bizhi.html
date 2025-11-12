@@ -267,6 +267,22 @@
             margin: 0 auto 20px;
         }
         
+        /* 响应式设计 */
+        @media (max-width: 500px) {
+            .modal-content {
+                width: 90%;
+                padding: 20px;
+            }
+            
+            .modal-title {
+                font-size: 18px;
+            }
+            
+            .modal-message {
+                font-size: 14px;
+            }
+        }
+        
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
@@ -386,7 +402,7 @@
             
             // 显示进度模态框
             function showProgressModal(message) {
-                document.getElementById('progressMessage').textContent = message;
+                document.getElementById('progressMessage').innerHTML = message;
                 document.getElementById('progressModal').style.display = 'flex';
             }
             
@@ -415,11 +431,18 @@
 
             // 上传视频到Cloudinary
             function uploadVideoToCloudinary(file, cloudName, uploadPreset) {
+                // 检查文件大小（限制为50MB）
+                if (file.size > 50 * 1024 * 1024) {
+                    showModal('文件过大', '视频文件过大，请选择小于50MB的文件');
+                    return;
+                }
+                
                 // 显示上传进度
                 showProgressModal('正在上传视频到Cloudinary...');
                 
                 // 验证配置
                 if (!cloudName || !uploadPreset) {
+                    closeProgressModal();
                     showModal('错误', 'Cloudinary配置不完整，请检查设置');
                     return;
                 }
@@ -430,15 +453,12 @@
                 formData.append('upload_preset', uploadPreset);
                 // 不需要再添加cloud_name到formData中，因为它已经在URL中了
                 
-                // 显示上传进度
-                const progressDiv = document.createElement('div');
-                progressDiv.id = 'upload-progress';
-                progressDiv.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.8);color:white;padding:20px;border-radius:10px;z-index:1000;';
-                progressDiv.innerHTML = '正在上传视频... 请稍候';
-                document.getElementById('wallpaperPreview').appendChild(progressDiv);
-                
                 // 上传到Cloudinary
                 console.log('开始上传到Cloudinary，Cloud Name:', cloudName);
+                
+                // 更新进度模态框消息
+                showProgressModal('正在上传视频到Cloudinary...<br>文件大小: ' + (file.size/1024/1024).toFixed(2) + 'MB<br>请耐心等待，大文件上传需要一些时间');
+                
                 fetch(`https://api.cloudinary.com/v1_1/${cloudName}/video/upload`, {
                     method: 'POST',
                     body: formData
@@ -455,12 +475,10 @@
                 })
                 .then(data => {
                     console.log('Cloudinary响应数据:', data);
-                    // 移除进度显示
-                    if (document.getElementById('upload-progress')) {
-                        document.getElementById('upload-progress').remove();
-                    }
+                    closeProgressModal();
                     
                     if (data.secure_url) {
+                        closeProgressModal();
                         // 保存视频URL到localStorage
                         const wallpaperData = {
                             type: 'video',
@@ -484,10 +502,7 @@
                     }
                 })
                 .catch(error => {
-                    // 移除进度显示
-                    if (document.getElementById('upload-progress')) {
-                        document.getElementById('upload-progress').remove();
-                    }
+                    closeProgressModal();
                     
                     console.error('上传错误:', error);
                     let errorMessage = '视频上传失败: ' + error.message + '\n\n';
