@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>壁纸设置</title>
+    <title>壁纸与视频设置</title>
+    <!-- 引入Cloudinary JavaScript SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/cloudinary-core@2.13.0/cloudinary-core-shrinkwrap.min.js"></script>
     <style>
         * {
             box-sizing: border-box;
@@ -196,6 +198,79 @@
             height: 20px;
             fill: white;
         }
+        
+        /* 自定义模态框样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background: #333;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 400px;
+            width: 80%;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        .modal-title {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #fff;
+        }
+        
+        .modal-message {
+            font-size: 16px;
+            color: #ccc;
+            margin-bottom: 30px;
+            line-height: 1.5;
+        }
+        
+        .modal-button {
+            padding: 12px 30px;
+            background: #007AFF;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .modal-button:hover {
+            background: #0062cc;
+        }
+        
+        /* 上传进度模态框 */
+        .progress-modal .modal-content {
+            padding: 40px 30px;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid #007AFF;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
@@ -234,7 +309,7 @@
         <!-- 主内容区域 -->
         <div class="main-content">
             <div class="wallpaper-container">
-                <h2 class="wallpaper-title">设置壁纸</h2>
+                <h2 class="wallpaper-title">设置壁纸与视频</h2>
                 
                 <div class="wallpaper-preview" id="wallpaperPreview">
                     <span>预览区域</span>
@@ -249,12 +324,34 @@
                     </button>
                 </div>
                 
+                <div style="color: #aaa; font-size: 12px; text-align: center; margin: 10px 0;">
+                    注意：视频文件将上传到Cloudinary存储（需在<a href="shezhi.html" style="color: #007AFF;">设置页面</a>配置密钥），图片文件保存在本地。
+                    <br>视频上传后可通过Cloudinary URL访问，不占用本地存储空间。
+                </div>
+                
                 <input type="file" id="imageUpload" class="file-input" accept="image/*" onchange="previewImage(event)">
                 <input type="file" id="videoUpload" class="file-input" accept="video/*" onchange="previewVideo(event)">
                 
                 <button class="set-btn" id="setWallpaperBtn" disabled onclick="setWallpaper()">
                     设置为壁纸
                 </button>
+            </div>
+        </div>
+        
+        <!-- 自定义模态框 -->
+        <div id="customModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-title" id="modalTitle">提示</div>
+                <div class="modal-message" id="modalMessage">这是一条提示信息</div>
+                <button class="modal-button" onclick="closeModal()">确定</button>
+            </div>
+        </div>
+        
+        <!-- 上传进度模态框 -->
+        <div id="progressModal" class="modal progress-modal">
+            <div class="modal-content">
+                <div class="spinner"></div>
+                <div class="modal-message" id="progressMessage">正在上传...</div>
             </div>
         </div>
 
@@ -274,57 +371,150 @@
             function goBack() {
                 window.location.href = 'index.html';
             }
-
-            // 预览视频
-            function previewVideo(event) {
-                const file = event.target.files[0];
-                console.log('选择的视频文件:', file);
-                if (file) {
-                    // 不限制视频文件大小
-                    // if (file.size > 1.5 * 1024 * 1024) {
-                    //     alert('视频文件太大，请选择小于1.5MB的文件');
-                    //     return;
-                    // }
-                    
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        const preview = document.getElementById('wallpaperPreview');
-                        const videoUrl = e.target.result;
-                        console.log('视频文件读取完成，大小:', videoUrl.length);
-                        
-                        // 在预览区域直接播放视频
-                        preview.innerHTML = `<video src="${videoUrl}" autoplay muted loop style="width:100%;height:100%;object-fit:cover;"></video>`;
-                        preview.dataset.videoUrl = videoUrl; // 保存视频URL
-                        preview.dataset.isFileVideo = "true"; // 标记这是视频壁纸
-                        console.log('视频预览生成完成');
-                        document.getElementById('setWallpaperBtn').disabled = false;
-                    };
-                    reader.onerror = function(e) {
-                        console.error('文件读取错误:', e);
-                        alert('文件读取失败，请重试');
-                    };
-                    reader.readAsDataURL(file);
-                }
+            
+            // 显示自定义模态框
+            function showModal(title, message) {
+                document.getElementById('modalTitle').textContent = title;
+                document.getElementById('modalMessage').innerHTML = message;
+                document.getElementById('customModal').style.display = 'flex';
+            }
+            
+            // 关闭自定义模态框
+            function closeModal() {
+                document.getElementById('customModal').style.display = 'none';
+            }
+            
+            // 显示进度模态框
+            function showProgressModal(message) {
+                document.getElementById('progressMessage').textContent = message;
+                document.getElementById('progressModal').style.display = 'flex';
+            }
+            
+            // 关闭进度模态框
+            function closeProgressModal() {
+                document.getElementById('progressModal').style.display = 'none';
             }
 
             // 预览图片
             function previewImage(event) {
                 const file = event.target.files[0];
                 if (file) {
-                    // 不限制图片文件大小
-                    // if (file.size > 1.5 * 1024 * 1024) {
-                    //     alert('图片文件太大，请选择小于1.5MB的文件');
-                    //     return;
-                    // }
-                    
                     const reader = new FileReader();
                     reader.onload = function(e) {
                         const preview = document.getElementById('wallpaperPreview');
                         preview.innerHTML = `<img src="${e.target.result}" alt="壁纸预览" style="width:100%;height:100%;object-fit:cover;">`;
-                        preview.dataset.imageUrl = e.target.result; // 保存图片URL
-                        preview.dataset.isFileVideo = "false"; // 标记这是图片壁纸
+                        preview.dataset.imageUrl = e.target.result;
+                        preview.dataset.fileName = file.name;
+                        preview.dataset.fileSize = file.size;
+                        preview.dataset.isFileVideo = "false";
                         document.getElementById('setWallpaperBtn').disabled = false;
+                    };
+                    reader.readAsDataURL(file);
+                }
+            }
+
+            // 上传视频到Cloudinary
+            function uploadVideoToCloudinary(file, cloudName, uploadPreset) {
+                // 显示上传进度
+                showProgressModal('正在上传视频到Cloudinary...');
+                
+                // 验证配置
+                if (!cloudName || !uploadPreset) {
+                    showModal('错误', 'Cloudinary配置不完整，请检查设置');
+                    return;
+                }
+                
+                // 创建FormData对象
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('upload_preset', uploadPreset);
+                // 不需要再添加cloud_name到formData中，因为它已经在URL中了
+                
+                // 显示上传进度
+                const progressDiv = document.createElement('div');
+                progressDiv.id = 'upload-progress';
+                progressDiv.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.8);color:white;padding:20px;border-radius:10px;z-index:1000;';
+                progressDiv.innerHTML = '正在上传视频... 请稍候';
+                document.getElementById('wallpaperPreview').appendChild(progressDiv);
+                
+                // 上传到Cloudinary
+                console.log('开始上传到Cloudinary，Cloud Name:', cloudName);
+                fetch(`https://api.cloudinary.com/v1_1/${cloudName}/video/upload`, {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => {
+                    console.log('Cloudinary响应状态:', response.status);
+                    if (!response.ok) {
+                        return response.text().then(text => {
+                            console.error('Cloudinary错误响应:', text);
+                            throw new Error(`HTTP error! status: ${response.status}, message: ${text}`);
+                        });
                     }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Cloudinary响应数据:', data);
+                    // 移除进度显示
+                    if (document.getElementById('upload-progress')) {
+                        document.getElementById('upload-progress').remove();
+                    }
+                    
+                    if (data.secure_url) {
+                        // 保存视频URL到localStorage
+                        const wallpaperData = {
+                            type: 'video',
+                            src: data.secure_url,
+                            // 为视频生成海报，使用视频的第一帧作为海报
+                            poster: data.secure_url.replace('/upload/', '/upload/f_auto,q_auto,so_0/').replace(/\.(mp4|webm|ogg|mov)$/, '.jpg'),
+                            fileName: file.name,
+                            timestamp: new Date().toISOString()
+                        };
+                        localStorage.setItem('wallpaper', JSON.stringify(wallpaperData));
+                        console.log('壁纸数据已保存到localStorage:', wallpaperData);
+                        showModal('成功', '视频壁纸已成功上传并设置！');
+                        
+                        // 更新预览显示
+                        const preview = document.getElementById('wallpaperPreview');
+                        preview.innerHTML = `<video src="${data.secure_url}" autoplay muted loop style="width:100%;height:100%;object-fit:cover;"></video>`;
+                        preview.dataset.videoUrl = data.secure_url;
+                        preview.dataset.isFileVideo = "true";
+                    } else {
+                        throw new Error('上传失败: ' + (data.error?.message || '未知错误'));
+                    }
+                })
+                .catch(error => {
+                    // 移除进度显示
+                    if (document.getElementById('upload-progress')) {
+                        document.getElementById('upload-progress').remove();
+                    }
+                    
+                    console.error('上传错误:', error);
+                    let errorMessage = '视频上传失败: ' + error.message + '\n\n';
+                    errorMessage += '请检查以下配置：\n';
+                    errorMessage += '1. Upload Preset是否设置为"Unsigned"模式\n';
+                    errorMessage += '2. Cloudinary账户是否有足够的存储空间\n';
+                    errorMessage += '3. 网络连接是否正常\n\n';
+                    errorMessage += '解决方法：登录Cloudinary控制台 -> Settings -> Upload -> 找到您的Upload Preset -> 设置为Unsigned模式';
+                    showModal('上传失败', errorMessage);
+                });
+            }
+
+            // 预览视频
+            function previewVideo(event) {
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const preview = document.getElementById('wallpaperPreview');
+                        preview.innerHTML = `<video src="${e.target.result}" autoplay muted loop style="width:100%;height:100%;object-fit:cover;"></video>`;
+                        preview.dataset.videoFile = file.name; // 保存文件名
+                        preview.dataset.isFileVideo = "true";
+                        document.getElementById('setWallpaperBtn').disabled = false;
+                        
+                        // 保存文件对象以便上传时使用
+                        window.currentVideoFile = file;
+                    };
                     reader.readAsDataURL(file);
                 }
             }
@@ -332,149 +522,43 @@
             // 设置壁纸
             function setWallpaper() {
                 const preview = document.getElementById('wallpaperPreview');
-                const isVideo = preview.dataset.isFileVideo === "true";
+                const isFileVideo = preview.dataset.isFileVideo === "true";
                 
-                try {
-                    if (isVideo) {
-                        const videoUrl = preview.dataset.videoUrl;
-                        if (!videoUrl) {
-                            alert('请先选择视频文件');
+                if (isFileVideo) {
+                    // 视频壁纸 - 上传到Cloudinary
+                    if (window.currentVideoFile) {
+                        // 检查是否已配置Cloudinary
+                        const cloudName = localStorage.getItem('cloudinaryCloudName');
+                        const uploadPreset = localStorage.getItem('cloudinaryUploadPreset');
+                        
+                        if (!cloudName || !uploadPreset) {
+                            showModal('配置缺失', '请先在设置页面配置Cloudinary！');
+                            window.location.href = 'shezhi.html';
                             return;
                         }
                         
-                        // 为视频壁纸生成海报图像
-                        const video = document.createElement('video');
-                        video.src = videoUrl;
-                        video.muted = true;
-                        video.playsInline = true;
-                        
-                        video.addEventListener('loadedmetadata', function() {
-                            video.currentTime = 0.1; // 跳到第0.1秒
-                        });
-                        
-                        video.addEventListener('seeked', function() {
-                            // 创建canvas来捕获视频帧作为海报
-                            const canvas = document.createElement('canvas');
-                            canvas.width = Math.min(video.videoWidth, 640); // 降低分辨率
-                            canvas.height = Math.min(video.videoHeight, 480);
-                            const ctx = canvas.getContext('2d');
-                            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-                            const posterUrl = canvas.toDataURL('image/jpeg', 0.7); // 降低质量以减少大小
-                            
-                            // 保存视频壁纸数据（包含视频URL和海报）
-                            const wallpaperData = {
-                                type: 'video',
-                                src: videoUrl,
-                                poster: posterUrl,
-                                timestamp: Date.now()
-                            };
-                            
-                            try {
-                                localStorage.setItem('wallpaper', JSON.stringify(wallpaperData));
-                                // 显示成功提示
-                                alert('视频壁纸设置成功！');
-                                // 返回主屏幕
-                                goBack();
-                            } catch (storageError) {
-                                if (storageError.name === 'QuotaExceededError') {
-                                    // 如果还是超限，只保存海报图像
-                                    const imageData = {
-                                        type: 'image',
-                                        src: posterUrl,
-                                        timestamp: Date.now()
-                                    };
-                                    try {
-                                        localStorage.setItem('wallpaper', JSON.stringify(imageData));
-                                        alert('视频文件太大，已保存为静态壁纸。');
-                                    } catch (finalError) {
-                                        if (finalError.name === 'QuotaExceededError') {
-                                            alert('壁纸文件太大，无法保存。请尝试选择更小的文件。');
-                                        } else {
-                                            throw finalError;
-                                        }
-                                    }
-                                    goBack();
-                                } else {
-                                    throw storageError;
-                                }
-                            }
-                        });
-                        
-                        video.load();
-                    } else {
-                        const imageUrl = preview.dataset.imageUrl;
-                        if (!imageUrl) {
-                            alert('请先选择图片文件');
-                            return;
-                        }
-                        
-                        // 检查图片大小，如果太大则压缩
-                        const img = new Image();
-                        img.onload = function() {
-                            // 创建canvas来压缩图片
-                            const canvas = document.createElement('canvas');
-                            const maxWidth = 1920;
-                            const maxHeight = 1080;
-                            let { width, height } = img;
-                            
-                            // 计算压缩比例
-                            if (width > maxWidth || height > maxHeight) {
-                                const ratio = Math.min(maxWidth / width, maxHeight / height);
-                                width = width * ratio;
-                                height = height * ratio;
-                            }
-                            
-                            canvas.width = width;
-                            canvas.height = height;
-                            const ctx = canvas.getContext('2d');
-                            ctx.drawImage(img, 0, 0, width, height);
-                            
-                            // 压缩图片质量
-                            let quality = 0.8;
-                            let compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
-                            
-                            // 不限制图片大小，移除压缩逻辑
-                            // while (compressedDataUrl.length > 1.5 * 1024 * 1024 && quality > 0.1) {
-                            //     quality -= 0.1;
-                            //     compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
-                            // }
-                            
-                            // 保存图片壁纸数据
-                            const wallpaperData = {
-                                type: 'image',
-                                src: compressedDataUrl,
-                                timestamp: Date.now()
-                            };
-                            
-                            try {
-                                localStorage.setItem('wallpaper', JSON.stringify(wallpaperData));
-                                // 显示成功提示
-                                alert('图片壁纸设置成功！');
-                                // 返回主屏幕
-                                goBack();
-                            } catch (storageError) {
-                                if (storageError.name === 'QuotaExceededError') {
-                                    alert('壁纸文件太大，无法保存。请尝试选择更小的文件。');
-                                } else {
-                                    throw storageError;
-                                }
-                            }
+                        // 上传视频到Cloudinary
+                        uploadVideoToCloudinary(window.currentVideoFile, cloudName, uploadPreset);
+                    }
+                } else {
+                    // 图片壁纸 - 保存到localStorage
+                    const imageUrl = preview.dataset.imageUrl;
+                    if (imageUrl) {
+                        const wallpaperData = {
+                            type: 'image',
+                            src: imageUrl,
+                            timestamp: new Date().toISOString()
                         };
-                        img.src = imageUrl;
+                        localStorage.setItem('wallpaper', JSON.stringify(wallpaperData));
+                        showModal('成功', '图片壁纸已设置！');
                     }
-                } catch (e) {
-                    if (e.name === 'QuotaExceededError') {
-                        alert('壁纸文件太大，无法保存。请尝试选择更小的文件。');
-                    } else {
-                        alert('设置壁纸时出错，请重试。');
-                    }
-                    console.error('设置壁纸错误:', e);
                 }
             }
 
             // 页面加载时检查是否有保存的壁纸
             window.onload = function() {
                 updateTime(); // 初始化时间
+                
                 const savedWallpaper = localStorage.getItem('wallpaper');
                 if (savedWallpaper) {
                     try {
@@ -482,16 +566,24 @@
                         const wallpaperData = JSON.parse(savedWallpaper);
                         const preview = document.getElementById('wallpaperPreview');
                         
+                        // 显示壁纸
                         if (wallpaperData.type === 'video') {
-                            // 视频壁纸
-                            preview.innerHTML = `<video src="${wallpaperData.src}" poster="${wallpaperData.poster}" autoplay muted loop style="width:100%;height:100%;object-fit:cover;"></video>`;
-                            preview.dataset.videoUrl = wallpaperData.src;
-                            preview.dataset.isFileVideo = "true";
+                            // 视频壁纸 - 从Cloudinary加载
+                            if (wallpaperData.src) {
+                                preview.innerHTML = `<video src="${wallpaperData.src}" autoplay muted loop style="width:100%;height:100%;object-fit:cover;"></video>`;
+                                preview.dataset.videoUrl = wallpaperData.src;
+                                preview.dataset.isFileVideo = "true";
+                            } else {
+                                preview.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100%;background:#333;color:#fff;font-size:14px;"><div>视频壁纸: ${wallpaperData.fileName || '未命名视频'}</div></div>`;
+                                preview.dataset.isFileVideo = "true";
+                            }
                         } else {
                             // 图片壁纸
-                            preview.innerHTML = `<img src="${wallpaperData.src}" alt="壁纸预览" style="width:100%;height:100%;object-fit:cover;">`;
-                            preview.dataset.imageUrl = wallpaperData.src;
-                            preview.dataset.isFileVideo = "false";
+                            if (wallpaperData.src) {
+                                preview.innerHTML = `<img src="${wallpaperData.src}" alt="壁纸预览" style="width:100%;height:100%;object-fit:cover;">`;
+                                preview.dataset.imageUrl = wallpaperData.src;
+                                preview.dataset.isFileVideo = "false";
+                            }
                         }
                         document.getElementById('setWallpaperBtn').disabled = false;
                     } catch (e) {
