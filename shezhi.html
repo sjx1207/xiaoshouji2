@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>设置</title>
+    <!-- 引入CryptoJS库用于生成上传凭证 -->
+    <script src="https://cdn.jsdelivr.net/npm/crypto-js@4.1.1/crypto-js.js"></script>
     <style>
         * {
             box-sizing: border-box;
@@ -723,6 +725,42 @@
                 </div>
             </div>
             
+            <!-- Cloudinary图床设置 -->
+            <div class="setting-item">
+                <div class="setting-title">Cloudinary图床设置</div>
+                <div class="setting-description">配置Cloudinary以启用图片和视频上传功能</div>
+                
+                <div class="input-group">
+                    <label class="input-label">Cloudinary Cloud Name</label>
+                    <input type="text" class="input-field" id="cloudinary-cloud-name" placeholder="请输入Cloudinary Cloud Name">
+                </div>
+                
+                <div class="input-group">
+                    <label class="input-label">Cloudinary Upload Preset</label>
+                    <input type="text" class="input-field" id="cloudinary-upload-preset" placeholder="请输入Cloudinary Upload Preset">
+                </div>
+                
+                <div class="setting-description">
+                    <p>注册地址: <a href="https://cloudinary.com/" target="_blank" style="color: #007AFF;">https://cloudinary.com/</a></p>
+                    <p>获取配置步骤：</p>
+                    <ol style="color: #aaa; font-size: 12px; padding-left: 20px; margin: 5px 0;">
+                        <li>注册并登录Cloudinary控制台</li>
+                        <li>进入"Dashboard"页面，复制"Cloud name"</li>
+                        <li>进入"Settings" -> "Upload"页面</li>
+                        <li>点击"Add upload preset"创建新的上传预设或编辑现有预设</li>
+                        <li>在"Signing Mode"中选择"Unsigned"</li>
+                        <li>保存预设并复制预设名称</li>
+                    </ol>
+                    <p style="color: #ff6b6b; font-weight: bold;">重要：Upload Preset必须设置为"Unsigned"模式才能在前端使用！</p>
+                </div>
+                
+                <div class="button-group">
+                    <div class="btn btn-secondary" onclick="testCloudinaryApi()">测试连接</div>
+                    <div class="btn btn-secondary" onclick="testCloudinaryUpload()">测试上传</div>
+                    <div class="btn btn-primary" onclick="saveCloudinarySettings()">保存设置</div>
+                </div>
+            </div>
+            
             <!-- ImgBB图床设置 -->
             <div class="setting-item">
                 <div class="setting-title">ImgBB图床设置</div>
@@ -741,44 +779,6 @@
                 <div class="button-group">
                     <div class="btn btn-secondary" onclick="testImgbbApi()">测试连接</div>
                     <div class="btn btn-primary" onclick="saveImgbbApiSettings()">保存设置</div>
-                </div>
-            </div>
-            
-            <!-- 七牛云存储设置 -->
-            <div class="setting-item">
-                <div class="setting-title">七牛云存储设置</div>
-                <div class="setting-description">配置七牛云Access Key以启用视频和大文件上传功能</div>
-                
-                <div class="input-group">
-                    <label class="input-label">七牛云Access Key (AK)</label>
-                    <input type="text" class="input-field" id="qiniu-access-key" placeholder="请输入七牛云Access Key">
-                </div>
-                
-                <div class="input-group">
-                    <label class="input-label">七牛云Secret Key (SK)</label>
-                    <input type="password" class="input-field" id="qiniu-secret-key" placeholder="请输入七牛云Secret Key">
-                </div>
-                
-                <div class="input-group">
-                    <label class="input-label">存储空间名称 (Bucket)</label>
-                    <input type="text" class="input-field" id="qiniu-bucket" placeholder="请输入存储空间名称">
-                </div>
-                
-                <div class="setting-description">
-                    <p>注册地址: <a href="https://www.qiniu.com/" target="_blank" style="color: #007AFF;">https://www.qiniu.com/</a></p>
-                    <p>获取密钥步骤：</p>
-                    <ol style="color: #aaa; font-size: 12px; padding-left: 20px; margin: 5px 0;">
-                        <li>注册并登录七牛云控制台</li>
-                        <li>进入"密钥管理"页面</li>
-                        <li>复制Access Key和Secret Key</li>
-                        <li>创建存储空间(Bucket)并填写名称</li>
-                    </ol>
-                    <p>Secret Key为敏感信息，请妥善保管，不要在代码中硬编码</p>
-                </div>
-                
-                <div class="button-group">
-                    <div class="btn btn-secondary" onclick="testQiniuApi()">测试连接</div>
-                    <div class="btn btn-primary" onclick="saveQiniuSettings()">保存设置</div>
                 </div>
             </div>
         </div>
@@ -1225,15 +1225,10 @@
                 loadWeatherApiKey();
                 // 加载ImgBB API密钥
                 loadImgbbApiKey();
-                // 加载七牛云配置
-                loadQiniuSettings();
+                // 加载Cloudinary配置
+                loadCloudinarySettings();
                 // 加载AI设置
                 loadAISettings();
-                // 设置七牛云API URL默认值
-                const qiniuApiUrlInput = document.getElementById('qiniu-api-url');
-                if (qiniuApiUrlInput && !qiniuApiUrlInput.value) {
-                    qiniuApiUrlInput.value = 'https://api.qnaigc.com/v1';
-                }
             };
 
             // 加载已保存的设置
@@ -1442,110 +1437,156 @@
                 }
             }
             
-            // 保存七牛云设置
-            function saveQiniuSettings() {
-                const accessKey = document.getElementById('qiniu-access-key').value;
-                const secretKey = document.getElementById('qiniu-secret-key').value;
-                const bucket = document.getElementById('qiniu-bucket').value;
+            // 保存Cloudinary设置
+            function saveCloudinarySettings() {
+                const cloudName = document.getElementById('cloudinary-cloud-name').value;
+                const uploadPreset = document.getElementById('cloudinary-upload-preset').value;
                 
-                if (!accessKey) {
-                    showModal('错误', '请输入七牛云Access Key');
+                if (!cloudName) {
+                    showModal('错误', '请输入Cloudinary Cloud Name');
                     return;
                 }
                 
-                if (!secretKey) {
-                    showModal('错误', '请输入七牛云Secret Key');
-                    return;
-                }
-                
-                if (!bucket) {
-                    showModal('错误', '请输入存储空间名称');
+                if (!uploadPreset) {
+                    showModal('错误', '请输入Cloudinary Upload Preset');
                     return;
                 }
                 
                 // 保存到localStorage
-                localStorage.setItem('qiniuAccessKey', accessKey);
-                localStorage.setItem('qiniuSecretKey', secretKey);
-                localStorage.setItem('qiniuBucket', bucket);
+                localStorage.setItem('cloudinaryCloudName', cloudName);
+                localStorage.setItem('cloudinaryUploadPreset', uploadPreset);
                 
-                showModal('保存成功', '七牛云配置已保存');
+                showModal('保存成功', 'Cloudinary配置已保存');
             }
             
-            // 加载已保存的七牛云配置
-            function loadQiniuSettings() {
-                const savedAccessKey = localStorage.getItem('qiniuAccessKey');
-                const savedSecretKey = localStorage.getItem('qiniuSecretKey');
-                const savedBucket = localStorage.getItem('qiniuBucket');
+            // 加载已保存的Cloudinary配置
+            function loadCloudinarySettings() {
+                const savedCloudName = localStorage.getItem('cloudinaryCloudName');
+                const savedUploadPreset = localStorage.getItem('cloudinaryUploadPreset');
                 
-                if (savedAccessKey) {
-                    document.getElementById('qiniu-access-key').value = savedAccessKey;
+                // 如果没有保存的配置，使用默认配置
+                if (savedCloudName) {
+                    document.getElementById('cloudinary-cloud-name').value = savedCloudName;
+                } else {
+                    // 默认Cloud Name
+                    document.getElementById('cloudinary-cloud-name').value = 'daikycfxn';
                 }
                 
-                if (savedSecretKey) {
-                    document.getElementById('qiniu-secret-key').value = savedSecretKey;
-                }
-                
-                if (savedBucket) {
-                    document.getElementById('qiniu-bucket').value = savedBucket;
+                if (savedUploadPreset) {
+                    document.getElementById('cloudinary-upload-preset').value = savedUploadPreset;
+                } else {
+                    // 默认Upload Preset
+                    document.getElementById('cloudinary-upload-preset').value = 'lc7yjezz';
                 }
             }
-        
-            // 测试七牛云API连接
-            function testQiniuApi() {
-                const accessKey = document.getElementById('qiniu-access-key').value;
-                const secretKey = document.getElementById('qiniu-secret-key').value;
-                const bucket = document.getElementById('qiniu-bucket').value;
+            
+            // 测试Cloudinary API连接
+            function testCloudinaryApi() {
+                const cloudName = document.getElementById('cloudinary-cloud-name').value;
+                const uploadPreset = document.getElementById('cloudinary-upload-preset').value;
                 
-                if (!accessKey) {
-                    showModal('错误', '请输入七牛云Access Key');
+                if (!cloudName) {
+                    showModal('错误', '请输入Cloudinary Cloud Name');
                     return;
                 }
                 
-                if (!secretKey) {
-                    showModal('错误', '请输入七牛云Secret Key');
-                    return;
-                }
-                
-                if (!bucket) {
-                    showModal('错误', '请输入存储空间名称');
+                if (!uploadPreset) {
+                    showModal('错误', '请输入Cloudinary Upload Preset');
                     return;
                 }
                 
                 // 显示加载指示器
-                showLoading('正在测试七牛云API连接...');
+                showLoading('正在测试Cloudinary连接...');
                 
-                // 由于浏览器CORS限制，我们无法直接测试七牛云API
-                // 改为验证配置格式是否正确
+                // 验证配置格式
                 setTimeout(() => {
                     hideLoading();
                     
-                    // 验证Access Key格式（通常为40位字符串）
-                    if (accessKey.length !== 40) {
-                        showModal('测试结果', 'Access Key格式可能不正确（应为40位字符）');
+                    // 验证Cloud Name格式
+                    if (cloudName.length < 3) {
+                        showModal('测试结果', 'Cloud Name格式可能不正确（应至少3个字符）');
                         return;
                     }
                     
-                    // 验证Secret Key格式（通常为40位字符串）
-                    if (secretKey.length !== 40) {
-                        showModal('测试结果', 'Secret Key格式可能不正确（应为40位字符）');
+                    // 验证Upload Preset格式
+                    if (uploadPreset.length < 3) {
+                        showModal('测试结果', 'Upload Preset格式可能不正确（应至少3个字符）');
                         return;
                     }
                     
-                    // 验证存储空间名称（不应包含特殊字符）
-                    if (!/^[a-zA-Z0-9\-_]+$/.test(bucket)) {
-                        showModal('测试结果', '存储空间名称格式不正确（只能包含字母、数字、连字符和下划线）');
-                        return;
-                    }
+                    // 提供更详细的配置说明
+                    let message = 'Cloudinary配置格式正确！\n\n';
+                    message += '请确保：\n';
+                    message += '1. Upload Preset已设置为"Unsigned"模式\n';
+                    message += '2. Cloudinary账户有足够的存储空间\n';
+                    message += '3. 网络连接正常\n\n';
+                    message += '配置已保存！';
                     
-                    showModal('测试成功', '七牛云配置格式正确，已保存！');
+                    showModal('测试成功', message);
                 }, 1000);
+            }
+
+            // 测试Cloudinary上传功能
+            function testCloudinaryUpload() {
+                const cloudName = document.getElementById('cloudinary-cloud-name').value;
+                const uploadPreset = document.getElementById('cloudinary-upload-preset').value;
+                
+                if (!cloudName || !uploadPreset) {
+                    showModal('错误', '请先配置Cloudinary参数并保存');
+                    return;
+                }
+                
+                // 创建一个测试文件
+                const testContent = '这是一个测试文件的内容';
+                const blob = new Blob([testContent], { type: 'text/plain' });
+                const file = new File([blob], 'test.txt', { type: 'text/plain' });
+                
+                // 显示加载指示器
+                showLoading('正在测试Cloudinary上传...');
+                
+                // 创建FormData对象
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('upload_preset', uploadPreset);
+                
+                // 上传到Cloudinary
+                fetch(`https://api.cloudinary.com/v1_1/${cloudName}/upload`, {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => {
+                    hideLoading();
+                    if (!response.ok) {
+                        return response.text().then(text => {
+                            throw new Error(`HTTP error! status: ${response.status}, message: ${text}`);
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.secure_url) {
+                        showModal('测试成功', `文件上传成功！\nURL: ${data.secure_url}`);
+                    } else {
+                        throw new Error('上传失败: ' + (data.error?.message || '未知错误'));
+                    }
+                })
+                .catch(error => {
+                    hideLoading();
+                    console.error('上传测试错误:', error);
+                    let errorMessage = `上传测试失败: ${error.message}\n\n`;
+                    if (error.message.includes('Upload preset')) {
+                        errorMessage += '请确保Upload Preset已设置为"Unsigned"模式。\n';
+                        errorMessage += '解决方法：登录Cloudinary控制台 -> Settings -> Upload -> 找到您的Upload Preset -> 设置为Unsigned模式';
+                    }
+                    showModal('测试失败', errorMessage);
+                });
             }
             
             // 初始化页面
             function init() {
-                loadQiniuSettings();
+                loadImgbbApiKey();
+                loadCloudinarySettings(); // 加载Cloudinary设置
             }
-            
             // 点击模态框外部关闭模态框
             window.onclick = function(event) {
                 const modal = document.getElementById('customModal');
