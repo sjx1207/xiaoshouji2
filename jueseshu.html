@@ -953,10 +953,10 @@
                                     character.name = character.name.substring(0, 50);
                                 }
                                 
-                                // 限制角色描述长度
-                                if (character.desc && character.desc.length > 200) {
-                                    character.desc = character.desc.substring(0, 200);
-                                }
+                                // 不再限制角色描述长度，允许用户输入详细的人设信息
+                                // if (character.desc && character.desc.length > 200) {
+                                //     character.desc = character.desc.substring(0, 200);
+                                // }
                                 
                                 // 优化头像数据
                                 if (character.avatar && character.avatar.startsWith('data:image')) {
