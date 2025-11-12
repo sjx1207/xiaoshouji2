@@ -1464,19 +1464,13 @@
                 const savedCloudName = localStorage.getItem('cloudinaryCloudName');
                 const savedUploadPreset = localStorage.getItem('cloudinaryUploadPreset');
                 
-                // 如果没有保存的配置，使用默认配置
+                // 只加载用户自己保存的配置，不使用默认值
                 if (savedCloudName) {
                     document.getElementById('cloudinary-cloud-name').value = savedCloudName;
-                } else {
-                    // 默认Cloud Name
-                    document.getElementById('cloudinary-cloud-name').value = 'daikycfxn';
                 }
                 
                 if (savedUploadPreset) {
                     document.getElementById('cloudinary-upload-preset').value = savedUploadPreset;
-                } else {
-                    // 默认Upload Preset
-                    document.getElementById('cloudinary-upload-preset').value = 'lc7yjezz';
                 }
             }
             
