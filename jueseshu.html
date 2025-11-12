@@ -1026,12 +1026,20 @@
                         avatarHtml = '👤';
                     }
                     
+                    // 为卡片显示创建简短描述（最多100个字符）
+                    let shortDesc = '';
+                    if (character.desc) {
+                        shortDesc = character.desc.length > 100 ? 
+                            character.desc.substring(0, 100) + '...' : 
+                            character.desc;
+                    }
+                    
                     characterCard.innerHTML = `
                         <div class="character-avatar">
                             ${avatarHtml}
                         </div>
                         <div class="character-name">${character.name}</div>
-                        <div class="character-desc">${character.desc || ''}</div>
+                        <div class="character-desc">${shortDesc || ''}</div>
                     `;
                     
                     // 添加点击事件
