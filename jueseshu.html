@@ -491,7 +491,7 @@
             line-height: 1.6;
             text-align: left;
             white-space: pre-wrap;
-            max-height: 50vh;
+            max-height: 65vh;
             overflow-y: auto;
             padding: 15px;
             background: rgba(255, 255, 255, 0.05);
@@ -499,6 +499,22 @@
             width: 100%;
             margin-top: 15px;
             -webkit-overflow-scrolling: touch; /* iOS Safari滚动优化 */
+            scrollbar-width: thin; /* Firefox */
+            scrollbar-color: rgba(255, 255, 255, 0.3) transparent; /* Firefox */
+        }
+        
+        /* Webkit浏览器的滚动条样式 */
+        .character-detail-desc::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .character-detail-desc::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        .character-detail-desc::-webkit-scrollbar-thumb {
+            background-color: rgba(255, 255, 255, 0.3);
+            border-radius: 4px;
         }
         
         /* 确认删除弹窗 */
@@ -1909,12 +1925,8 @@
                     }
                 }
                 
-                // 检查是否已存在同名角色（排除当前编辑的角色）
-                const existingCharacter = characters.find(char => char.name === name && char.id !== currentCharacter.id);
-                if (existingCharacter) {
-                    showPageAlert('已存在同名角色，请使用不同的名称');
-                    return;
-                }
+                // 编辑角色时不需要检查名称重复，因为是修改现有角色
+                // 只有在添加新角色时才需要检查名称重复
                 
                 // 查找并更新角色
                 let updated = false;
