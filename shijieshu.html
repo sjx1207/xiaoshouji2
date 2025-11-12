@@ -119,23 +119,24 @@
             flex: 1;
             display: flex;
             flex-direction: column;
-            padding: 110px 20px 20px; /* 调整padding以适应头部 */
+            padding: 110px 15px 20px; /* 调整padding以适应头部 */
             overflow-y: auto;
+            -webkit-overflow-scrolling: touch; /* iOS Safari滚动优化 */
         }
 
         /* 世界卡片容器 */
         .worlds-container {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 20px;
-            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 15px;
         }
 
         /* 世界卡片 */
         .world-card {
             background: rgba(255, 255, 255, 0.1);
             border-radius: 15px;
-            padding: 15px;
+            padding: 20px 15px;
             text-align: center;
             cursor: pointer;
             transition: all 0.3s ease;
@@ -143,6 +144,10 @@
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
             touch-action: manipulation; /* 防止默认的触摸行为 */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
         }
 
         .world-card:hover {
@@ -157,15 +162,15 @@
         }
 
         .world-avatar {
-            width: 60px;
-            height: 60px;
+            width: 80px;
+            height: 80px;
             border-radius: 50%;
             background: #333;
             margin: 0 auto 10px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 24px;
+            font-size: 32px;
             overflow: hidden;
         }
 
@@ -177,19 +182,24 @@
         }
 
         .world-name {
-            font-size: 14px;
+            font-size: 16px;
             font-weight: bold;
             margin-bottom: 5px;
+            word-break: break-all;
+            padding: 0 5px;
         }
 
         .world-desc {
-            font-size: 12px;
+            font-size: 14px;
             color: #aaa;
             overflow: hidden;
             text-overflow: ellipsis;
             display: -webkit-box;
-            line-clamp: 2;
+            line-clamp: 4;
             -webkit-box-orient: vertical;
+            text-align: left;
+            width: 100%;
+            line-height: 1.5;
         }
 
         /* 添加世界按钮 */
@@ -198,14 +208,14 @@
             border: none;
             border-radius: 15px;
             color: white;
-            padding: 15px;
-            font-size: 16px;
+            padding: 18px;
+            font-size: 17px;
             font-weight: bold;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
+            gap: 12px;
             margin-top: 20px;
             transition: all 0.3s ease;
         }
@@ -242,15 +252,16 @@
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             border-radius: 20px;
-            padding: 25px;
-            width: 90%;
-            max-width: 90%;
-            max-height: 90vh;
+            padding: 20px 15px;
+            width: 95%;
+            max-width: 95%;
+            max-height: 85vh;
             overflow-y: auto;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
             border: 1px solid rgba(255, 255, 255, 0.1);
             transform: translateY(20px);
             transition: transform 0.3s ease;
+            -webkit-overflow-scrolling: touch; /* iOS Safari滚动优化 */
         }
 
         .modal.active .modal-content {
@@ -261,11 +272,12 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
+            padding: 0 5px;
         }
 
         .modal-title {
-            font-size: 18px;
+            font-size: 20px;
             font-weight: bold;
         }
 
@@ -273,14 +285,15 @@
             background: transparent;
             border: none;
             color: white;
-            font-size: 24px;
+            font-size: 28px;
             cursor: pointer;
-            width: 30px;
-            height: 30px;
+            width: 40px;
+            height: 40px;
             display: flex;
             align-items: center;
             justify-content: center;
             border-radius: 50%;
+            margin-right: -10px;
         }
 
         .close-btn:hover {
@@ -293,20 +306,21 @@
 
         .form-label {
             display: block;
-            margin-bottom: 8px;
-            font-size: 14px;
+            margin-bottom: 10px;
+            font-size: 16px;
             color: #aaa;
         }
 
         .form-input {
             width: 100%;
-            padding: 12px 15px;
+            padding: 15px;
             border-radius: 12px;
             background: rgba(255, 255, 255, 0.1);
             border: 1px solid rgba(255, 255, 255, 0.1);
             color: white;
             font-size: 16px;
             box-sizing: border-box;
+            margin-bottom: 10px;
         }
 
         .form-input:focus {
@@ -317,28 +331,30 @@
 
         .form-textarea {
             width: 100%;
-            padding: 12px 15px;
+            padding: 15px;
             border-radius: 12px;
             background: rgba(255, 255, 255, 0.1);
             border: 1px solid rgba(255, 255, 255, 0.1);
             color: white;
             font-size: 16px;
             box-sizing: border-box;
-            min-height: 100px;
+            min-height: 120px;
             resize: vertical;
+            margin-bottom: 10px;
         }
 
         .submit-btn {
             width: 100%;
-            padding: 15px;
+            padding: 16px;
             border-radius: 12px;
             background: linear-gradient(45deg, #007AFF, #0A84FF);
             border: none;
             color: white;
-            font-size: 16px;
+            font-size: 17px;
             font-weight: bold;
             cursor: pointer;
             transition: all 0.3s;
+            margin-top: 10px;
         }
 
         .submit-btn:hover {
@@ -348,16 +364,16 @@
 
         .delete-btn {
             width: 100%;
-            padding: 15px;
+            padding: 16px;
             border-radius: 12px;
             background: linear-gradient(135deg, #FF3B30, #FF453A);
             border: none;
             color: white;
-            font-size: 16px;
+            font-size: 17px;
             font-weight: bold;
             cursor: pointer;
             transition: all 0.3s;
-            margin-top: 10px;
+            margin-top: 15px;
         }
 
         .delete-btn:hover {
@@ -399,18 +415,23 @@
         .world-detail-modal .modal-content {
             max-width: 90%;
             width: auto;
+            max-height: 85vh;
         }
         
         .world-detail-content {
             text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
         
         .world-detail-avatar {
-            width: 100px;
-            height: 100px;
+            width: 120px;
+            height: 120px;
             border-radius: 50%;
             margin: 0 auto 20px;
             overflow: hidden;
+            border: 3px solid rgba(255, 255, 255, 0.2);
         }
         
         .world-detail-avatar img {
@@ -423,14 +444,24 @@
             font-size: 24px;
             font-weight: bold;
             margin-bottom: 10px;
+            word-break: break-all;
+            padding: 0 10px;
         }
         
         .world-detail-desc {
             font-size: 16px;
             color: #aaa;
-            line-height: 1.5;
+            line-height: 1.6;
             text-align: left;
             white-space: pre-wrap;
+            max-height: 50vh;
+            overflow-y: auto;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            width: 100%;
+            margin-top: 15px;
+            -webkit-overflow-scrolling: touch; /* iOS Safari滚动优化 */
         }
         
         /* 确认删除弹窗 */
@@ -460,7 +491,7 @@
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             border-radius: 20px;
-            padding: 25px;
+            padding: 20px 15px;
             width: 90%;
             max-width: 300px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
@@ -481,14 +512,15 @@
         }
 
         .confirm-modal-title {
-            font-size: 18px;
+            font-size: 20px;
             font-weight: bold;
         }
 
         .confirm-modal-message {
-            font-size: 16px;
+            font-size: 17px;
             margin-bottom: 20px;
             text-align: center;
+            line-height: 1.5;
         }
 
         .confirm-modal-actions {
@@ -498,11 +530,11 @@
 
         .confirm-btn {
             flex: 1;
-            padding: 12px;
+            padding: 15px;
             border-radius: 12px;
             border: none;
             color: white;
-            font-size: 16px;
+            font-size: 17px;
             font-weight: bold;
             cursor: pointer;
             transition: all 0.3s;
@@ -514,6 +546,143 @@
 
         .confirm-delete-btn {
             background: linear-gradient(135deg, #FF3B30, #FF453A);
+        }
+        
+        /* 编辑弹窗 */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: rgba(30, 30, 30, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 20px 15px;
+            width: 95%;
+            max-width: 95%;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+            -webkit-overflow-scrolling: touch; /* iOS Safari滚动优化 */
+        }
+
+        .modal.active .modal-content {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 0 5px;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .close-btn {
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 28px;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            margin-right: -10px;
+        }
+
+        .close-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 16px;
+            color: #aaa;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 15px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 16px;
+            box-sizing: border-box;
+            margin-bottom: 10px;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: rgba(0, 122, 255, 0.5);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .form-textarea {
+            width: 100%;
+            padding: 15px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 16px;
+            box-sizing: border-box;
+            min-height: 120px;
+            resize: vertical;
+            margin-bottom: 10px;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 16px;
+            border-radius: 12px;
+            background: linear-gradient(45deg, #007AFF, #0A84FF);
+            border: none;
+            color: white;
+            font-size: 17px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(10, 132, 255, 0.4);
         }
     </style>
 </head>
@@ -601,13 +770,50 @@
                     <button class="close-btn" onclick="closeWorldDetailModal()">&times;</button>
                 </div>
                 <div class="world-detail-content">
-                    <div class="world-detail-avatar">
+                    <!-- 头像容器，点击可直接修改 -->
+                    <div class="world-detail-avatar" id="worldDetailAvatar" style="cursor: pointer;" onclick="changeWorldAvatar()">
                         <img id="detailAvatar" src="" alt="世界头像">
                     </div>
-                    <div class="world-detail-name" id="detailName"></div>
-                    <div class="world-detail-desc" id="detailDesc"></div>
+                    <!-- 世界名称，点击可直接修改 -->
+                    <div class="world-detail-name" id="detailName" style="cursor: pointer;" onclick="editWorldName()"></div>
+                    <!-- 世界描述，点击可直接修改 -->
+                    <div class="world-detail-desc" id="detailDesc" style="cursor: pointer;" onclick="editWorldDesc()"></div>
+                    <!-- 提示信息 -->
+                    <div style="text-align: center; font-size: 12px; color: #aaa; margin-top: 10px;">点击头像或世界设定可直接修改</div>
                 </div>
                 <button class="delete-btn" onclick="deleteWorld()">删除世界</button>
+                <!-- 隐藏的文件上传输入框 -->
+                <input type="file" id="worldAvatarUploadInput" class="hidden-file-input" accept="image/*" onchange="handleWorldAvatarUploadForDetail(event)">
+            </div>
+        </div>
+
+        <!-- 编辑世界名称弹窗 -->
+        <div class="modal" id="editWorldNameModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="modal-title">编辑世界名称</div>
+                    <button class="close-btn" onclick="closeEditWorldNameModal()">&times;</button>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">世界名称</label>
+                    <input type="text" class="form-input" id="editWorldNameInput" placeholder="请输入世界名称">
+                </div>
+                <button class="submit-btn" onclick="saveWorldName()">保存</button>
+            </div>
+        </div>
+
+        <!-- 编辑世界描述弹窗 -->
+        <div class="modal" id="editWorldDescModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="modal-title">编辑世界描述</div>
+                    <button class="close-btn" onclick="closeEditWorldDescModal()">&times;</button>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">世界描述</label>
+                    <textarea class="form-textarea" id="editWorldDescInput" placeholder="请输入世界描述"></textarea>
+                </div>
+                <button class="submit-btn" onclick="saveWorldDesc()">保存</button>
             </div>
         </div>
 
@@ -648,6 +854,42 @@
             let currentWorld = null;
             let currentWorldIndex = null;
             let longPressTimer = null;
+            
+            // 上传图片到 imgbb
+            function uploadToImgbb(file) {
+                return new Promise((resolve, reject) => {
+                    // 创建 FormData 对象
+                    const formData = new FormData();
+                    formData.append('image', file);
+                    
+                    // 显示上传中提示
+                    showPageAlert('头像上传中...');
+                    
+                    // 发送到 imgbb API
+                    fetch('https://api.imgbb.com/1/upload?key=e575f2643476020fc17a4f4ee408d079', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => {
+                        // 检查响应状态
+                        if (!response.ok) {
+                            throw new Error(`上传失败: ${response.status} ${response.statusText}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.success) {
+                            resolve(data.data.url); // imgbb 返回的图片URL在 data.url
+                        } else {
+                            throw new Error(data.data ? data.data.error : '上传失败');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('上传到imgbb时出错:', error);
+                        reject(error);
+                    });
+                });
+            }
 
             // 页面加载时初始化世界数据
             window.onload = function() {
@@ -768,10 +1010,10 @@
                                     world.name = world.name.substring(0, 50);
                                 }
                                 
-                                // 限制世界描述长度
-                                if (world.desc && world.desc.length > 200) {
-                                    world.desc = world.desc.substring(0, 200);
-                                }
+                                // 不再限制世界描述长度，允许用户输入详细的描述信息
+                                // if (world.desc && world.desc.length > 200) {
+                                //     world.desc = world.desc.substring(0, 200);
+                                // }
                                 
                                 // 优化头像数据
                                 if (world.avatar && world.avatar.startsWith('data:image')) {
@@ -1236,12 +1478,12 @@
             function handleAvatarUpload(event) {
                 const file = event.target.files[0];
                 if (file) {
-                    // 移除文件大小限制，允许上传更大的图片
+                    // 不限制文件大小
                     // 检查文件大小 - 在手机端不限制
-                    if (file.size > 10 * 1024 * 1024) { // 10MB限制（仅作为基本保护）
-                        showPageAlert('头像文件太大，请选择小于10MB的图片');
-                        return;
-                    }
+                    // if (file.size > 10 * 1024 * 1024) { // 10MB限制（仅作为基本保护）
+                    //     showPageAlert('头像文件太大，请选择小于10MB的图片');
+                    //     return;
+                    // }
                     
                     const reader = new FileReader();
                     reader.onload = function(e) {
@@ -1461,44 +1703,36 @@
                 
                 // 设置头像
                 const avatarContainer = document.querySelector('.world-detail-avatar');
-                if (avatarContainer) {
-                    // 清空容器
-                    avatarContainer.innerHTML = '';
-                    
+                const avatarImg = document.getElementById('detailAvatar');
+                if (avatarImg) {
                     if (world.avatar) {
                         // 检查avatar是URL还是base64数据
                         if (world.avatar.startsWith('http://') || world.avatar.startsWith('https://')) {
-                            // 如果是URL，创建img元素并设置属性
-                            const img = document.createElement('img');
-                            img.src = world.avatar;
-                            img.alt = world.name;
-                            img.style.cssText = 'width:100%;height:100%;object-fit:cover;';
-                            img.onerror = function() {
+                            // 如果是URL，设置图片源
+                            avatarImg.src = world.avatar;
+                            avatarImg.onerror = function() {
                                 // 如果图片加载失败，显示默认头像
                                 console.log('详情页头像加载失败:', this.src.substring(0, 100));
                                 this.onerror = null;
                                 this.parentElement.innerHTML = '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:40px;">🌎</div>';
                             };
-                            avatarContainer.appendChild(img);
                         } else if (world.avatar.startsWith('data:image')) {
-                            // 如果是base64数据，创建img元素并设置属性
-                            const img = document.createElement('img');
-                            img.src = world.avatar;
-                            img.alt = world.name;
-                            img.style.cssText = 'width:100%;height:100%;object-fit:cover;';
-                            img.onerror = function() {
+                            // 如果是base64数据，设置图片源
+                            avatarImg.src = world.avatar;
+                            avatarImg.onerror = function() {
                                 // 如果图片加载失败，显示默认头像
                                 console.log('详情页头像加载失败:', this.src.substring(0, 100));
                                 this.onerror = null;
                                 this.parentElement.innerHTML = '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:40px;">🌎</div>';
                             };
-                            avatarContainer.appendChild(img);
                         } else {
                             // 如果不是有效的图片格式，使用默认头像
+                            avatarImg.src = '';
                             avatarContainer.innerHTML = '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:40px;">🌎</div>';
                         }
                     } else {
                         // 没有头像数据，使用默认头像
+                        avatarImg.src = '';
                         avatarContainer.innerHTML = '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:40px;">🌎</div>';
                     }
                 }
@@ -1516,6 +1750,294 @@
                 }
             }
 
+            // 点击头像修改
+            function changeWorldAvatar() {
+                if (!currentWorld) {
+                    showPageAlert('未选择世界');
+                    return;
+                }
+                // 触发文件选择
+                document.getElementById('worldAvatarUploadInput').click();
+            }
+            
+            // 处理详情页头像上传
+            function handleWorldAvatarUploadForDetail(event) {
+                const file = event.target.files[0];
+                if (file) {
+                    // 检查文件类型
+                    if (!file.type.startsWith('image/')) {
+                        showPageAlert('请选择有效的图片文件');
+                        return;
+                    }
+                    
+                    // 上传到 imgbb
+                    uploadToImgbb(file)
+                        .then(imageUrl => {
+                            // 更新世界头像
+                            updateWorldAvatar(imageUrl);
+                            
+                            // 更新详情页显示
+                            const avatarImg = document.getElementById('detailAvatar');
+                            if (avatarImg) {
+                                avatarImg.src = imageUrl;
+                                avatarImg.onerror = function() {
+                                    console.log('详情页头像加载失败:', this.src.substring(0, 100));
+                                    this.onerror = null;
+                                    this.parentElement.innerHTML = '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:40px;">🌎</div>';
+                                };
+                            }
+                            
+                            showPageAlert('头像更新成功！');
+                        })
+                        .catch(error => {
+                            console.error('上传头像时出错:', error);
+                            showPageAlert('上传头像失败: ' + (error.message || error));
+                        })
+                        .finally(() => {
+                            // 清空文件输入框
+                            event.target.value = '';
+                        });
+                }
+            }
+            
+            // 更新世界头像
+            function updateWorldAvatar(newAvatarUrl) {
+                if (!currentWorld) {
+                    showPageAlert('未选择世界');
+                    return;
+                }
+                
+                // 获取保存的世界数据
+                const savedWorlds = localStorage.getItem('worlds');
+                let worlds = [];
+                
+                if (savedWorlds) {
+                    try {
+                        worlds = JSON.parse(savedWorlds);
+                    } catch (e) {
+                        console.error('解析世界数据时出错:', e);
+                        showPageAlert('数据解析错误');
+                        return;
+                    }
+                }
+                
+                // 查找并更新世界头像
+                let updated = false;
+                for (let i = 0; i < worlds.length; i++) {
+                    if (worlds[i].id === currentWorld.id) {
+                        worlds[i].avatar = newAvatarUrl;
+                        updated = true;
+                        break;
+                    }
+                }
+                
+                if (!updated) {
+                    showPageAlert('未找到要更新的世界');
+                    return;
+                }
+                
+                // 保存到本地存储
+                try {
+                    localStorage.setItem('worlds', JSON.stringify(worlds));
+                    
+                    // 更新当前世界引用
+                    if (currentWorld) {
+                        currentWorld.avatar = newAvatarUrl;
+                    }
+                    
+                    // 重新加载世界列表
+                    loadWorlds();
+                } catch (e) {
+                    console.error('保存世界时出错:', e);
+                    showPageAlert('保存世界时出错，请重试');
+                }
+            }
+            
+            // 编辑世界名称
+            function editWorldName() {
+                if (!currentWorld) {
+                    showPageAlert('未选择世界');
+                    return;
+                }
+                
+                // 显示编辑名称弹窗
+                const nameInput = document.getElementById('editWorldNameInput');
+                if (nameInput) {
+                    nameInput.value = currentWorld.name || '';
+                    document.getElementById('editWorldNameModal').classList.add('active');
+                }
+            }
+            
+            // 关闭编辑世界名称弹窗
+            function closeEditWorldNameModal() {
+                document.getElementById('editWorldNameModal').classList.remove('active');
+            }
+            
+            // 保存世界名称
+            function saveWorldName() {
+                const nameInput = document.getElementById('editWorldNameInput');
+                const newName = nameInput.value.trim();
+                
+                if (newName !== '' && newName !== currentWorld.name) {
+                    updateWorldName(newName);
+                }
+                
+                // 关闭弹窗
+                closeEditWorldNameModal();
+            }
+            
+            // 更新世界名称
+            function updateWorldName(newName) {
+                // 获取保存的世界数据
+                const savedWorlds = localStorage.getItem('worlds');
+                let worlds = [];
+                
+                if (savedWorlds) {
+                    try {
+                        worlds = JSON.parse(savedWorlds);
+                    } catch (e) {
+                        console.error('解析世界数据时出错:', e);
+                        showPageAlert('数据解析错误');
+                        return;
+                    }
+                }
+                
+                // 检查是否已存在同名世界
+                const existingWorld = worlds.find(world => world.name === newName && world.id !== currentWorld.id);
+                if (existingWorld) {
+                    showPageAlert('已存在同名世界，请使用不同的名称');
+                    return;
+                }
+                
+                // 查找并更新世界名称
+                let updated = false;
+                for (let i = 0; i < worlds.length; i++) {
+                    if (worlds[i].id === currentWorld.id) {
+                        worlds[i].name = newName;
+                        updated = true;
+                        break;
+                    }
+                }
+                
+                if (!updated) {
+                    showPageAlert('未找到要更新的世界');
+                    return;
+                }
+                
+                // 保存到本地存储
+                try {
+                    localStorage.setItem('worlds', JSON.stringify(worlds));
+                    
+                    // 更新当前世界引用
+                    if (currentWorld) {
+                        currentWorld.name = newName;
+                    }
+                    
+                    // 更新详情页显示
+                    const detailName = document.getElementById('detailName');
+                    if (detailName) {
+                        detailName.textContent = newName;
+                    }
+                    
+                    // 重新加载世界列表
+                    loadWorlds();
+                    
+                    showPageAlert('世界名称更新成功！');
+                } catch (e) {
+                    console.error('保存世界时出错:', e);
+                    showPageAlert('保存世界时出错，请重试');
+                }
+            }
+            
+            // 编辑世界描述
+            function editWorldDesc() {
+                if (!currentWorld) {
+                    showPageAlert('未选择世界');
+                    return;
+                }
+                
+                // 显示编辑描述弹窗
+                const descInput = document.getElementById('editWorldDescInput');
+                if (descInput) {
+                    descInput.value = currentWorld.desc || '';
+                    document.getElementById('editWorldDescModal').classList.add('active');
+                }
+            }
+            
+            // 关闭编辑世界描述弹窗
+            function closeEditWorldDescModal() {
+                document.getElementById('editWorldDescModal').classList.remove('active');
+            }
+            
+            // 保存世界描述
+            function saveWorldDesc() {
+                const descInput = document.getElementById('editWorldDescInput');
+                const newDesc = descInput.value;
+                
+                if (newDesc !== currentWorld.desc) {
+                    updateWorldDesc(newDesc);
+                }
+                
+                // 关闭弹窗
+                closeEditWorldDescModal();
+            }
+            
+            // 更新世界描述
+            function updateWorldDesc(newDesc) {
+                // 获取保存的世界数据
+                const savedWorlds = localStorage.getItem('worlds');
+                let worlds = [];
+                
+                if (savedWorlds) {
+                    try {
+                        worlds = JSON.parse(savedWorlds);
+                    } catch (e) {
+                        console.error('解析世界数据时出错:', e);
+                        showPageAlert('数据解析错误');
+                        return;
+                    }
+                }
+                
+                // 查找并更新世界描述
+                let updated = false;
+                for (let i = 0; i < worlds.length; i++) {
+                    if (worlds[i].id === currentWorld.id) {
+                        worlds[i].desc = newDesc;
+                        updated = true;
+                        break;
+                    }
+                }
+                
+                if (!updated) {
+                    showPageAlert('未找到要更新的世界');
+                    return;
+                }
+                
+                // 保存到本地存储
+                try {
+                    localStorage.setItem('worlds', JSON.stringify(worlds));
+                    
+                    // 更新当前世界引用
+                    if (currentWorld) {
+                        currentWorld.desc = newDesc;
+                    }
+                    
+                    // 更新详情页显示
+                    const detailDesc = document.getElementById('detailDesc');
+                    if (detailDesc) {
+                        detailDesc.textContent = newDesc;
+                    }
+                    
+                    // 重新加载世界列表
+                    loadWorlds();
+                    
+                    showPageAlert('世界描述更新成功！');
+                } catch (e) {
+                    console.error('保存世界时出错:', e);
+                    showPageAlert('保存世界时出错，请重试');
+                }
+            }
+            
             // 关闭世界详情弹窗
             function closeWorldDetailModal() {
                 const modal = document.getElementById('worldDetailModal');
