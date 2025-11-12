@@ -1879,11 +1879,7 @@
                     return false;
                 }
                 
-                // 检查描述长度
-                if (desc && desc.length > 500) {
-                    showPageAlert('角色描述不能超过500个字符');
-                    return false;
-                }
+                // 不再限制描述长度，允许用户输入详细的人设信息
                 
                 return true;
             }
