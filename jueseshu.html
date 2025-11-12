@@ -572,6 +572,143 @@
         .confirm-modal.active .confirm-modal-content {
             transform: translateY(0);
         }
+        
+        /* 编辑弹窗 */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: rgba(30, 30, 30, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 20px 15px;
+            width: 95%;
+            max-width: 95%;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+            -webkit-overflow-scrolling: touch; /* iOS Safari滚动优化 */
+        }
+
+        .modal.active .modal-content {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 0 5px;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .close-btn {
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 28px;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            margin-right: -10px;
+        }
+
+        .close-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 16px;
+            color: #aaa;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 15px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 16px;
+            box-sizing: border-box;
+            margin-bottom: 10px;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: rgba(0, 122, 255, 0.5);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .form-textarea {
+            width: 100%;
+            padding: 15px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 16px;
+            box-sizing: border-box;
+            min-height: 120px;
+            resize: vertical;
+            margin-bottom: 10px;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 16px;
+            border-radius: 12px;
+            background: linear-gradient(45deg, #007AFF, #0A84FF);
+            border: none;
+            color: white;
+            font-size: 17px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(10, 132, 255, 0.4);
+        }
 
         .confirm-modal-header {
             display: flex;
@@ -758,17 +895,52 @@
                     <button class="close-btn" onclick="closeCharacterDetailModal()">&times;</button>
                 </div>
                 <div class="character-detail-content">
-                    <div class="character-detail-avatar">
+                    <!-- 头像容器，点击可直接修改 -->
+                    <div class="character-detail-avatar" id="characterDetailAvatar" style="cursor: pointer;" onclick="changeAvatar()">
                         <img id="detailAvatar" src="" alt="角色头像">
                     </div>
-                    <div class="character-detail-name" id="detailName"></div>
-                    <div class="character-detail-desc" id="detailDesc"></div>
+                    <!-- 角色名称，点击可直接修改 -->
+                    <div class="character-detail-name" id="detailName" style="cursor: pointer;" onclick="editCharacterName()"></div>
+                    <!-- 角色描述，点击可直接修改 -->
+                    <div class="character-detail-desc" id="detailDesc" style="cursor: pointer;" onclick="editCharacterDesc()"></div>
+                    <!-- 提示信息 -->
+                    <div style="text-align: center; font-size: 12px; color: #aaa; margin-top: 10px;">点击头像或人设可直接修改</div>
                 </div>
                 <button class="delete-btn" onclick="deleteCharacter()">删除角色</button>
-                <!-- 添加编辑按钮 -->
-                <button class="delete-btn" onclick="editCharacter()" style="background: linear-gradient(135deg, #34C759, #30D158); margin-top: 10px;">编辑角色</button>
                 <!-- 添加数据清理按钮 -->
                 <button class="delete-btn" onclick="cleanAndFixCharacters()" style="background: linear-gradient(135deg, #007AFF, #0A84FF); margin-top: 10px;">清理数据</button>
+                <!-- 隐藏的文件上传输入框 -->
+                <input type="file" id="avatarUploadInput" class="hidden-file-input" accept="image/*" onchange="handleAvatarUploadForDetail(event)">
+            </div>
+        </div>
+
+        <!-- 编辑角色名称弹窗 -->
+        <div class="modal" id="editNameModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="modal-title">编辑角色名称</div>
+                    <button class="close-btn" onclick="closeEditNameModal()">&times;</button>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">角色名称</label>
+                    <input type="text" class="form-input" id="editCharacterNameInput" placeholder="请输入角色名称">
+                </div>
+                <button class="submit-btn" onclick="saveCharacterName()">保存</button>
+            </div>
+        </div>
+
+        <!-- 编辑角色描述弹窗 -->
+        <div class="modal" id="editDescModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="modal-title">编辑角色描述</div>
+                    <button class="close-btn" onclick="closeEditDescModal()">&times;</button>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">角色描述</label>
+                    <textarea class="form-textarea" id="editCharacterDescInput" placeholder="请输入角色描述"></textarea>
+                </div>
+                <button class="submit-btn" onclick="saveCharacterDesc()">保存</button>
             </div>
         </div>
 
@@ -810,6 +982,42 @@
             let currentCharacterIndex = null;
             let longPressTimer = null;
 
+            // 上传图片到 imgbb
+            function uploadToImgbb(file) {
+                return new Promise((resolve, reject) => {
+                    // 创建 FormData 对象
+                    const formData = new FormData();
+                    formData.append('image', file);
+                    
+                    // 显示上传中提示
+                    showPageAlert('头像上传中...');
+                    
+                    // 发送到 imgbb API
+                    fetch('https://api.imgbb.com/1/upload?key=e575f2643476020fc17a4f4ee408d079', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => {
+                        // 检查响应状态
+                        if (!response.ok) {
+                            throw new Error(`上传失败: ${response.status} ${response.statusText}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.success) {
+                            resolve(data.data.url); // imgbb 返回的图片URL在 data.url
+                        } else {
+                            throw new Error(data.data ? data.data.error : '上传失败');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('上传到imgbb时出错:', error);
+                        reject(error);
+                    });
+                });
+            }
+            
             // 数据清理和修复函数
             function cleanAndFixCharacters() {
                 const savedCharacters = localStorage.getItem('characters');
@@ -1416,7 +1624,24 @@
 
             // 打开添加角色弹窗
             function openAddCharacterModal() {
-                document.getElementById('addCharacterModal').classList.add('active');
+                const modal = document.getElementById('addCharacterModal');
+                if (modal) {
+                    // 设置为添加模式
+                    const saveButton = modal.querySelector('.submit-btn');
+                    if (saveButton) {
+                        saveButton.setAttribute('data-mode', 'add');
+                        saveButton.onclick = addCharacter;
+                    }
+                    
+                    // 显示模态框
+                    modal.classList.add('active');
+                    
+                    // 确保模态框可见
+                    setTimeout(() => {
+                        modal.style.opacity = '1';
+                        modal.style.visibility = 'visible';
+                    }, 10);
+                }
             }
 
             // 关闭添加角色弹窗
@@ -1441,6 +1666,7 @@
                     if (saveButton) {
                         saveButton.textContent = '保存角色';
                         saveButton.onclick = addCharacter;
+                        saveButton.setAttribute('data-mode', 'add');
                     }
                     
                     // 重置表单和临时变量
@@ -1459,6 +1685,10 @@
                     }
                     document.getElementById('avatarUrl').value = '';
                     window.tempAvatar = undefined; // 重置为undefined而不是null
+                    
+                    // 清除当前角色引用
+                    currentCharacter = null;
+                    currentCharacterIndex = null;
                 }
             }
 
@@ -1636,7 +1866,7 @@
                     }
                 }
                 
-                // 检查是否已存在同名角色
+                // 检查是否已存在同名角色（添加时检查）
                 const existingCharacter = characters.find(char => char.name === name);
                 if (existingCharacter) {
                     showPageAlert('已存在同名角色，请使用不同的名称');
@@ -1696,6 +1926,302 @@
                 showPageAlert('角色添加成功！');
             }
 
+            // 更新角色
+            function updateCharacter() {
+                console.log('更新角色函数被调用');
+                const name = document.getElementById('characterName').value.trim();
+                const desc = document.getElementById('characterDesc').value.trim();
+                
+                // 验证表单数据
+                if (!validateCharacterForm(name, desc)) {
+                    return;
+                }
+                
+                // 获取保存的角色数据
+                const savedCharacters = localStorage.getItem('characters');
+                let characters = [];
+                
+                if (savedCharacters) {
+                    try {
+                        characters = JSON.parse(savedCharacters);
+                    } catch (e) {
+                        console.error('解析角色数据时出错:', e);
+                        showPageAlert('数据解析错误');
+                        return;
+                    }
+                }
+                
+                // 编辑角色时，如果用户修改了名称，需要检查是否与其他角色重复（除了当前正在编辑的角色）
+                // 只有当名称确实被修改了，才需要检查重复
+                if (name !== currentCharacter.name) {
+                    const existingCharacter = characters.find(char => char.name === name && char.id !== currentCharacter.id);
+                    if (existingCharacter) {
+                        showPageAlert('已存在同名角色，请使用不同的名称');
+                        return;
+                    }
+                }
+                
+                // 更新角色对象
+                const updatedCharacter = {
+                    id: currentCharacter.id,
+                    name: name,
+                    desc: desc,
+                    avatar: window.tempAvatar || currentCharacter.avatar,
+                    createdAt: currentCharacter.createdAt,
+                    updatedAt: new Date().toISOString()
+                };
+                
+                // 找到并替换旧角色对象
+                const index = characters.findIndex(char => char.id === currentCharacter.id);
+                if (index !== -1) {
+                    characters[index] = updatedCharacter;
+                }
+                
+                // 保存到本地存储
+                try {
+                    localStorage.setItem('characters', JSON.stringify(characters));
+                } catch (e) {
+                    console.error('保存角色时出错:', e);
+                    
+                    // 检查是否为存储空间不足错误
+                    if (e.name === 'QuotaExceededError') {
+                        showPageAlert('存储空间不足，请删除一些角色后再试');
+                    } else {
+                        showPageAlert('保存角色时出错，请重试');
+                    }
+                    
+                    return;
+                }
+                
+                // 更新UI
+                loadCharacters();
+                closeAddCharacterModal();
+                
+                // 显示成功提示
+                showPageAlert('角色更新成功！');
+            }
+
+            // 删除角色
+            function deleteCharacter(id) {
+                const savedCharacters = localStorage.getItem('characters');
+                let characters = [];
+                
+                if (savedCharacters) {
+                    try {
+                        characters = JSON.parse(savedCharacters);
+                    } catch (e) {
+                        console.error('解析角色数据时出错:', e);
+                        showPageAlert('数据解析错误');
+                        return;
+                    }
+                }
+                
+                // 找到并删除角色对象
+                const index = characters.findIndex(char => char.id === id);
+                if (index !== -1) {
+                    characters.splice(index, 1);
+                }
+                
+                // 保存到本地存储
+                try {
+                    localStorage.setItem('characters', JSON.stringify(characters));
+                } catch (e) {
+                    console.error('保存角色时出错:', e);
+                    
+                    // 检查是否为存储空间不足错误
+                    if (e.name === 'QuotaExceededError') {
+                        showPageAlert('存储空间不足，请删除一些角色后再试');
+                    } else {
+                        showPageAlert('保存角色时出错，请重试');
+                    }
+                    
+                    return;
+                }
+                
+                // 更新UI
+                loadCharacters();
+                
+                // 显示成功提示
+                showPageAlert('角色删除成功！');
+            }
+
+            // 验证表单数据
+            function validateCharacterForm(name, desc) {
+                // 验证名称
+                if (!name || name.trim() === '') {
+                    showPageAlert('请输入角色名称');
+                    return false;
+                }
+                
+                // 检查名称长度
+                if (name.length > 50) {
+                    showPageAlert('角色名称不能超过50个字符');
+                    return false;
+                }
+                
+                // 不再限制描述长度，允许用户输入详细的人设信息
+                
+                return true;
+            }
+
+            // 显示页面提示
+            function showPageAlert(message) {
+                const alertElement = document.getElementById('pageAlert');
+                alertElement.textContent = message;
+                alertElement.style.display = 'block';
+                
+                setTimeout(() => {
+                    alertElement.style.display = 'none';
+                }, 3000);
+            }
+
+            // 加载角色
+            function loadCharacters() {
+                const charactersContainer = document.getElementById('charactersContainer');
+                const savedCharacters = localStorage.getItem('characters');
+                let characters = [];
+                
+                if (savedCharacters) {
+                    try {
+                        characters = JSON.parse(savedCharacters);
+                        console.log('从localStorage加载的角色数据:', characters);
+                        
+                        // 数据验证和清理
+                        if (Array.isArray(characters)) {
+                            // 过滤掉无效的角色数据
+                            characters = characters.filter((character, index) => {
+                                // 检查角色对象是否有效
+                                if (!character || typeof character !== 'object') {
+                                    console.log('发现无效角色对象，索引:', index);
+                                    return false;
+                                }
+                                
+                                // 检查必要字段是否存在
+                                if (!character.name || typeof character.name !== 'string') {
+                                    console.log('发现无效角色名称，索引:', index, '角色:', character);
+                                    return false;
+                                }
+                                
+                                // 确保每个角色都有ID
+                                if (!character.id) {
+                                    character.id = Date.now() + index; // 生成唯一ID
+                                    console.log('为角色生成ID:', character.id);
+                                }
+                                
+                                // 确保有创建时间
+                                if (!character.createdAt) {
+                                    character.createdAt = new Date().toISOString();
+                                }
+                                
+                                // 限制角色名称长度
+                                if (character.name.length > 50) {
+                                    character.name = character.name.substring(0, 50);
+                                }
+                                
+                                // 不再限制角色描述长度，允许用户输入详细的人设信息
+                                // if (character.desc && character.desc.length > 200) {
+                                //     character.desc = character.desc.substring(0, 200);
+                                // }
+                                
+                                // 优化头像数据
+                                if (character.avatar && character.avatar.startsWith('data:image')) {
+                                    // 如果头像数据太大，截取部分数据
+                                    if (character.avatar.length > 100 * 1024) { // 100KB
+                                        character.avatar = character.avatar.substring(0, 100 * 1024);
+                                    }
+                                }
+                                
+                                return true;
+                            });
+                        } else {
+                            console.log('角色数据格式不正确，初始化为空数组');
+                            characters = [];
+                        }
+                        
+                        // 重新保存清理后的数据（仅在有变化时）
+                        const originalString = savedCharacters;
+                        const cleanedString = JSON.stringify(characters);
+                        if (originalString !== cleanedString) {
+                            console.log('数据已清理，重新保存到localStorage');
+                            try {
+                                localStorage.setItem('characters', cleanedString);
+                            } catch (e) {
+                                if (e.name === 'QuotaExceededError') {
+                                    console.log('存储空间不足，无法保存清理后的数据');
+                                    // 尝试进一步清理
+                                    characters = characters.slice(0, Math.floor(characters.length * 0.8)); // 删除20%的角色
+                                    localStorage.setItem('characters', JSON.stringify(characters));
+                                }
+                            }
+                        }
+                    } catch (e) {
+                        console.error('解析角色数据时出错:', e);
+                        // 如果解析失败，初始化为空数组
+                        characters = [];
+                        // 尝试清除损坏的数据
+                        try {
+                            localStorage.removeItem('characters');
+                        } catch (removeError) {
+                            console.error('清除损坏数据时出错:', removeError);
+                        }
+                    }
+                }
+                
+                // 清空容器
+                charactersContainer.innerHTML = '';
+                
+                // 生成角色卡片
+                characters.forEach((character, index) => {
+                    const characterCard = document.createElement('div');
+                    characterCard.className = 'character-card';
+                    
+                    // 处理头像显示，增加更好的错误处理
+                    let avatarHtml = '';
+                    if (character.avatar) {
+                        // 检查头像数据是否为有效的base64数据或URL
+                        if (character.avatar.startsWith('data:image') || 
+                            character.avatar.startsWith('http://') || 
+                            character.avatar.startsWith('https://')) {
+                            avatarHtml = `<img src="${character.avatar}" alt="${character.name}" onerror="this.onerror=null;this.parentElement.innerHTML='👤';console.log('头像加载失败:', this.src.substring(0, 100))">`;
+                        } else {
+                            // 如果不是有效的图片格式，显示默认头像
+                            avatarHtml = '👤';
+                        }
+                    } else {
+                        avatarHtml = '👤';
+                    }
+                    
+                    // 为卡片显示创建简短描述（最多100个字符）
+                    let shortDesc = '';
+                    if (character.desc) {
+                        shortDesc = character.desc.length > 100 ? 
+                            character.desc.substring(0, 100) + '...' : 
+                            character.desc;
+                    }
+                    
+                    characterCard.innerHTML = `
+                        <div class="character-avatar">
+                            ${avatarHtml}
+                        </div>
+                        <div class="character-name">${character.name}</div>
+                        <div class="character-desc">${shortDesc || ''}</div>
+                    `;
+                    
+                    // 添加点击事件
+                    characterCard.onclick = (e) => {
+                        console.log('角色卡片被点击:', character, index);
+                        // 在手机上，确保点击事件正常工作
+                        if (e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                        }
+                        viewCharacter(character, index);
+                    };
+                    
+                    charactersContainer.appendChild(characterCard);
+                });
+            }
+
             // 查看角色详情
             function viewCharacter(character, index) {
                 console.log('查看角色详情:', character, index);
@@ -1725,44 +2251,36 @@
                 
                 // 设置头像
                 const avatarContainer = document.querySelector('.character-detail-avatar');
-                if (avatarContainer) {
-                    // 清空容器
-                    avatarContainer.innerHTML = '';
-                    
+                const avatarImg = document.getElementById('detailAvatar');
+                if (avatarImg) {
                     if (character.avatar) {
                         // 检查avatar是URL还是base64数据
                         if (character.avatar.startsWith('http://') || character.avatar.startsWith('https://')) {
-                            // 如果是URL，创建img元素并设置属性
-                            const img = document.createElement('img');
-                            img.src = character.avatar;
-                            img.alt = character.name;
-                            img.style.cssText = 'width:100%;height:100%;object-fit:cover;';
-                            img.onerror = function() {
+                            // 如果是URL，设置图片源
+                            avatarImg.src = character.avatar;
+                            avatarImg.onerror = function() {
                                 // 如果图片加载失败，显示默认头像
                                 console.log('详情页头像加载失败:', this.src.substring(0, 100));
                                 this.onerror = null;
                                 this.parentElement.innerHTML = '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:40px;">👤</div>';
                             };
-                            avatarContainer.appendChild(img);
                         } else if (character.avatar.startsWith('data:image')) {
-                            // 如果是base64数据，创建img元素并设置属性
-                            const img = document.createElement('img');
-                            img.src = character.avatar;
-                            img.alt = character.name;
-                            img.style.cssText = 'width:100%;height:100%;object-fit:cover;';
-                            img.onerror = function() {
+                            // 如果是base64数据，设置图片源
+                            avatarImg.src = character.avatar;
+                            avatarImg.onerror = function() {
                                 // 如果图片加载失败，显示默认头像
                                 console.log('详情页头像加载失败:', this.src.substring(0, 100));
                                 this.onerror = null;
                                 this.parentElement.innerHTML = '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:40px;">👤</div>';
                             };
-                            avatarContainer.appendChild(img);
                         } else {
                             // 如果不是有效的图片格式，使用默认头像
+                            avatarImg.src = '';
                             avatarContainer.innerHTML = '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:40px;">👤</div>';
                         }
                     } else {
                         // 没有头像数据，使用默认头像
+                        avatarImg.src = '';
                         avatarContainer.innerHTML = '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:40px;">👤</div>';
                     }
                 }
@@ -1782,6 +2300,294 @@
                 }
             }
 
+            // 点击头像修改
+            function changeAvatar() {
+                if (!currentCharacter) {
+                    showPageAlert('未选择角色');
+                    return;
+                }
+                // 触发文件选择
+                document.getElementById('avatarUploadInput').click();
+            }
+            
+            // 处理详情页头像上传
+            function handleAvatarUploadForDetail(event) {
+                const file = event.target.files[0];
+                if (file) {
+                    // 检查文件类型
+                    if (!file.type.startsWith('image/')) {
+                        showPageAlert('请选择有效的图片文件');
+                        return;
+                    }
+                    
+                    // 上传到 imgbb
+                    uploadToImgbb(file)
+                        .then(imageUrl => {
+                            // 更新角色头像
+                            updateCharacterAvatar(imageUrl);
+                            
+                            // 更新详情页显示
+                            const avatarImg = document.getElementById('detailAvatar');
+                            if (avatarImg) {
+                                avatarImg.src = imageUrl;
+                                avatarImg.onerror = function() {
+                                    console.log('详情页头像加载失败:', this.src.substring(0, 100));
+                                    this.onerror = null;
+                                    this.parentElement.innerHTML = '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:40px;">👤</div>';
+                                };
+                            }
+                            
+                            showPageAlert('头像更新成功！');
+                        })
+                        .catch(error => {
+                            console.error('上传头像时出错:', error);
+                            showPageAlert('上传头像失败: ' + (error.message || error));
+                        })
+                        .finally(() => {
+                            // 清空文件输入框
+                            event.target.value = '';
+                        });
+                }
+            }
+            
+            // 更新角色头像
+            function updateCharacterAvatar(newAvatarUrl) {
+                if (!currentCharacter) {
+                    showPageAlert('未选择角色');
+                    return;
+                }
+                
+                // 获取保存的角色数据
+                const savedCharacters = localStorage.getItem('characters');
+                let characters = [];
+                
+                if (savedCharacters) {
+                    try {
+                        characters = JSON.parse(savedCharacters);
+                    } catch (e) {
+                        console.error('解析角色数据时出错:', e);
+                        showPageAlert('数据解析错误');
+                        return;
+                    }
+                }
+                
+                // 查找并更新角色头像
+                let updated = false;
+                for (let i = 0; i < characters.length; i++) {
+                    if (characters[i].id === currentCharacter.id) {
+                        characters[i].avatar = newAvatarUrl;
+                        updated = true;
+                        break;
+                    }
+                }
+                
+                if (!updated) {
+                    showPageAlert('未找到要更新的角色');
+                    return;
+                }
+                
+                // 保存到本地存储
+                try {
+                    localStorage.setItem('characters', JSON.stringify(characters));
+                    
+                    // 更新当前角色引用
+                    if (currentCharacter) {
+                        currentCharacter.avatar = newAvatarUrl;
+                    }
+                    
+                    // 重新加载角色列表
+                    loadCharacters();
+                } catch (e) {
+                    console.error('保存角色时出错:', e);
+                    showPageAlert('保存角色时出错，请重试');
+                }
+            }
+            
+            // 编辑角色名称
+            function editCharacterName() {
+                if (!currentCharacter) {
+                    showPageAlert('未选择角色');
+                    return;
+                }
+                
+                // 显示编辑名称弹窗
+                const nameInput = document.getElementById('editCharacterNameInput');
+                if (nameInput) {
+                    nameInput.value = currentCharacter.name || '';
+                    document.getElementById('editNameModal').classList.add('active');
+                }
+            }
+            
+            // 关闭编辑名称弹窗
+            function closeEditNameModal() {
+                document.getElementById('editNameModal').classList.remove('active');
+            }
+            
+            // 保存角色名称
+            function saveCharacterName() {
+                const nameInput = document.getElementById('editCharacterNameInput');
+                const newName = nameInput.value.trim();
+                
+                if (newName !== '' && newName !== currentCharacter.name) {
+                    updateCharacterName(newName);
+                }
+                
+                // 关闭弹窗
+                closeEditNameModal();
+            }
+            
+            // 更新角色名称
+            function updateCharacterName(newName) {
+                // 获取保存的角色数据
+                const savedCharacters = localStorage.getItem('characters');
+                let characters = [];
+                
+                if (savedCharacters) {
+                    try {
+                        characters = JSON.parse(savedCharacters);
+                    } catch (e) {
+                        console.error('解析角色数据时出错:', e);
+                        showPageAlert('数据解析错误');
+                        return;
+                    }
+                }
+                
+                // 检查是否已存在同名角色
+                const existingCharacter = characters.find(char => char.name === newName && char.id !== currentCharacter.id);
+                if (existingCharacter) {
+                    showPageAlert('已存在同名角色，请使用不同的名称');
+                    return;
+                }
+                
+                // 查找并更新角色名称
+                let updated = false;
+                for (let i = 0; i < characters.length; i++) {
+                    if (characters[i].id === currentCharacter.id) {
+                        characters[i].name = newName;
+                        updated = true;
+                        break;
+                    }
+                }
+                
+                if (!updated) {
+                    showPageAlert('未找到要更新的角色');
+                    return;
+                }
+                
+                // 保存到本地存储
+                try {
+                    localStorage.setItem('characters', JSON.stringify(characters));
+                    
+                    // 更新当前角色引用
+                    if (currentCharacter) {
+                        currentCharacter.name = newName;
+                    }
+                    
+                    // 更新详情页显示
+                    const detailName = document.getElementById('detailName');
+                    if (detailName) {
+                        detailName.textContent = newName;
+                    }
+                    
+                    // 重新加载角色列表
+                    loadCharacters();
+                    
+                    showPageAlert('角色名称更新成功！');
+                } catch (e) {
+                    console.error('保存角色时出错:', e);
+                    showPageAlert('保存角色时出错，请重试');
+                }
+            }
+            
+            // 编辑角色描述
+            function editCharacterDesc() {
+                if (!currentCharacter) {
+                    showPageAlert('未选择角色');
+                    return;
+                }
+                
+                // 显示编辑描述弹窗
+                const descInput = document.getElementById('editCharacterDescInput');
+                if (descInput) {
+                    descInput.value = currentCharacter.desc || '';
+                    document.getElementById('editDescModal').classList.add('active');
+                }
+            }
+            
+            // 关闭编辑描述弹窗
+            function closeEditDescModal() {
+                document.getElementById('editDescModal').classList.remove('active');
+            }
+            
+            // 保存角色描述
+            function saveCharacterDesc() {
+                const descInput = document.getElementById('editCharacterDescInput');
+                const newDesc = descInput.value;
+                
+                if (newDesc !== currentCharacter.desc) {
+                    updateCharacterDesc(newDesc);
+                }
+                
+                // 关闭弹窗
+                closeEditDescModal();
+            }
+            
+            // 更新角色描述
+            function updateCharacterDesc(newDesc) {
+                // 获取保存的角色数据
+                const savedCharacters = localStorage.getItem('characters');
+                let characters = [];
+                
+                if (savedCharacters) {
+                    try {
+                        characters = JSON.parse(savedCharacters);
+                    } catch (e) {
+                        console.error('解析角色数据时出错:', e);
+                        showPageAlert('数据解析错误');
+                        return;
+                    }
+                }
+                
+                // 查找并更新角色描述
+                let updated = false;
+                for (let i = 0; i < characters.length; i++) {
+                    if (characters[i].id === currentCharacter.id) {
+                        characters[i].desc = newDesc;
+                        updated = true;
+                        break;
+                    }
+                }
+                
+                if (!updated) {
+                    showPageAlert('未找到要更新的角色');
+                    return;
+                }
+                
+                // 保存到本地存储
+                try {
+                    localStorage.setItem('characters', JSON.stringify(characters));
+                    
+                    // 更新当前角色引用
+                    if (currentCharacter) {
+                        currentCharacter.desc = newDesc;
+                    }
+                    
+                    // 更新详情页显示
+                    const detailDesc = document.getElementById('detailDesc');
+                    if (detailDesc) {
+                        detailDesc.textContent = newDesc;
+                    }
+                    
+                    // 重新加载角色列表
+                    loadCharacters();
+                    
+                    showPageAlert('角色描述更新成功！');
+                } catch (e) {
+                    console.error('保存角色时出错:', e);
+                    showPageAlert('保存角色时出错，请重试');
+                }
+            }
+            
             // 关闭角色详情弹窗
             function closeCharacterDetailModal() {
                 const modal = document.getElementById('characterDetailModal');
@@ -1793,9 +2599,9 @@
                         modal.style.visibility = 'hidden';
                     }, 300); // 与CSS过渡时间匹配
                 }
-                // 清除当前角色引用
-                currentCharacter = null;
-                currentCharacterIndex = null;
+                // 不再清除当前角色引用，因为在编辑角色时需要保持引用
+                // currentCharacter = null;
+                // currentCharacterIndex = null;
                 
                 // 清除详情弹窗内容
                 const detailName = document.getElementById('detailName');
@@ -1816,99 +2622,7 @@
             }
 
             // 编辑角色
-            function editCharacter() {
-                // 检查是否有选中的角色
-                if (!currentCharacter) {
-                    showPageAlert('未选择角色，请从角色列表中选择要编辑的角色');
-                    return;
-                }
-                
-                // 保存当前角色引用，因为在关闭详情弹窗时会被清除
-                const characterToEdit = currentCharacter;
-                const characterIndexToEdit = currentCharacterIndex;
-                
-                // 关闭详情弹窗
-                closeCharacterDetailModal();
-                
-                // 确保详情弹窗完全关闭后再打开编辑弹窗
-                setTimeout(() => {
-                    // 恢复当前角色引用
-                    currentCharacter = characterToEdit;
-                    currentCharacterIndex = characterIndexToEdit;
-                    // 打开编辑弹窗
-                    openEditCharacterModal();
-                }, 350); // 等待详情弹窗关闭动画完成
-            }
-
-            // 打开编辑角色弹窗
-            function openEditCharacterModal() {
-                // 检查是否有选中的角色
-                if (!currentCharacter) {
-                    showPageAlert('未选择角色，请重新选择');
-                    return;
-                }
-                
-                // 设置表单数据
-                document.getElementById('characterName').value = currentCharacter.name || '';
-                document.getElementById('characterDesc').value = currentCharacter.desc || '';
-                
-                // 设置头像预览
-                const previewArea = document.getElementById('avatarPreviewArea');
-                if (previewArea) {
-                    if (currentCharacter.avatar) {
-                        if (currentCharacter.avatar.startsWith('data:image') || 
-                            currentCharacter.avatar.startsWith('http://') || 
-                            currentCharacter.avatar.startsWith('https://')) {
-                            previewArea.innerHTML = `
-                                <img src="${currentCharacter.avatar}" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; margin: 0 auto 10px;">
-                                <div class="upload-text" id="uploadText">当前头像</div>
-                            `;
-                        } else {
-                            previewArea.innerHTML = `
-                                <div class="upload-icon">👤</div>
-                                <div class="upload-text" id="uploadText">点击选择新头像</div>
-                            `;
-                        }
-                    } else {
-                        previewArea.innerHTML = `
-                            <div class="upload-icon">👤</div>
-                            <div class="upload-text" id="uploadText">点击选择头像</div>
-                        `;
-                    }
-                }
-                
-                // 保存当前角色到临时变量
-                window.tempAvatar = currentCharacter.avatar || null;
-                
-                // 显示添加角色弹窗（用于编辑）
-                const modal = document.getElementById('addCharacterModal');
-                if (modal) {
-                    // 更改标题为编辑角色
-                    const titleElement = modal.querySelector('.modal-title');
-                    if (titleElement) {
-                        titleElement.textContent = '编辑角色';
-                    }
-                    
-                    // 更改保存按钮文字
-                    const saveButton = modal.querySelector('.submit-btn');
-                    if (saveButton) {
-                        saveButton.textContent = '更新角色';
-                        // 更改保存按钮的点击事件
-                        saveButton.onclick = updateCharacter;
-                    }
-                    
-                    // 显示模态框
-                    modal.classList.add('active');
-                    
-                    // 确保模态框可见
-                    setTimeout(() => {
-                        modal.style.opacity = '1';
-                        modal.style.visibility = 'visible';
-                    }, 10);
-                } else {
-                    showPageAlert('无法打开编辑界面');
-                }
-            }
+            // 已移除此功能，改为直接在详情页修改
 
             // 验证角色表单数据
             function validateCharacterForm(name, desc) {
@@ -1927,119 +2641,6 @@
                 // 不再限制描述长度，允许用户输入详细的人设信息
                 
                 return true;
-            }
-            
-            // 更新角色
-            function updateCharacter() {
-                console.log('更新角色函数被调用');
-                const name = document.getElementById('characterName').value.trim();
-                const desc = document.getElementById('characterDesc').value.trim();
-                
-                // 验证表单数据
-                if (!validateCharacterForm(name, desc)) {
-                    return;
-                }
-                
-                // 获取保存的角色数据
-                const savedCharacters = localStorage.getItem('characters');
-                let characters = [];
-                
-                if (savedCharacters) {
-                    try {
-                        characters = JSON.parse(savedCharacters);
-                    } catch (e) {
-                        console.error('解析角色数据时出错:', e);
-                        showPageAlert('数据解析错误');
-                        return;
-                    }
-                }
-                
-                // 编辑角色时不需要检查名称重复，因为是修改现有角色
-                // 只有在添加新角色时才需要检查名称重复
-                
-                // 查找并更新角色
-                let updated = false;
-                let originalCreatedAt = null;
-                for (let i = 0; i < characters.length; i++) {
-                    if (characters[i].id === currentCharacter.id) {
-                        // 保存原始创建时间
-                        originalCreatedAt = characters[i].createdAt;
-                        
-                        // 更新角色信息
-                        characters[i].name = name;
-                        characters[i].desc = desc;
-                        characters[i].avatar = window.tempAvatar || characters[i].avatar;
-                        
-                        // 确保创建时间不变
-                        if (!originalCreatedAt) {
-                            originalCreatedAt = new Date().toISOString();
-                        }
-                        characters[i].createdAt = originalCreatedAt;
-                        
-                        updated = true;
-                        break;
-                    }
-                }
-                
-                if (!updated) {
-                    showPageAlert('未找到要更新的角色');
-                    return;
-                }
-                
-                // 保存到本地存储
-                try {
-                    localStorage.setItem('characters', JSON.stringify(characters));
-                } catch (e) {
-                    console.error('保存角色时出错:', e);
-                    
-                    // 检查是否为存储空间不足错误
-                    if (e.name === 'QuotaExceededError') {
-                        showPageAlert('存储空间不足，请删除一些角色后再试');
-                    } else {
-                        showPageAlert('保存角色时出错，请重试');
-                    }
-                    
-                    return;
-                }
-                
-                // 更新UI
-                loadCharacters();
-                closeAddCharacterModal();
-                
-                // 重置表单和临时变量
-                document.getElementById('characterName').value = '';
-                document.getElementById('characterDesc').value = '';
-                const previewArea = document.getElementById('avatarPreviewArea');
-                if (previewArea) {
-                    previewArea.innerHTML = `
-                        <div class="upload-icon">👤</div>
-                        <div class="upload-text" id="uploadText">点击选择头像或使用URL上传</div>
-                    `;
-                }
-                const urlContainer = document.getElementById('urlUploadContainer');
-                if (urlContainer) {
-                    urlContainer.style.display = 'none';
-                }
-                document.getElementById('avatarUrl').value = '';
-                window.tempAvatar = undefined; // 重置为undefined而不是null
-                
-                // 恢复添加角色弹窗的原始状态
-                const modal = document.getElementById('addCharacterModal');
-                if (modal) {
-                    const titleElement = modal.querySelector('.modal-title');
-                    if (titleElement) {
-                        titleElement.textContent = '添加角色';
-                    }
-                    
-                    const saveButton = modal.querySelector('.submit-btn');
-                    if (saveButton) {
-                        saveButton.textContent = '保存角色';
-                        saveButton.onclick = addCharacter;
-                    }
-                }
-                
-                // 显示成功提示
-                showPageAlert('角色更新成功！');
             }
 
             // 删除角色
