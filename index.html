@@ -2300,18 +2300,23 @@
                 wallpaperElement.style.backgroundImage = '';
                 wallpaperElement.innerHTML = '';
                 
+                console.log('从localStorage获取的壁纸数据:', savedWallpaper);
+                
                 if (savedWallpaper) {
                     try {
                         // 解析壁纸数据
                         const wallpaperData = JSON.parse(savedWallpaper);
+                        console.log('解析后的壁纸数据:', wallpaperData);
                         
                         if (wallpaperData && wallpaperData.src) {
-                            if (wallpaperData.type === 'video' && wallpaperData.poster) {
+                            if (wallpaperData.type === 'video' && wallpaperData.src) {
                                 // 视频壁纸 - 创建视频元素
+                                // 如果没有海报，使用视频的第一帧作为海报
+                                const posterUrl = wallpaperData.poster || '';
                                 wallpaperElement.innerHTML = `
                                     <video 
                                         src="${wallpaperData.src}" 
-                                        poster="${wallpaperData.poster}" 
+                                        poster="${posterUrl}" 
                                         autoplay 
                                         muted 
                                         playsinline
@@ -2332,6 +2337,14 @@
                                         video.play().catch(e => {
                                             console.error('自动播放失败:', e);
                                         });
+                                        
+                                        // 如果海报无法加载，移除poster属性
+                                        video.addEventListener('error', function(e) {
+                                            if (e.target.tagName === 'VIDEO' && e.target.poster) {
+                                                console.warn('视频海报加载失败，移除poster属性');
+                                                e.target.removeAttribute('poster');
+                                            }
+                                        }, true);
                                     }
                                 }, 100);
                             } else if (wallpaperData.type === 'image') {
