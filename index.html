@@ -1817,7 +1817,7 @@
                             <div class="avatar-bubble-container">
                                 <!-- 左侧圆形头像 -->
                                 <div class="widget-avatar" id="widgetAvatar" onclick="changeWidgetAvatar()">
-                                    <span style="font-size: 24px; line-height: 60px;" id="widgetAvatarDefault">👤</span>
+                                    <span style="font-size: 24px; line-height: 60px;">👤</span>
                                 </div>
                                 
                                 <!-- 右侧圆角气泡 -->
@@ -3001,7 +3001,7 @@
                             if (data.status === 200) {
                                 // 更新头像显示，确保正确比例
                                 const widgetAvatar = document.getElementById('widgetAvatar');
-                                widgetAvatar.innerHTML = `<img src="${data.data.url}" alt="头像" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+                                widgetAvatar.innerHTML = `<img src="${data.data.url}" alt="头像" style="width:100%;height:100%;object-fit:cover;object-position:center;border-radius:50%;">`;
                                 // 保存到本地存储
                                 localStorage.setItem('widgetAvatar', data.data.url);
                                 showPageAlert('头像上传成功！');
@@ -3035,11 +3035,8 @@
                 // 加载头像
                 const savedAvatar = localStorage.getItem('widgetAvatar');
                 const widgetAvatar = document.getElementById('widgetAvatar');
-                if (savedAvatar && savedAvatar !== 'null' && savedAvatar !== 'undefined') {
-                    widgetAvatar.innerHTML = `<img src="${savedAvatar}" alt="头像" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
-                } else {
-                    // 如果没有保存的头像，显示默认头像
-                    widgetAvatar.innerHTML = '<span style="font-size: 24px; line-height: 60px;">👤</span>';
+                if (savedAvatar) {
+                    widgetAvatar.innerHTML = `<img src="${savedAvatar}" alt="头像" style="width:100%;height:100%;object-fit:cover;object-position:center;border-radius:50%;">`;
                 }
 
                 // 加载照片
