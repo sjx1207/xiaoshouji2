@@ -549,11 +549,14 @@
                 { id: 'chouka', name: '抽卡', type: 'main' },
                 // 名片头像
                 { id: 'profile-avatar', name: '名片头像', type: 'main' },
+                // 智能体
+                { id: 'zhinengti', name: '智能体', type: 'main' },
                 
                 // Dock栏应用
                 { id: 'jueseshu-dock', name: '角色书', type: 'dock' },
                 { id: 'shijieshu-dock', name: '世界书', type: 'dock' },
                 { id: 'shuomingshu-dock', name: '说明书', type: 'dock' },
+                { id: 'zhinengti-dock', name: '智能体', type: 'dock' },
                 { id: 'tubiao-dock', name: '图标', type: 'dock' }
             ];
 
@@ -586,11 +589,19 @@
                 'peiban': '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 12C14.2091 12 16 10.2091 16 8C16 5.79086 14.2091 4 12 4C9.79086 4 8 5.79086 8 8C8 10.2091 9.79086 12 12 12Z" stroke="white" stroke-width="2"/><path d="M6 20C6 17.7909 7.79086 16 10 16H14C16.2091 16 18 17.7909 18 20V20C18 21.1046 17.1046 22 16 22H8C6.89543 22 6 21.1046 6 20V20Z" stroke="white" stroke-width="2"/></svg>',
                 'chouka': '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M19 9L12 2L5 9M19 9V21C19 21.5304 18.7893 22.0391 18.4142 22.4142C18.0391 22.7893 17.5304 23 17 23H7C6.46957 23 5.96086 22.7893 5.58579 22.4142C5.21071 22.0391 5 21.5304 5 21V9M19 9H5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 23V15C9 14.4696 9.21071 13.9609 9.58579 13.5858C9.96086 13.2107 10.4696 13 11 13H13C13.5304 13 14.0391 13.2107 14.4142 13.5858C14.7893 13.9609 15 14.4696 15 15V23" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
                 // 名片头像默认图标
-                'profile-avatar': '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="9" stroke="white" stroke-width="2"/><circle cx="12" cy="10" r="3" stroke="white" stroke-width="2"/><path d="M7 18C7 18 8 16 12 16C16 16 17 18 17 18" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>'
+                'profile-avatar': '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="9" stroke="white" stroke-width="2"/><circle cx="12" cy="10" r="3" stroke="white" stroke-width="2"/><path d="M7 18C7 18 8 16 12 16C16 16 17 18 17 18" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>',
+                // 智能体默认图标
+                'zhinengti': '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2Z" stroke="white" stroke-width="2"/><path d="M8 16C9.10457 16 10 15.1046 10 14C10 12.8954 9.10457 12 8 12C6.89543 12 6 12.8954 6 14C6 15.1046 6.89543 16 8 16Z" fill="white"/><path d="M16 16C17.1046 16 18 15.1046 18 14C18 12.8954 17.1046 12 16 12C14.8954 12 14 12.8954 14 14C14 15.1046 14.8954 16 16 16Z" fill="white"/><path d="M8 11C8 11 9.5 13 12 13C14.5 13 16 11 16 11" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>'
             };
 
             // 音乐应用默认图标
             defaultIcons['yinyue'] = '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 3V12L19 5V19L12 12V21" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+            // 智能体应用默认图标
+            defaultIcons['zhinengti-dock'] = '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2Z" stroke="white" stroke-width="2"/><path d="M8 16C9.10457 16 10 15.1046 10 14C10 12.8954 9.10457 12 8 12C6.89543 12 6 12.8954 6 14C6 15.1046 6.89543 16 8 16Z" fill="white"/><path d="M16 16C17.1046 16 18 15.1046 18 14C18 12.8954 17.1046 12 16 12C14.8954 12 14 12.8954 14 14C14 15.1046 14.8954 16 16 16Z" fill="white"/><path d="M8 11C8 11 9.5 13 12 13C14.5 13 16 11 16 11" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>';
+
+
+
 
             // 页面加载时初始化
             window.addEventListener('load', function() {
@@ -699,9 +710,6 @@
             // 上传图片到 imgbb
             function uploadToImgur(file) {
                 return new Promise((resolve, reject) => {
-                    // 获取用户配置的ImgBB API密钥，如果没有则使用默认密钥
-                    const imgbbApiKey = localStorage.getItem('imgbbApiKey') || 'e575f2643476020fc17a4f4ee408d079';
-                    
                     // 创建 FormData 对象
                     const formData = new FormData();
                     formData.append('image', file);
@@ -713,7 +721,7 @@
                     saveBtn.disabled = true;
                     
                     // 发送到 imgbb API
-                    fetch(`https://api.imgbb.com/1/upload?key=${imgbbApiKey}`, {
+                    fetch('https://api.imgbb.com/1/upload?key=e575f2643476020fc17a4f4ee408d079', {
                         method: 'POST',
                         body: formData
                     })
