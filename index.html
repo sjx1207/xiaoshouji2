@@ -3035,7 +3035,7 @@
                 // 加载头像
                 const savedAvatar = localStorage.getItem('widgetAvatar');
                 const widgetAvatar = document.getElementById('widgetAvatar');
-                if (savedAvatar) {
+                if (savedAvatar && savedAvatar !== 'null' && savedAvatar !== 'undefined') {
                     widgetAvatar.innerHTML = `<img src="${savedAvatar}" alt="头像" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
                 } else {
                     // 如果没有保存的头像，显示默认头像
