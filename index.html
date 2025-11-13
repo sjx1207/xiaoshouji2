@@ -1816,7 +1816,9 @@
                             <!-- 头像和气泡容器 -->
                             <div class="avatar-bubble-container">
                                 <!-- 左侧圆形头像 -->
-                                <div class="widget-avatar" id="widgetAvatar" onclick="changeWidgetAvatar()"></div>
+                                <div class="widget-avatar" id="widgetAvatar" onclick="changeWidgetAvatar()">
+                                    <span style="font-size: 24px; line-height: 60px;">👤</span>
+                                </div>
                                 
                                 <!-- 右侧圆角气泡 -->
                                 <div class="widget-bubble" id="widgetBubble" onclick="changeBubbleText()">点击设置气泡文字</div>
@@ -2199,7 +2201,10 @@
                     { id: 'tubiao-dock', selector: '.dock .app-icon[data-app="图标"]' }
                 ];
                 
-                dockApps.forEach(app => {
+                // 查找匹配的应用
+                const allApps = [...mainScreenApps, ...dockApps];
+                
+                allApps.forEach(app => {
                     try {
                         const customIcon = localStorage.getItem(`customIcon_${app.id}`);
                         if (customIcon) {
@@ -2239,7 +2244,8 @@
                         { id: 'qianbao', selector: '.app-icon[data-app="钱包"]' },
                         { id: 'dianhua', selector: '.app-icon[data-app="电话"]' },
                         { id: 'peiban', selector: '.app-icon[data-app="陪伴"]' },
-                        { id: 'chouka', selector: '.app-icon[data-app="抽卡"]' }
+                        { id: 'chouka', selector: '.app-icon[data-app="抽卡"]' },
+                        { id: 'zhinengti', selector: '.app-icon[data-app="智能体"]' }
                     ];
                     
                     // Dock栏应用图标
@@ -2247,6 +2253,7 @@
                         { id: 'jueseshu-dock', selector: '.dock .app-icon[data-app="角色书"]' },
                         { id: 'shijieshu-dock', selector: '.dock .app-icon[data-app="世界书"]' },
                         { id: 'shuomingshu-dock', selector: '.dock .app-icon[data-app="说明书"]' },
+                        { id: 'zhinengti-dock', selector: '.dock .app-icon[data-app="智能体"]' },
                         { id: 'tubiao-dock', selector: '.dock .app-icon[data-app="图标"]' }
                     ];
                     
@@ -3036,8 +3043,12 @@
                 
                 // 加载头像
                 const savedAvatar = localStorage.getItem('widgetAvatar');
+                const widgetAvatar = document.getElementById('widgetAvatar');
                 if (savedAvatar) {
-                    document.getElementById('widgetAvatar').innerHTML = `<img src="${savedAvatar}" alt="头像" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+                    widgetAvatar.innerHTML = `<img src="${savedAvatar}" alt="头像" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+                } else {
+                    // 如果没有保存的头像，显示默认头像
+                    widgetAvatar.innerHTML = '<span style="font-size: 24px; line-height: 60px;">👤</span>';
                 }
 
                 // 加载照片
